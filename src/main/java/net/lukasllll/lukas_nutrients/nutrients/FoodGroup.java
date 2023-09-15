@@ -4,6 +4,8 @@ public class FoodGroup {
     public static final int MAX_NUTRIENT_AMOUNT=12;
     public static final int MIN_NUTRIENT_AMOUNT=0;
 
+    public static FoodGroup[] FoodGroups=null;
+
     private final String id;
     private String displayname;
     private int[] pointRanges;
@@ -20,4 +22,16 @@ public class FoodGroup {
     public String getID() {return this.id;}
     public String getDisplayname() {return this.displayname;}
     public int[] getPointRanges() {return this.pointRanges;}
+
+    public static  FoodGroup[] getFoodGroups() {
+        if(FoodGroups!=null) return FoodGroups;
+        FoodGroups= new FoodGroup[5];
+        FoodGroups[0] = new FoodGroup("fruits", "Fruits", 4, 6, 9, 11);
+        FoodGroups[0] = new FoodGroup("grains", "Grains", 4, 5, 9, 10);
+        FoodGroups[0] = new FoodGroup("proteins", "Proteins", 3, 5, 9, 11);
+        FoodGroups[0] = new FoodGroup("vegetables", "Vegetables", 4, 8, 11, 12);
+        FoodGroups[0] = new FoodGroup("sugars", "Sugars", 0, 1, 3, 7);
+
+        return FoodGroups;
+    }
 }
