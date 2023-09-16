@@ -14,7 +14,7 @@ public class FoodGroup {
 
     public FoodGroup(String id, String displayname, int r1, int r2, int r3, int r4) {
         this.id=id;
-        this.displayname="displayname";
+        this.displayname=displayname;
         int[] tPointRanges={r1,r2,r3,r4};
         this.pointRanges=tPointRanges;
     }
@@ -27,10 +27,10 @@ public class FoodGroup {
         if(FoodGroups!=null) return FoodGroups;
         FoodGroups= new FoodGroup[5];
         FoodGroups[0] = new FoodGroup("fruits", "Fruits", 4, 6, 9, 11);
-        FoodGroups[0] = new FoodGroup("grains", "Grains", 4, 5, 9, 10);
-        FoodGroups[0] = new FoodGroup("proteins", "Proteins", 3, 5, 9, 11);
-        FoodGroups[0] = new FoodGroup("vegetables", "Vegetables", 4, 8, 11, 12);
-        FoodGroups[0] = new FoodGroup("sugars", "Sugars", 0, 1, 3, 7);
+        FoodGroups[1] = new FoodGroup("grains", "Grains", 4, 5, 9, 10);
+        FoodGroups[2] = new FoodGroup("proteins", "Proteins", 3, 5, 9, 11);
+        FoodGroups[3] = new FoodGroup("vegetables", "Vegetables", 4, 8, 11, 12);
+        FoodGroups[4] = new FoodGroup("sugars", "Sugars", 0, 1, 3, 7);
 
         return FoodGroups;
     }

@@ -1,6 +1,7 @@
 package net.lukasllll.lukas_nutrients.event;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.commands.NutrientsCommand;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
 import net.lukasllll.lukas_nutrients.networking.packet.NutrientsDataSyncS2CPacket;
 import net.lukasllll.lukas_nutrients.nutrients.PlayerNutrientProvider;
@@ -10,11 +11,13 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
+import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.server.command.ConfigCommand;
 
 @Mod.EventBusSubscriber(modid = LukasNutrients.MOD_ID)
 public class ModEvents {
@@ -53,6 +56,13 @@ public class ModEvents {
                 });
             }
         }
+    }
+
+    @SubscribeEvent
+    public static void onCommandsRegister(RegisterCommandsEvent event) {
+        new NutrientsCommand(event.getDispatcher());
+
+        ConfigCommand.register(event.getDispatcher());
     }
 
 }

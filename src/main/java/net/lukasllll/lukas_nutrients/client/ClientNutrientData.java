@@ -13,4 +13,14 @@ public class ClientNutrientData {
     public static double[] getPlayerNutrients() {
         return ClientNutrientData.amounts;
     }
+
+    private int getArrayIndex(String nutrientID) {
+        for(int i=0; i< Groups.length; i++) {
+            if(Groups[i].getID().equals(nutrientID)) {
+                return i;
+            }
+        }
+
+        return -1;
+    }
 }
