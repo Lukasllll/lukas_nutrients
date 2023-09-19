@@ -4,15 +4,10 @@ package net.lukasllll.lukas_nutrients.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
-import net.lukasllll.lukas_nutrients.networking.ModMessages;
-import net.lukasllll.lukas_nutrients.networking.packet.NutrientsDataSyncS2CPacket;
 import net.lukasllll.lukas_nutrients.nutrients.FoodGroup;
 import net.lukasllll.lukas_nutrients.nutrients.PlayerNutrientProvider;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
@@ -21,7 +16,7 @@ public class NutrientsCommand {
     public NutrientsCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("nutrients").requires((command) -> {
             return command.hasPermission(2);
-        }).then(Commands.literal("set").then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(FoodGroupSuggestionProvider.getProvider()).then(Commands.argument("amount", IntegerArgumentType.integer(1, 24)).executes((command) -> {
+        }).then(Commands.literal("set").then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(FoodGroupSuggestionProvider.getProvider()).then(Commands.argument("amount", IntegerArgumentType.integer(0, 24)).executes((command) -> {
             return setNutrients(command.getSource(), StringArgumentType.getString(command, "nutrient id"), IntegerArgumentType.getInteger(command, "amount"));
         })))).then(Commands.literal("get").then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(FoodGroupSuggestionProvider.getProvider()).executes((command) -> {
             return getNutrients(command.getSource(), StringArgumentType.getString(command, "nutrient id"));
@@ -35,7 +30,7 @@ public class NutrientsCommand {
         ServerPlayer player =source.getPlayer();
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
             nutrients.setAmount(nutrientID,amount);
-            ModMessages.sendToPlayer(new NutrientsDataSyncS2CPacket(nutrients.getNutrientAmounts()), player);
+            nutrients.updateClient(player);
             player.sendSystemMessage(Component.literal("Set " + nutrients.getDisplayName(nutrientID) + " to " + amount));
         });
 

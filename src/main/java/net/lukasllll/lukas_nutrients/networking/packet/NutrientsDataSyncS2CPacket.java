@@ -12,30 +12,43 @@ public class NutrientsDataSyncS2CPacket {
     private static FoodGroup[] Groups=FoodGroup.getFoodGroups();
 
     private final double[] nutrientAmounts;
+    private final int[] nutrientRanges;
+    private final int[] nutrientScores;
+    private int totalScore;
 
-    public NutrientsDataSyncS2CPacket(double[] amounts) {
+    public NutrientsDataSyncS2CPacket(double[] amounts, int[] ranges, int[] scores, int totalScore) {
         this.nutrientAmounts = amounts;
+        this.nutrientRanges = ranges;
+        this.nutrientScores = scores;
+        this.totalScore = totalScore;
     }
 
     public NutrientsDataSyncS2CPacket(FriendlyByteBuf buf) {
-
         this.nutrientAmounts = new double[Groups.length];
+        this.nutrientRanges = new int[Groups.length];
+        this.nutrientScores = new int[Groups.length];
         for(int i=0; i< nutrientAmounts.length; i++) {
             this.nutrientAmounts[i] = buf.readDouble();
+            this.nutrientRanges[i] = buf.readInt();
+            this.nutrientScores[i] = buf.readInt();
         }
+        this.totalScore = buf.readInt();
     }
 
     public void toBytes(FriendlyByteBuf buf) {
         for(int i=0; i< nutrientAmounts.length; i++) {
             buf.writeDouble(nutrientAmounts[i]);
+            buf.writeInt(nutrientRanges[i]);
+            buf.writeInt(nutrientScores[i]);
         }
+        buf.writeInt(totalScore);
     }
 
     public boolean handle(Supplier<NetworkEvent.Context> supplier) {
         NetworkEvent.Context context = supplier.get();;
         context.enqueueWork(() -> {
             //CLIENT CODE
-            ClientNutrientData.set(nutrientAmounts);
+            ClientNutrientData.set(nutrientAmounts, nutrientRanges, nutrientScores, totalScore);
         });
 
         return true;
