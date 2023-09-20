@@ -4,6 +4,7 @@ import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.commands.NutrientsCommand;
 import net.lukasllll.lukas_nutrients.nutrients.PlayerNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.PlayerNutrients;
+import net.lukasllll.lukas_nutrients.nutrients.effects.DietEffects;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -11,6 +12,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
+import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -49,7 +51,17 @@ public class ModEvents {
                 player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                     nutrients.recalculateAll();
                     nutrients.updateClient(player);
+                    DietEffects.apply(player);
                 });
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static  void onPlayerLeaveWorld(EntityLeaveLevelEvent event) {
+        if(!event.getLevel().isClientSide()) {
+            if (event.getEntity() instanceof ServerPlayer player) {
+                DietEffects.remove(player);
             }
         }
     }
@@ -60,6 +72,7 @@ public class ModEvents {
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 nutrients.setToDefault();
                 nutrients.updateClient(player);
+                DietEffects.apply(player);
             });
         }
     }

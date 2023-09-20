@@ -2,7 +2,7 @@ package net.lukasllll.lukas_nutrients.event;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
-import net.lukasllll.lukas_nutrients.client.textures.gui.screens.NutrientScreen;
+import net.lukasllll.lukas_nutrients.client.graphics.gui.screens.NutrientScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;

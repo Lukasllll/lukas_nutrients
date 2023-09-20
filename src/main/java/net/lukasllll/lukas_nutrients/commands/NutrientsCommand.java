@@ -6,6 +6,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.lukasllll.lukas_nutrients.nutrients.FoodGroup;
 import net.lukasllll.lukas_nutrients.nutrients.PlayerNutrientProvider;
+import net.lukasllll.lukas_nutrients.nutrients.effects.DietEffects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -31,6 +32,7 @@ public class NutrientsCommand {
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
             nutrients.setAmount(nutrientID,amount);
             nutrients.updateClient(player);
+            DietEffects.apply(player);
             player.sendSystemMessage(Component.literal("Set " + nutrients.getDisplayName(nutrientID) + " to " + amount));
         });
 

@@ -1,4 +1,4 @@
-package net.lukasllll.lukas_nutrients.client.textures;
+package net.lukasllll.lukas_nutrients.client.graphics;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;

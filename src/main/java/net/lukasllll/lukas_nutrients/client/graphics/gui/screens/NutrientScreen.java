@@ -1,13 +1,13 @@
-package net.lukasllll.lukas_nutrients.client.textures.gui.screens;
+package net.lukasllll.lukas_nutrients.client.graphics.gui.screens;
 
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
-import net.lukasllll.lukas_nutrients.client.textures.CustomTexture;
-import net.lukasllll.lukas_nutrients.client.textures.NativeImageLoader;
-import net.lukasllll.lukas_nutrients.nutrients.DietEffects;
+import net.lukasllll.lukas_nutrients.client.graphics.CustomTexture;
+import net.lukasllll.lukas_nutrients.client.graphics.NativeImageLoader;
+import net.lukasllll.lukas_nutrients.nutrients.effects.DietEffects;
 import net.lukasllll.lukas_nutrients.nutrients.FoodGroup;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
