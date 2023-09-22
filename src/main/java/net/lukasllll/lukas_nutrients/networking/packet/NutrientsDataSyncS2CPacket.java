@@ -1,7 +1,7 @@
 package net.lukasllll.lukas_nutrients.networking.packet;
 
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
-import net.lukasllll.lukas_nutrients.nutrients.FoodGroup;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 public class NutrientsDataSyncS2CPacket {
 
-    private static FoodGroup[] Groups=FoodGroup.getFoodGroups();
+    private static NutrientGroup[] Groups= NutrientGroup.getFoodGroups();
 
     private final double[] nutrientAmounts;
     private final double[] exhaustionLevels;

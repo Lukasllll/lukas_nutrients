@@ -7,8 +7,8 @@ import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.graphics.CustomTexture;
 import net.lukasllll.lukas_nutrients.client.graphics.NativeImageLoader;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.effects.DietEffects;
-import net.lukasllll.lukas_nutrients.nutrients.FoodGroup;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
@@ -39,7 +39,7 @@ public class NutrientScreen extends Screen {
     private static final int TEXT_COLOR = new Color(63, 63, 63).getRGB();
     private static final int SEPARATOR_COLOR = new Color(139, 139, 139).getRGB();
 
-    private static FoodGroup[] Groups;
+    private static NutrientGroup[] Groups;
 
     private static NativeImage ICONS_BASE_IMAGE = null;
     private static ResourceLocation[] GroupBarLocations;
@@ -241,7 +241,7 @@ public class NutrientScreen extends Screen {
         //the total width with the spacing between modules
         totalWidth = horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3] + rightModuleWidth + horizontalSpacing[4];
 
-        FoodGroup[] Groups = ClientNutrientData.getFoodGroups();
+        NutrientGroup[] Groups = ClientNutrientData.getFoodGroups();
         //the main section contains the food groups and their bars, its height depends on how many food groups there are.
         mainSectionHeight = Groups.length * (16 + verticalSpacing[1]) - verticalSpacing[1];
         //the bottom section contains the sum score of all food groups. It's always 16 pixels high
@@ -371,7 +371,7 @@ public class NutrientScreen extends Screen {
         return out;
     }
 
-    private static ResourceLocation createNutrientBar(FoodGroup group) {
+    private static ResourceLocation createNutrientBar(NutrientGroup group) {
         int[] hues = {
                 0,          //red
                 44,         //yellow

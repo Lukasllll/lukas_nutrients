@@ -6,11 +6,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
-public class FoodGroup {
+public class NutrientGroup {
     public static final int MAX_NUTRIENT_AMOUNT=12;
     public static final int MIN_NUTRIENT_AMOUNT=0;
 
-    public static FoodGroup[] FoodGroups=null;
+    public static NutrientGroup[] FoodGroups=null;
 
     private final String id;
     private String displayname;
@@ -19,7 +19,7 @@ public class FoodGroup {
     private double defaultAmount;
     //TODO decay
 
-    public FoodGroup(String id, String displayname, String item, int r1, int r2, int r3, int r4, double defaultAmount) {
+    public NutrientGroup(String id, String displayname, String item, int r1, int r2, int r3, int r4, double defaultAmount) {
         this.id=id;
         this.displayname=displayname;
         int[] tPointRanges={r1,r2,r3,r4};
@@ -37,14 +37,14 @@ public class FoodGroup {
     public int[] getPointRanges() {return this.pointRanges;}
     public double getDefaultAmount() {return this.defaultAmount;}
 
-    public static  FoodGroup[] getFoodGroups() {
+    public static  NutrientGroup[] getFoodGroups() {
         if(FoodGroups!=null) return FoodGroups;
-        FoodGroups= new FoodGroup[5];
-        FoodGroups[0] = new FoodGroup("fruits", "Fruits", "minecraft:apple", 8, 12, 18, 22, 16);
-        FoodGroups[1] = new FoodGroup("grains", "Grains", "minecraft:bread", 8, 10, 18, 20, 16);
-        FoodGroups[2] = new FoodGroup("proteins", "Proteins", "minecraft:cooked_beef", 6, 10, 18, 22, 16);
-        FoodGroups[3] = new FoodGroup("vegetables", "Vegetables", "minecraft:carrot", 8, 16, 22, 24, 20);
-        FoodGroups[4] = new FoodGroup("sugars", "Sugars", "minecraft:honey_bottle", 0, 2, 6, 14, 0);
+        FoodGroups= new NutrientGroup[5];
+        FoodGroups[0] = new NutrientGroup("fruits", "Fruits", "minecraft:apple", 8, 12, 18, 22, 16);
+        FoodGroups[1] = new NutrientGroup("grains", "Grains", "minecraft:bread", 8, 10, 18, 20, 16);
+        FoodGroups[2] = new NutrientGroup("proteins", "Proteins", "minecraft:cooked_beef", 6, 10, 18, 22, 16);
+        FoodGroups[3] = new NutrientGroup("vegetables", "Vegetables", "minecraft:carrot", 8, 16, 22, 24, 20);
+        FoodGroups[4] = new NutrientGroup("sugars", "Sugars", "minecraft:honey_bottle", 0, 2, 6, 14, 0);
 
         return FoodGroups;
     }

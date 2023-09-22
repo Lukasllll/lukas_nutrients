@@ -4,7 +4,7 @@ package net.lukasllll.lukas_nutrients.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import net.lukasllll.lukas_nutrients.nutrients.FoodGroup;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.PlayerNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.effects.DietEffects;
 import net.minecraft.commands.CommandSourceStack;
@@ -17,9 +17,9 @@ public class NutrientsCommand {
     public NutrientsCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("nutrients").requires((command) -> {
             return command.hasPermission(2);
-        }).then(Commands.literal("set").then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(FoodGroupSuggestionProvider.getProvider()).then(Commands.argument("amount", IntegerArgumentType.integer(0, 24)).executes((command) -> {
+        }).then(Commands.literal("set").then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(NutrientGroupSuggestionProvider.getProvider()).then(Commands.argument("amount", IntegerArgumentType.integer(0, 24)).executes((command) -> {
             return setNutrients(command.getSource(), StringArgumentType.getString(command, "nutrient id"), IntegerArgumentType.getInteger(command, "amount"));
-        })))).then(Commands.literal("get").then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(FoodGroupSuggestionProvider.getProvider()).executes((command) -> {
+        })))).then(Commands.literal("get").then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(NutrientGroupSuggestionProvider.getProvider()).executes((command) -> {
             return getNutrients(command.getSource(), StringArgumentType.getString(command, "nutrient id"));
         }))).then(Commands.literal("list").executes((command) -> {
             return listNutrientGroups(command.getSource());
@@ -52,7 +52,7 @@ public class NutrientsCommand {
 
     private int listNutrientGroups(CommandSourceStack source) {
 
-        FoodGroup[] Groups = FoodGroup.getFoodGroups();
+        NutrientGroup[] Groups = NutrientGroup.getFoodGroups();
 
         String message = "Food Groups: ";
         for(int i=0; i<Groups.length; i++) {

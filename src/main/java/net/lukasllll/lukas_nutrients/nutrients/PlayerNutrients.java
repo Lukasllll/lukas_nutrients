@@ -10,7 +10,7 @@ import net.minecraft.world.food.FoodData;
 
 public class PlayerNutrients {
 
-    private FoodGroup[] groups;
+    private NutrientGroup[] groups;
     private double[] amounts;               //how many nutrients the player has of each group
     private double[] exhaustionLevels;      //how much exhaustion each group has. Exhaustion increases until it reaches 4.0. Then resets and nutrients are subtracted
     private int[] ranges;                   //in which of the five segments the amount falls
@@ -22,7 +22,7 @@ public class PlayerNutrients {
     private double totalFoodLevel = -1;     //used in handleNutrientDecay() to find out whether the player has lost hunger
 
     public PlayerNutrients() {
-        this.groups = FoodGroup.getFoodGroups();
+        this.groups = NutrientGroup.getFoodGroups();
         this.amounts = new double[this.groups.length];
         this.exhaustionLevels = new double[this.groups.length];
         this.ranges = new int[this.groups.length];
