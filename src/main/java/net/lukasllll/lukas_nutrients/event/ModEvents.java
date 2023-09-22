@@ -11,9 +11,11 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
-import net.minecraftforge.event.entity.EntityLeaveLevelEvent;
+import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -40,7 +42,6 @@ public class ModEvents {
     @SubscribeEvent
     public static void onCommandsRegister(RegisterCommandsEvent event) {
         new NutrientsCommand(event.getDispatcher());
-
         ConfigCommand.register(event.getDispatcher());
     }
 
@@ -58,11 +59,9 @@ public class ModEvents {
     }
 
     @SubscribeEvent
-    public static  void onPlayerLeaveWorld(EntityLeaveLevelEvent event) {
-        if(!event.getLevel().isClientSide()) {
-            if (event.getEntity() instanceof ServerPlayer player) {
-                DietEffects.remove(player);
-            }
+    public static  void onPlayerLeaveServer(PlayerEvent.PlayerLoggedOutEvent event) {
+        if (event.getEntity() instanceof ServerPlayer player) {
+            DietEffects.remove(player);
         }
     }
 
@@ -73,6 +72,16 @@ public class ModEvents {
                 nutrients.setToDefault();
                 nutrients.updateClient(player);
                 DietEffects.apply(player);
+            });
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerTick(TickEvent.PlayerTickEvent event) {
+        if(event.side == LogicalSide.SERVER) {
+            ServerPlayer player = (ServerPlayer) event.player;
+            player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
+                nutrients.handleNutrientDecay(player);
             });
         }
     }

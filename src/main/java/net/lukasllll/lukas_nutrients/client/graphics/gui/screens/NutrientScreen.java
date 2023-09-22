@@ -124,6 +124,12 @@ public class NutrientScreen extends Screen {
             }
             RenderSystem.setShaderTexture(0, arrows[ClientNutrientData.getPlayerNutrientScores()[i]]);
             GuiComponent.blit(pose, currentX + barLength - 3, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
+            //render exhaustion bar
+            double exhaustionLevel = ClientNutrientData.getPlayerExhaustionLevels()[i];
+            barLength = (int) ((4.0 - exhaustionLevel)/4.0 * 98.0);
+            RenderSystem.setShaderTexture(0, ICONS);
+            GuiComponent.blit(pose, currentX, currentY + 12, barLength, 2, 16, 10, barLength, 2, 256, 256);
+
             currentY += 16 + verticalSpacing[1];
         }
         currentY -= verticalSpacing[1];
