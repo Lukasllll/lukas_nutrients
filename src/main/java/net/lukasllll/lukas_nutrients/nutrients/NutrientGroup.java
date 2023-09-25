@@ -10,7 +10,7 @@ public class NutrientGroup {
     public static final int MAX_NUTRIENT_AMOUNT=12;
     public static final int MIN_NUTRIENT_AMOUNT=0;
 
-    public static NutrientGroup[] FoodGroups=null;
+    public static NutrientGroup[] nutrientGroups =null;
 
     private final String id;
     private String displayname;
@@ -37,15 +37,25 @@ public class NutrientGroup {
     public int[] getPointRanges() {return this.pointRanges;}
     public double getDefaultAmount() {return this.defaultAmount;}
 
-    public static  NutrientGroup[] getFoodGroups() {
-        if(FoodGroups!=null) return FoodGroups;
-        FoodGroups= new NutrientGroup[5];
-        FoodGroups[0] = new NutrientGroup("fruits", "Fruits", "minecraft:apple", 8, 12, 18, 22, 16);
-        FoodGroups[1] = new NutrientGroup("grains", "Grains", "minecraft:bread", 8, 10, 18, 20, 16);
-        FoodGroups[2] = new NutrientGroup("proteins", "Proteins", "minecraft:cooked_beef", 6, 10, 18, 22, 16);
-        FoodGroups[3] = new NutrientGroup("vegetables", "Vegetables", "minecraft:carrot", 8, 16, 22, 24, 20);
-        FoodGroups[4] = new NutrientGroup("sugars", "Sugars", "minecraft:honey_bottle", 0, 2, 6, 14, 0);
+    public static  NutrientGroup[] getNutrientGroups() {
+        if(nutrientGroups !=null) return nutrientGroups;
+        nutrientGroups = new NutrientGroup[5];
+        nutrientGroups[0] = new NutrientGroup("fruits", "Fruits", "minecraft:apple", 8, 12, 18, 22, 16);
+        nutrientGroups[1] = new NutrientGroup("grains", "Grains", "minecraft:bread", 8, 10, 18, 20, 16);
+        nutrientGroups[2] = new NutrientGroup("proteins", "Proteins", "minecraft:cooked_beef", 6, 10, 18, 22, 16);
+        nutrientGroups[3] = new NutrientGroup("vegetables", "Vegetables", "minecraft:carrot", 8, 16, 22, 24, 20);
+        nutrientGroups[4] = new NutrientGroup("sugars", "Sugars", "minecraft:honey_bottle", 0, 2, 6, 14, 0);
 
-        return FoodGroups;
+        return nutrientGroups;
+    }
+
+    //gets the array index from a nutrientID. Returns -1 if no such ID exists.
+    public static int getArrayIndex(String nutrientID) {
+        for(int i = 0; i< nutrientGroups.length; i++) {
+            if(nutrientGroups[i].getID().equals(nutrientID)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

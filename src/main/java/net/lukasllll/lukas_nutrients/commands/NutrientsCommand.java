@@ -5,8 +5,8 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
-import net.lukasllll.lukas_nutrients.nutrients.PlayerNutrientProvider;
-import net.lukasllll.lukas_nutrients.nutrients.effects.DietEffects;
+import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -52,7 +52,7 @@ public class NutrientsCommand {
 
     private int listNutrientGroups(CommandSourceStack source) {
 
-        NutrientGroup[] Groups = NutrientGroup.getFoodGroups();
+        NutrientGroup[] Groups = NutrientGroup.getNutrientGroups();
 
         String message = "Food Groups: ";
         for(int i=0; i<Groups.length; i++) {

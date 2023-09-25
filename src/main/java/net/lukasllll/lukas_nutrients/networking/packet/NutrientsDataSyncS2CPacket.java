@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 public class NutrientsDataSyncS2CPacket {
 
-    private static NutrientGroup[] Groups= NutrientGroup.getFoodGroups();
+    private static NutrientGroup[] Groups= NutrientGroup.getNutrientGroups();
 
     private final double[] nutrientAmounts;
     private final double[] exhaustionLevels;

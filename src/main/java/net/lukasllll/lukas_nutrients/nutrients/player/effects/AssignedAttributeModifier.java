@@ -1,4 +1,4 @@
-package net.lukasllll.lukas_nutrients.nutrients.effects;
+package net.lukasllll.lukas_nutrients.nutrients.player.effects;
 
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;

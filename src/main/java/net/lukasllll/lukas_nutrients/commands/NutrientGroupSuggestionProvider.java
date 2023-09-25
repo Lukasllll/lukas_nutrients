@@ -1,7 +1,6 @@
 package net.lukasllll.lukas_nutrients.commands;
 
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
@@ -21,7 +20,7 @@ public class NutrientGroupSuggestionProvider implements SuggestionProvider {
 
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext context, SuggestionsBuilder builder) {
-        NutrientGroup[] Groups = NutrientGroup.getFoodGroups();
+        NutrientGroup[] Groups = NutrientGroup.getNutrientGroups();
         for(int i=0; i<Groups.length; i++) {
             builder.suggest(Groups[i].getID());
         }

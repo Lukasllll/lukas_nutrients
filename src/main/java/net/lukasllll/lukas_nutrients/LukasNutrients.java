@@ -2,16 +2,12 @@ package net.lukasllll.lukas_nutrients;
 
 import com.mojang.logging.LogUtils;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.api.distmarker.Dist;
+import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.slf4j.Logger;
 
 // The value here should match an entry in the META-INF/mods.toml file
@@ -19,7 +15,7 @@ import org.slf4j.Logger;
 public class LukasNutrients
 {
     public static final String MOD_ID = "lukas_nutrients";
-    private static final Logger LOGGER = LogUtils.getLogger();
+    public static final Logger LOGGER = LogUtils.getLogger();
     public LukasNutrients()
     {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -35,16 +31,7 @@ public class LukasNutrients
     {
         // Some common setup code
         ModMessages.register();
-    }
-
-    // You can use EventBusSubscriber to automatically register all static methods in the class annotated with @SubscribeEvent
-    @Mod.EventBusSubscriber(modid = MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
-    public static class ClientModEvents
-    {
-        @SubscribeEvent
-        public static void onClientSetup(FMLClientSetupEvent event)
-        {
-
-        }
+        FoodNutrientProvider.addNutrientProperties();
+        //FoodNutrientProvider.assignUnassignedItems();
     }
 }

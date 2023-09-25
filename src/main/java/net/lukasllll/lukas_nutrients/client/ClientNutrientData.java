@@ -3,7 +3,7 @@ package net.lukasllll.lukas_nutrients.client;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 
 public class ClientNutrientData {
-    private static NutrientGroup[] Groups= NutrientGroup.getFoodGroups();
+    private static NutrientGroup[] Groups= NutrientGroup.getNutrientGroups();
     private static double[] amounts;
     private static double[] exhaustionLevels;
     private static int[] ranges;
@@ -40,13 +40,4 @@ public class ClientNutrientData {
 
     public static NutrientGroup[] getFoodGroups() {return Groups;}
 
-    private int getArrayIndex(String nutrientID) {
-        for(int i=0; i< Groups.length; i++) {
-            if(Groups[i].getID().equals(nutrientID)) {
-                return i;
-            }
-        }
-
-        return -1;
-    }
 }

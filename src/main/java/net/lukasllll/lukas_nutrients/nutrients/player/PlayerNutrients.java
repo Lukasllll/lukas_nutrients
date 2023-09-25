@@ -1,14 +1,18 @@
-package net.lukasllll.lukas_nutrients.nutrients;
+package net.lukasllll.lukas_nutrients.nutrients.player;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
 import net.lukasllll.lukas_nutrients.networking.packet.NutrientsDataSyncS2CPacket;
-import net.lukasllll.lukas_nutrients.nutrients.effects.DietEffects;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodData;
 
 public class PlayerNutrients {
+
+    public static final double BASE_DECAY_RATE = 0.16;
+    public static final double PASSIVE_DECAY_RATE = 0.1;
 
     private NutrientGroup[] groups;
     private double[] amounts;               //how many nutrients the player has of each group
@@ -22,7 +26,7 @@ public class PlayerNutrients {
     private double totalFoodLevel = -1;     //used in handleNutrientDecay() to find out whether the player has lost hunger
 
     public PlayerNutrients() {
-        this.groups = NutrientGroup.getFoodGroups();
+        this.groups = NutrientGroup.getNutrientGroups();
         this.amounts = new double[this.groups.length];
         this.exhaustionLevels = new double[this.groups.length];
         this.ranges = new int[this.groups.length];
@@ -81,7 +85,7 @@ public class PlayerNutrients {
             double foodLevelDifference = oldTotalFoodLevel - totalFoodLevel;
             //exhaustion increases. If the amount falls into the lowest range 0.08 is added, otherwise 0.16
             for(int i=0; i<groups.length; i++) {
-                increaseExhaustion(i, foodLevelDifference * (ranges[i] < 1 ? 0.08 : 0.16));
+                increaseExhaustion(i, foodLevelDifference * (ranges[i] < 1 ? BASE_DECAY_RATE/2 : BASE_DECAY_RATE));
             }
         }
         //additionally, if any amount falls into the highest two ranges (3 & 4) additional exhaustion is added
@@ -89,7 +93,7 @@ public class PlayerNutrients {
         //which means one additional nutrient amount lost about every 11 minutes.
         for(int i=0; i<groups.length; i++) {
             if(ranges[i] > 2 && player.getRandom().nextDouble() < 0.003) {
-                increaseExhaustion(i, 0.1);
+                increaseExhaustion(i, PASSIVE_DECAY_RATE);
             }
         }
 
@@ -107,7 +111,7 @@ public class PlayerNutrients {
     }
 
     public void increaseExhaustion(String nutrientID, double amount) {
-        increaseExhaustion(getArrayIndex(nutrientID), amount);
+        increaseExhaustion(NutrientGroup.getArrayIndex(nutrientID), amount);
     }
 
     //increases exhaustion and calculates whether nutrients are lost
@@ -129,12 +133,19 @@ public class PlayerNutrients {
         }
     }
 
+    public void addAmounts(double[] amounts) {
+        if(amounts.length != groups.length) return;
+        for(int i=0; i<groups.length; i++) {
+            addAmount(i, amounts[i]);
+        }
+    }
+
     public void addAmount(int nutrient, double amount){
         setAmount(nutrient, amounts[nutrient] + amount);
     }
 
     public void setAmount(String nutrientID, double amount) {
-        int arrayIndex = this.getArrayIndex(nutrientID);
+        int arrayIndex = NutrientGroup.getArrayIndex(nutrientID);
         if(arrayIndex == -1) return;
         this.setAmount(arrayIndex, amount);
     }
@@ -163,7 +174,7 @@ public class PlayerNutrients {
     }
 
     public double getNutrientAmount(String nutrientID) {
-        int arrayIndex = this.getArrayIndex(nutrientID);
+        int arrayIndex = NutrientGroup.getArrayIndex(nutrientID);
         if(arrayIndex == -1) return -1;
         return getNutrientAmount(arrayIndex);
     }
@@ -173,7 +184,7 @@ public class PlayerNutrients {
     }
 
     public String getDisplayName(String nutrientID) {
-        int arrayIndex = this.getArrayIndex(nutrientID);
+        int arrayIndex = NutrientGroup.getArrayIndex(nutrientID);
         if(arrayIndex == -1) return null;
         return this.groups[arrayIndex].getDisplayname();
     }
@@ -212,16 +223,7 @@ public class PlayerNutrients {
         dirty = true;
     }
 
-    //gets the array index from a nutrientID. Returns -1 if no such ID exists.
-    private int getArrayIndex(String nutrientID) {
-        for(int i = 0; i< groups.length; i++) {
-            if(groups[i].getID().equals(nutrientID)) {
-                return i;
-            }
-        }
 
-        return -1;
-    }
 
     private boolean isDirty() {
         return dirty;

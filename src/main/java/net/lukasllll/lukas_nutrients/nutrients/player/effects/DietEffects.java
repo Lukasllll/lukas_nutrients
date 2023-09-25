@@ -1,7 +1,7 @@
-package net.lukasllll.lukas_nutrients.nutrients.effects;
+package net.lukasllll.lukas_nutrients.nutrients.player.effects;
 
 
-import net.lukasllll.lukas_nutrients.nutrients.PlayerNutrientProvider;
+import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;

@@ -8,7 +8,7 @@ import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.graphics.CustomTexture;
 import net.lukasllll.lukas_nutrients.client.graphics.NativeImageLoader;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
-import net.lukasllll.lukas_nutrients.nutrients.effects.DietEffects;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;

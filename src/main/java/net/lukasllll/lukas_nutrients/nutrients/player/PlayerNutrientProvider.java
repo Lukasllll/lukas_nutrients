@@ -1,4 +1,4 @@
-package net.lukasllll.lukas_nutrients.nutrients;
+package net.lukasllll.lukas_nutrients.nutrients.player;
 
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
