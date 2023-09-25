@@ -1,14 +1,27 @@
 package net.lukasllll.lukas_nutrients.event;
 
+import com.mojang.datafixers.util.Either;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.screens.NutrientScreen;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
+import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SwordItem;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RenderTooltipEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ClientEvents {
     @Mod.EventBusSubscriber(modid = LukasNutrients.MOD_ID, value = Dist.CLIENT)
@@ -24,6 +37,38 @@ public class ClientEvents {
                 Minecraft mc = Minecraft.getInstance();
                 mc.setScreen(new NutrientScreen());
             }
+        }
+
+        @SubscribeEvent
+        public static void onRenderTooltip(RenderTooltipEvent.GatherComponents event) {
+            Item item = event.getItemStack().getItem();
+            //I only want the tooltip to be rendered on edible items that have nutrients assigned to them
+            if(item == null || !item.isEdible() || !((INutrientPropertiesHaver) item).hasFoodNutrientProperties()) {
+                return;
+            }
+            double[] nutrientAmounts = ((INutrientPropertiesHaver) item).getFoodNutrientProperties().getNutrientAmounts();
+            NutrientGroup[] groups = NutrientGroup.getNutrientGroups();
+            //The Either.class is weird and I don't like it
+            List<Either<FormattedText, TooltipComponent>> toolTipElements = event.getTooltipElements();     //tooltips added to this list will be rendered
+
+            //I first loop through all nutrient groups and check whether any nutrients of that type are present. If not, nothing is added
+            //to the nutrientTooltipElements list. If the list turns out empty at the end, nothing is rendered at all.
+            List<Either<FormattedText, TooltipComponent>> nutrientTooltipElements = new ArrayList<>();
+            for(int i=0; i< groups.length; i++) {
+                if(nutrientAmounts[i] == 0) continue;
+                String text = "+" + round(nutrientAmounts[i]) + " " + groups[i].getDisplayname();
+                nutrientTooltipElements.add(Either.left(Component.literal(text).withStyle(ChatFormatting.GOLD)));
+            }
+            if(nutrientTooltipElements.isEmpty()) {
+                return;
+            }
+            //If it's not empty, first add the "when eaten" tooltip, then everything else
+            toolTipElements.add(Either.left(Component.literal("When eaten:").withStyle(ChatFormatting.GRAY)));
+            toolTipElements.addAll(nutrientTooltipElements);
+        }
+
+        private static double round(double in) {
+            return (double) Math.round(in * 100) / 100.0;
         }
     }
 }
