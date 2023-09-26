@@ -55,8 +55,6 @@ public class NutrientScreen extends Screen {
     private int startX;
     private int startY;
 
-
-
     public NutrientScreen() {
         super(TITLE);
         Groups = ClientNutrientData.getFoodGroups();

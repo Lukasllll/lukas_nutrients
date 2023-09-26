@@ -8,7 +8,6 @@ import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -28,8 +27,6 @@ import net.minecraftforge.server.command.ConfigCommand;
 
 @Mod.EventBusSubscriber(modid = LukasNutrients.MOD_ID)
 public class ModEvents {
-
-
 
     @SubscribeEvent
     public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
@@ -67,7 +64,6 @@ public class ModEvents {
 
     @SubscribeEvent
     public static void onRecipesUpdated(RecipesUpdatedEvent event) {
-        //TODO does this belong here???
         FoodNutrientProvider.assignUnassignedItems();
     }
 
@@ -104,19 +100,11 @@ public class ModEvents {
         if(event.getEntity() instanceof ServerPlayer player && event.getItem().isEdible()) {
             if(((INutrientPropertiesHaver) event.getItem().getItem()).hasFoodNutrientProperties()) {
                 NutrientProperties properties = ((INutrientPropertiesHaver) event.getItem().getItem()).getFoodNutrientProperties();
-                double[] amounts = properties.getNutrientAmounts();
-                String amountText = "";
-                for(int i=0; i< amounts.length; i++) {
-                    amountText += amounts[i] + (i == amounts.length-1 ? "" : ", ");
-                }
-                player.sendSystemMessage(Component.literal("Has FoodNutrientProperties: " + amountText));
                 player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                     nutrients.addAmounts(properties.getNutrientAmounts());
                     nutrients.updateClient(player);
                     DietEffects.apply(player);
                 });
-            } else {
-                player.sendSystemMessage(Component.literal("Doesn't have FoodNutrientProperties"));
             }
         }
     }

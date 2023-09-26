@@ -3,6 +3,7 @@ package net.lukasllll.lukas_nutrients.nutrients.food;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 
 public class NutrientProperties {
+    //Through the ItemMixin class, every item now has NutrientProperties
 
     private double[] nutrientAmounts;
     private boolean isIngredient;

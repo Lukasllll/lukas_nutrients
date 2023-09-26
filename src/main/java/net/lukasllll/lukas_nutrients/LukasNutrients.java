@@ -20,18 +20,16 @@ public class LukasNutrients
     {
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 
-        // Register the commonSetup method for modloading
+        //Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
 
-        // Register ourselves for server and other game events we are interested in
+        //Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)
     {
-        // Some common setup code
         ModMessages.register();
         FoodNutrientProvider.addNutrientProperties();
-        //FoodNutrientProvider.assignUnassignedItems();
     }
 }
