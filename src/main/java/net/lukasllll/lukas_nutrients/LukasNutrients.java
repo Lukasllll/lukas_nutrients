@@ -1,6 +1,7 @@
 package net.lukasllll.lukas_nutrients;
 
 import com.mojang.logging.LogUtils;
+import net.lukasllll.lukas_nutrients.config.BaseNutrientsConfig;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.minecraftforge.common.MinecraftForge;
@@ -30,6 +31,7 @@ public class LukasNutrients
     private void commonSetup(final FMLCommonSetupEvent event)
     {
         ModMessages.register();
-        FoodNutrientProvider.addNutrientProperties();
+        BaseNutrientsConfig.read();
+        FoodNutrientProvider.addNutrientPropertiesFromConfig();
     }
 }

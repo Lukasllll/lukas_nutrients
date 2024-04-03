@@ -1,14 +1,16 @@
 package net.lukasllll.lukas_nutrients.nutrients.food;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.config.BaseNutrientsConfig;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -27,55 +29,20 @@ public class FoodNutrientProvider {
     private static Map<Item, Recipe<?>> smokerRecipesByInput;
     private static List<Item> currentlyWorkingOn = new ArrayList<>();
 
-    public static void addNutrientProperties() {
-        ArrayList<String> justGrains = new ArrayList<>();
-        justGrains.add("grains");
-        ArrayList<String> justFruits = new ArrayList<>();
-        justFruits.add("fruits");
-        ArrayList<String> justVegetables = new ArrayList<>();
-        justVegetables.add("vegetables");
-        ArrayList<String> justProteins = new ArrayList<>();
-        justProteins.add("proteins");
-        ArrayList<String> justSugars = new ArrayList<>();
-        justSugars.add("sugars");
+    public static void addNutrientPropertiesFromConfig() {
+        if(BaseNutrientsConfig.DATA == null) return;
 
-        addNutrientPropertiesByIDs(Items.APPLE, justFruits, 0.9);
-        addNutrientPropertiesByIDs(Items.CHORUS_FRUIT, justFruits, 0.4);
-        addNutrientPropertiesByIDs(Items.MELON_SLICE, justFruits, 0.9);
-        addNutrientPropertiesByIDs(Items.PUMPKIN, justFruits, 1.0);
-        addNutrientPropertiesByIDs(Items.SWEET_BERRIES, justFruits, 0.9);
-        addNutrientPropertiesByIDs(Items.GLOW_BERRIES, justFruits, 0.9);
-        addNutrientPropertiesByIDs(Items.ENCHANTED_GOLDEN_APPLE, justFruits, 0.9);
+        for(String key : BaseNutrientsConfig.DATA.baseNutrients.keySet()) {
+            Item item = Registry.ITEM.get(new ResourceLocation(key));                           //key is the full path (namespace:path) of the item e.g. "minecraft:apple"
+            if(item == null) continue;
 
-        addNutrientPropertiesByIDs(Items.BREAD, justGrains, 1.0);
-        addNutrientPropertiesByIDs(Items.WHEAT, justGrains, ((INutrientPropertiesHaver) Items.BREAD).getFoodNutrientProperties().getNutrientAmount("grains")/3);
+            List<String> entry = BaseNutrientsConfig.DATA.baseNutrients.get(key);
 
-        addNutrientPropertiesByIDs(Items.CHICKEN, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.PORKCHOP, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.MUTTON, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.BEEF, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.RABBIT, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.COD, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.SALMON, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.TROPICAL_FISH, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.PUFFERFISH, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.SPIDER_EYE, justProteins, 0.9);
-        addNutrientPropertiesByIDs(Items.MILK_BUCKET, justProteins, 0.2);
-        addNutrientPropertiesByIDs(Items.EGG, justProteins, 0.5);
-        addNutrientPropertiesByIDs(Items.ROTTEN_FLESH, justProteins, 0.5);
+            double nutrientEffectiveness = Double.parseDouble(entry.get(entry.size()-1));       //the last String in entry is always supposed to be the nutrientEffectiveness
+            List<String> ids = entry.subList(0, entry.size()-1);                                //the rest of the strings are the nutrient groups assigned to the item
 
-        addNutrientPropertiesByIDs(Items.CARROT, justVegetables, 0.9);
-        addNutrientPropertiesByIDs(Items.BEETROOT, justVegetables, 0.9);
-        addNutrientPropertiesByIDs(Items.KELP, justVegetables, 0.1);
-        addNutrientPropertiesByIDs(Items.POTATO, justVegetables, 0.9);
-        addNutrientPropertiesByIDs(Items.POISONOUS_POTATO, justVegetables, 0.4);
-        addNutrientPropertiesByIDs(Items.MUSHROOM_STEW, justVegetables, 1.0);
-        addNutrientPropertiesByIDs(Items.RED_MUSHROOM, justVegetables, ((INutrientPropertiesHaver) Items.MUSHROOM_STEW).getFoodNutrientProperties().getNutrientAmount("vegetables")*0.35);
-        addNutrientPropertiesByIDs(Items.BROWN_MUSHROOM, justVegetables, ((INutrientPropertiesHaver) Items.MUSHROOM_STEW).getFoodNutrientProperties().getNutrientAmount("vegetables")*0.65);
-
-        addNutrientPropertiesByIDs(Items.HONEY_BOTTLE, justSugars, 0.9);
-        //addNutrientPropertiesByIDs(Items.SUGAR, justSugars, 1.0);
-        addNutrientPropertiesByIDs(Items.COCOA_BEANS, justSugars, 0.6);
+            addNutrientPropertiesByIDs(item, ids, nutrientEffectiveness);
+        }
     }
 
     private static void addNutrientPropertiesByIDs(Item item, List<String> ids, double nutrientEffectiveness) {
