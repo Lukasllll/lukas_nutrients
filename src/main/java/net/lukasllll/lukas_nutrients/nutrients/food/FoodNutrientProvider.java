@@ -152,9 +152,6 @@ public class FoodNutrientProvider {
                     double currentItemTotalNutrientAmount = 0;
 
                     //calculate how many nutrients this item would contribute to the new item
-
-                    //double amountModifier = item.isEdible() ? currentItem.isEdible() ? item.getFoodProperties().getSaturationModifier() / currentItem.getFoodProperties().getSaturationModifier() : 1 + item.getFoodProperties().getSaturationModifier() : 1.0;
-                    //scaleArray(currentItemNutrientAmounts, currentItemCount * amountModifier);
                     scaleArray(currentItemNutrientAmounts, currentItemCount);
 
                     //calculation done
