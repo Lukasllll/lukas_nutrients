@@ -4,7 +4,9 @@ package net.lukasllll.lukas_nutrients.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.lukasllll.lukas_nutrients.config.Config;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
+import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.minecraft.commands.CommandSourceStack;
@@ -23,8 +25,15 @@ public class NutrientsCommand {
             return getNutrients(command.getSource(), StringArgumentType.getString(command, "nutrient id"));
         }))).then(Commands.literal("list").executes((command) -> {
             return listNutrientGroups(command.getSource());
+        })).then(Commands.literal("reload").executes((command) -> {
+            return reloadConfigs(command.getSource());
         })));
     }
+
+    /*
+    The commands should probably be reworked. I originally made them just for debugging, but they seem useful.
+    At the moment they are not build to be used on a server (except reload). I should change that some time.
+     */
 
     private int setNutrients(CommandSourceStack source, String nutrientID, int amount) {
 
@@ -41,7 +50,7 @@ public class NutrientsCommand {
 
     private int getNutrients(CommandSourceStack source, String nutrientID) {
 
-        ServerPlayer player =source.getPlayer();
+        ServerPlayer player = source.getPlayer();
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
             double amount = nutrients.getNutrientAmount(nutrientID);
             player.sendSystemMessage(Component.literal(nutrients.getDisplayName(nutrientID) + ": " + amount));
@@ -64,6 +73,13 @@ public class NutrientsCommand {
         ServerPlayer player =source.getPlayer();
         player.sendSystemMessage(Component.literal(message));
 
+        return 1;
+    }
+
+    private int reloadConfigs(CommandSourceStack source) {
+        Config.loadConfigs();
+        FoodNutrientProvider.reassignAllItems();
+        source.sendSuccess(Component.literal("Configs reloaded!"), true);
         return 1;
     }
 

@@ -70,6 +70,21 @@ public class FoodNutrientProvider {
         ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(amounts, isIngredient));
     }
 
+
+    //This function is called by the reload command (commands.NutrientsCommand.reloadConfigs())
+    public static void reassignAllItems() {
+        unassignAllItems();
+        addNutrientPropertiesFromConfig();
+        assignUnassignedItems();
+    }
+
+    private static void unassignAllItems() {
+        Collection<Item> items = ForgeRegistries.ITEMS.getValues();
+        for(Item item : items) {
+            ((INutrientPropertiesHaver) item).setFoodNutrientProperties(null);
+        }
+    }
+
     public static void assignUnassignedItems() {
         Collection<Item> items = ForgeRegistries.ITEMS.getValues();
         for(Item item : items) {
