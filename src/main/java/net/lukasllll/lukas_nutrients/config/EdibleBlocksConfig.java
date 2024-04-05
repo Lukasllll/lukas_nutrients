@@ -54,7 +54,20 @@ public class EdibleBlocksConfig{
     private static EdibleBlocksConfig getDefaultEdibleBlocks() {
         HashMap<String, Integer> map = new HashMap<>();
 
+        //minecraft
         map.put(Registry.BLOCK.getKey(Blocks.CAKE).toString(), 7);
+
+        //farmers delight
+        String farmersdelightNamespace = "farmersdelight";
+
+        map.put(farmersdelightNamespace + ":apple_pie", 4);
+        map.put(farmersdelightNamespace + ":sweet_berry_cheesecake", 4);
+        map.put(farmersdelightNamespace + ":chocolate_pie", 4);
+
+        //autumnity
+        String autumnityNamespace = "autumnity";
+        map.put(autumnityNamespace + ":pancake", 2);
+
 
         return new EdibleBlocksConfig(map);
     }
