@@ -91,9 +91,9 @@ public class BaseNutrientsConfig{
 
 
         map.put(Registry.ITEM.getKey(Items.CARROT).toString(), buildEntry( 0.9, vegetables));
-        map.put(Registry.ITEM.getKey(Items.BEETROOT).toString(), buildEntry( 0.9, vegetables));
+        map.put(Registry.ITEM.getKey(Items.BEETROOT).toString(), buildEntry( 1.8, vegetables));
         map.put(Registry.ITEM.getKey(Items.KELP).toString(), buildEntry( 0.1, vegetables));
-        map.put(Registry.ITEM.getKey(Items.POTATO).toString(), buildEntry( 0.9, vegetables));
+        map.put(Registry.ITEM.getKey(Items.POTATO).toString(), buildEntry( 0.7, vegetables));
         map.put(Registry.ITEM.getKey(Items.POISONOUS_POTATO).toString(), buildEntry( 0.4, vegetables));
         map.put(Registry.ITEM.getKey(Items.MUSHROOM_STEW).toString(), buildEntry( 1.0, vegetables));
         map.put(Registry.ITEM.getKey(Items.RED_MUSHROOM).toString(), buildEntry( 0.54, vegetables));
