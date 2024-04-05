@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.minecraft.core.Registry;
 import net.minecraft.world.item.Items;
-import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
 import java.io.FileReader;
@@ -15,8 +14,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class BaseNutrientsConfig {
-    public static final String FILE_PATH = Config.FILE_PATH + "/base_nutrients.json";
+public class BaseNutrientsConfig{
+    public static final String FILE_PATH = Config.FOLDER_FILE_PATH + "/base_nutrients.json";
 
     public static BaseNutrientsConfig DATA = null;
     public HashMap<String, List<String>> baseNutrients;
@@ -86,7 +85,7 @@ public class BaseNutrientsConfig {
         map.put(Registry.ITEM.getKey(Items.SALMON).toString(), buildEntry( 0.9, proteins));
         map.put(Registry.ITEM.getKey(Items.TROPICAL_FISH).toString(), buildEntry( 0.9, proteins));
         map.put(Registry.ITEM.getKey(Items.SPIDER_EYE).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.MILK_BUCKET).toString(), buildEntry( 0.2, proteins));
+        map.put(Registry.ITEM.getKey(Items.MILK_BUCKET).toString(), buildEntry( 0.1, proteins));
         map.put(Registry.ITEM.getKey(Items.EGG).toString(), buildEntry( 0.5, proteins));
         map.put(Registry.ITEM.getKey(Items.ROTTEN_FLESH).toString(), buildEntry( 0.5, proteins));
 
@@ -101,14 +100,13 @@ public class BaseNutrientsConfig {
         map.put(Registry.ITEM.getKey(Items.BROWN_MUSHROOM).toString(), buildEntry( 1.0, vegetables));
 
 
-        map.put(Registry.ITEM.getKey(Items.HONEY_BOTTLE).toString(), buildEntry( 0.9, sugars));
+        map.put(Registry.ITEM.getKey(Items.HONEY_BOTTLE).toString(), buildEntry( 2.0, sugars));
         map.put(Registry.ITEM.getKey(Items.COCOA_BEANS).toString(), buildEntry( 0.6, sugars));
 
         return new BaseNutrientsConfig(map);
-
     }
 
-    private static ArrayList<String> buildEntry(double nutrientEffectiveness, String... nutrientIDs) {
+    public static ArrayList<String> buildEntry(double nutrientEffectiveness, String... nutrientIDs) {
         ArrayList<String> out = new ArrayList<>();
         for(String id : nutrientIDs) {
             out.add(id);

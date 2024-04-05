@@ -2,6 +2,7 @@ package net.lukasllll.lukas_nutrients.nutrients.food;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.config.BaseNutrientsConfig;
+import net.lukasllll.lukas_nutrients.config.EdibleBlocksConfig;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
@@ -15,6 +16,7 @@ import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
@@ -42,6 +44,38 @@ public class FoodNutrientProvider {
             List<String> ids = entry.subList(0, entry.size()-1);                                //the rest of the strings are the nutrient groups assigned to the item
 
             addNutrientPropertiesByIDs(item, ids, nutrientEffectiveness);
+        }
+    }
+
+    /*
+    Adds nutrient properties to special blocks (such as cake) from the EdibleBlocksConfig.
+    This function must be called, after all items have been assigned nutrientProperties, because it gives the block
+    properties based on the properties of its item.
+     */
+    public static void assignEdibleBlocksFromConfig() {
+        if(EdibleBlocksConfig.DATA == null) return;
+
+        for(String key : EdibleBlocksConfig.DATA.edibleBlocks.keySet()) {
+            Block block = Registry.BLOCK.get(new ResourceLocation(key));        //key is the full path (namespace:path) of the block e.g. minecraft:cake
+            if(block == null) continue;
+
+            Item blockItem = block.asItem();
+            if(blockItem == null) continue;
+            //the item probably doesn't have nutrient properties yet, because it probably isn't edible
+            if(!((INutrientPropertiesHaver) blockItem).hasFoodNutrientProperties()) {
+                assignNutrientsThroughRecipe(blockItem);
+            }
+
+            NutrientProperties itemNutrientProperties = ((INutrientPropertiesHaver)blockItem).getFoodNutrientProperties();
+            itemNutrientProperties.setPlaceableEdible(true);
+
+            int servings = EdibleBlocksConfig.DATA.edibleBlocks.get(key);
+            //if the item isn't directly edible change servings to match that of block to display in tooltip.
+            if(!blockItem.isEdible()) {
+                itemNutrientProperties.setServings(servings);
+            }
+
+            ((INutrientPropertiesHaver) block).setFoodNutrientProperties(new NutrientProperties(itemNutrientProperties.getNutrientAmounts(), servings, false));
         }
     }
 
@@ -83,6 +117,11 @@ public class FoodNutrientProvider {
         for(Item item : items) {
             ((INutrientPropertiesHaver) item).setFoodNutrientProperties(null);
         }
+
+        Collection<Block> blocks = ForgeRegistries.BLOCKS.getValues();
+        for(Block block : blocks) {
+            ((INutrientPropertiesHaver) block).setFoodNutrientProperties(null);
+        }
     }
 
     public static void assignUnassignedItems() {
@@ -92,6 +131,8 @@ public class FoodNutrientProvider {
                 assignNutrientsThroughRecipe(item);
             }
         }
+
+        assignEdibleBlocksFromConfig();
     }
 
     private static void assignNutrientsThroughRecipe(Item item) {

@@ -4,6 +4,10 @@ import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.minecraftforge.fml.loading.FMLPaths;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class Config {
     /*
     For now this class mostly exists, because of the NutrientsCommand.reloadConfigs() function. Before, the configs were
@@ -18,10 +22,19 @@ public class Config {
     Ah well... that's OOP I guess...
      */
 
-    public static final String FILE_PATH = FMLPaths.CONFIGDIR.get().toString()+"/"+ LukasNutrients.MOD_ID;
+    public static final String FOLDER_FILE_PATH = FMLPaths.CONFIGDIR.get().toString()+"/"+ LukasNutrients.MOD_ID;
 
     public static void loadConfigs() {
+        createFolder();
         BaseNutrientsConfig.read();
+        EdibleBlocksConfig.read();
         FoodNutrientProvider.addNutrientPropertiesFromConfig();
+    }
+
+    private static void createFolder() {
+        File configFolder = new File(FOLDER_FILE_PATH);
+        if(!configFolder.exists()) {
+            configFolder.mkdirs();
+        }
     }
 }

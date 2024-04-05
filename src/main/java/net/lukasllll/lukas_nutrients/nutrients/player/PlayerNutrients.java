@@ -133,10 +133,10 @@ public class PlayerNutrients {
         }
     }
 
-    public void addAmounts(double[] amounts) {
+    public void addAmounts(double[] amounts, int servings) {
         if(amounts.length != groups.length) return;
         for(int i=0; i<groups.length; i++) {
-            addAmount(i, amounts[i]);
+            addAmount(i, amounts[i]/ servings);
         }
     }
 

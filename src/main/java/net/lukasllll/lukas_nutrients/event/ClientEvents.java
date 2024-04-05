@@ -41,11 +41,13 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onRenderTooltip(RenderTooltipEvent.GatherComponents event) {
             Item item = event.getItemStack().getItem();
-            //I only want the tooltip to be rendered on edible items that have nutrients assigned to them
-            if(item == null || !item.isEdible() || !((INutrientPropertiesHaver) item).hasFoodNutrientProperties()) {
+            //I only want the tooltip to be rendered on edible items that have nutrients assigned to them or items that can be placed to create edible blocks like cake
+            if(item == null || !((INutrientPropertiesHaver) item).hasFoodNutrientProperties() ||
+                    ( !item.isEdible() && !((INutrientPropertiesHaver) item).getFoodNutrientProperties().getPlaceableEdible()) ) {
                 return;
             }
             double[] nutrientAmounts = ((INutrientPropertiesHaver) item).getFoodNutrientProperties().getNutrientAmounts();
+            int servings = ((INutrientPropertiesHaver) item).getFoodNutrientProperties().getServings();
             NutrientGroup[] groups = NutrientGroup.getNutrientGroups();
             //The Either.class is weird and I don't like it
             List<Either<FormattedText, TooltipComponent>> toolTipElements = event.getTooltipElements();     //tooltips added to this list will be rendered
@@ -55,14 +57,26 @@ public class ClientEvents {
             List<Either<FormattedText, TooltipComponent>> nutrientTooltipElements = new ArrayList<>();
             for(int i=0; i< groups.length; i++) {
                 if(nutrientAmounts[i] == 0) continue;
-                String text = "+" + round(nutrientAmounts[i]) + " " + groups[i].getDisplayname();
+                String text = "+" + round(nutrientAmounts[i] / servings) + " " + groups[i].getDisplayname();
                 nutrientTooltipElements.add(Either.left(Component.literal(text).withStyle(ChatFormatting.GOLD)));
             }
             if(nutrientTooltipElements.isEmpty()) {
                 return;
             }
-            //If it's not empty, first add the "when eaten" tooltip, then everything else
-            toolTipElements.add(Either.left(Component.literal("When eaten:").withStyle(ChatFormatting.GRAY)));
+            //If it's not empty, for edible items first add the "when eaten" tooltip
+            if(item.isEdible()) {
+                toolTipElements.add(Either.left(Component.literal("When eaten:").withStyle(ChatFormatting.GRAY)));
+
+            }
+            //if it's placeable like cake add the "when placed" tooltip
+            if(((INutrientPropertiesHaver) item).getFoodNutrientProperties().getPlaceableEdible()) {
+                toolTipElements.add(Either.left(Component.literal("When placed:").withStyle(ChatFormatting.GRAY)));
+            }
+            //add servings (only if there are more than one)
+            if(servings > 1) {
+                toolTipElements.add(Either.left(Component.literal(servings + " servings of").withStyle(ChatFormatting.GRAY)));
+            }
+            //add the nutrients
             toolTipElements.addAll(nutrientTooltipElements);
         }
 
