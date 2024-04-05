@@ -1,10 +1,12 @@
 package net.lukasllll.lukas_nutrients.client.graphics.gui.screens;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
+import net.lukasllll.lukas_nutrients.client.KeyBinding;
 import net.lukasllll.lukas_nutrients.client.graphics.CustomTexture;
 import net.lukasllll.lukas_nutrients.client.graphics.NativeImageLoader;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
@@ -63,6 +65,20 @@ public class NutrientScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+    }
+    /*
+    Method is needed to close the screen on pressing 'n' again.
+    I don't now, what all these parameters do, so I didn't change their names.
+     */
+    public boolean keyPressed(int p_97765_, int p_97766_, int p_97767_){
+        InputConstants.Key key = InputConstants.getKey(p_97765_, p_97766_);
+        if(super.keyPressed(p_97765_, p_97766_, p_97767_)) {
+            return true;
+        } else if (KeyBinding.OPEN_GUI_KEY.getKey().equals(key)) {
+            this.onClose();
+            return true;
+        }
+        return false;
     }
 
     @Override
