@@ -12,12 +12,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
@@ -97,15 +99,29 @@ public class ModEvents {
 
     @SubscribeEvent
     public static void onPlayerEat(LivingEntityUseItemEvent.Finish event) {
+        LukasNutrients.LOGGER.debug("Eating: " + event.getItem()); //DEBUG
         if(event.getEntity() instanceof ServerPlayer player && event.getItem().isEdible()) {
             if(((INutrientPropertiesHaver) event.getItem().getItem()).hasFoodNutrientProperties()) {
                 NutrientProperties properties = ((INutrientPropertiesHaver) event.getItem().getItem()).getFoodNutrientProperties();
                 player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
-                    nutrients.addAmounts(properties.getNutrientAmounts());
+                    nutrients.addAmounts(properties.getNutrientAmounts(), properties.getServings());
                     nutrients.updateClient(player);
                     DietEffects.apply(player);
                 });
             }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onPlayerRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        Block block = event.getLevel().getBlockState(event.getPos()).getBlock();
+        if(event.getEntity() instanceof ServerPlayer player && ((INutrientPropertiesHaver) block).hasFoodNutrientProperties()) {
+            NutrientProperties properties = ((INutrientPropertiesHaver) block).getFoodNutrientProperties();
+            player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
+                nutrients.addAmounts(properties.getNutrientAmounts(), properties.getServings());
+                nutrients.updateClient(player);
+                DietEffects.apply(player);
+            });
         }
     }
 
