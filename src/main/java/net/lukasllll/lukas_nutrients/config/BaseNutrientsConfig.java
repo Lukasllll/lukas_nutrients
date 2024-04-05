@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class BaseNutrientsConfig {
-    public static final String FILE_PATH = FMLPaths.CONFIGDIR.get().toString()+"/"+LukasNutrients.MOD_ID + "_base_nutrients.json";
+    public static final String FILE_PATH = Config.FILE_PATH + "/base_nutrients.json";
 
     public static BaseNutrientsConfig DATA = null;
     public HashMap<String, List<String>> baseNutrients;

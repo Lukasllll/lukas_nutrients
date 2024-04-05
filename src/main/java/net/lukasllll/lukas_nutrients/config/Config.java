@@ -1,6 +1,8 @@
 package net.lukasllll.lukas_nutrients.config;
 
+import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
+import net.minecraftforge.fml.loading.FMLPaths;
 
 public class Config {
     /*
@@ -15,6 +17,9 @@ public class Config {
 
     Ah well... that's OOP I guess...
      */
+
+    public static final String FILE_PATH = FMLPaths.CONFIGDIR.get().toString()+"/"+ LukasNutrients.MOD_ID;
+
     public static void loadConfigs() {
         BaseNutrientsConfig.read();
         FoodNutrientProvider.addNutrientPropertiesFromConfig();
