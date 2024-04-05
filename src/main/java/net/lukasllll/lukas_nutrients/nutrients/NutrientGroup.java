@@ -10,7 +10,7 @@ public class NutrientGroup {
     public static final int MAX_NUTRIENT_AMOUNT=12;
     public static final int MIN_NUTRIENT_AMOUNT=0;
 
-    public static NutrientGroup[] nutrientGroups =null;
+    public static NutrientGroup[] nutrientGroups = null;
 
     private final String id;
     private String displayname;

@@ -21,8 +21,8 @@ public class NutrientGroupSuggestionProvider implements SuggestionProvider {
     @Override
     public CompletableFuture<Suggestions> getSuggestions(CommandContext context, SuggestionsBuilder builder) {
         NutrientGroup[] Groups = NutrientGroup.getNutrientGroups();
-        for(int i=0; i<Groups.length; i++) {
-            builder.suggest(Groups[i].getID());
+        for(NutrientGroup group : Groups) {
+            builder.suggest(group.getID());
         }
         return builder.buildFuture();
     }
