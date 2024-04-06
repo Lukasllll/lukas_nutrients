@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -20,6 +21,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
+
+import net.minecraft.world.level.block.Blocks;
 
 public class FoodNutrientProvider {
     //this class provides (almost) every edible item (and some non-edible items) with NutrientProperties
@@ -36,7 +39,7 @@ public class FoodNutrientProvider {
 
         for(String key : BaseNutrientsConfig.DATA.baseNutrients.keySet()) {
             Item item = Registry.ITEM.get(new ResourceLocation(key));                           //key is the full path (namespace:path) of the item e.g. "minecraft:apple"
-            if(item == null) continue;
+            if(item == null || item == Items.AIR) continue;
 
             List<String> entry = BaseNutrientsConfig.DATA.baseNutrients.get(key);
 
@@ -57,10 +60,10 @@ public class FoodNutrientProvider {
 
         for(String key : EdibleBlocksConfig.DATA.edibleBlocks.keySet()) {
             Block block = Registry.BLOCK.get(new ResourceLocation(key));        //key is the full path (namespace:path) of the block e.g. minecraft:cake
-            if(block == null) continue;
+            if(block == null || block == Blocks.AIR) continue;
 
             Item blockItem = block.asItem();
-            if(blockItem == null) continue;
+            if(blockItem == null || blockItem == Items.AIR) continue;
             //the item probably doesn't have nutrient properties yet, because it probably isn't edible
             if(!((INutrientPropertiesHaver) blockItem).hasFoodNutrientProperties()) {
                 assignNutrientsThroughRecipe(blockItem);
@@ -246,12 +249,12 @@ public class FoodNutrientProvider {
 
         for(Recipe<?> currentRecipe: recipeManager.getRecipes()) {
             ItemStack outputStack = currentRecipe.getResultItem();
-            if(outputStack == null) {
+            if(outputStack == null || outputStack.getItem() == Items.AIR) {
                 continue;
             }
             Item outputItem = outputStack.getItem();
 
-            if(out.get(outputItem) == null) {
+            if(out.get(outputItem) == null || out.get(outputItem) == Items.AIR) {
                 out.put(outputItem, new ArrayList<>());
             }
             out.get(outputItem).add(currentRecipe);
@@ -274,7 +277,7 @@ public class FoodNutrientProvider {
         for(Recipe<?> currentRecipe: recipeManager.getRecipes()) {
             if(currentRecipe.getType() != RecipeType.SMOKING) continue;
             ItemStack outputStack = currentRecipe.getResultItem();
-            if(outputStack == null) {
+            if(outputStack == null || outputStack.getItem() == Items.AIR) {
                 continue;
             }
             List<Ingredient> ingredients = currentRecipe.getIngredients();
@@ -282,7 +285,7 @@ public class FoodNutrientProvider {
                 ItemStack[] stacks = ingredient.getItems();
                 for(ItemStack stack : stacks) {
                     Item item = stack.getItem();
-                    if(item == null) continue;
+                    if(item == null || item == Items.AIR) continue;
                     out.put(item, currentRecipe);
                 }
             }
