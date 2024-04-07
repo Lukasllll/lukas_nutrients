@@ -99,7 +99,6 @@ public class ModEvents {
 
     @SubscribeEvent
     public static void onPlayerEat(LivingEntityUseItemEvent.Finish event) {
-        LukasNutrients.LOGGER.debug("Eating: " + event.getItem()); //DEBUG
         if(event.getEntity() instanceof ServerPlayer player && event.getItem().isEdible()) {
             if(((INutrientPropertiesHaver) event.getItem().getItem()).hasFoodNutrientProperties()) {
                 NutrientProperties properties = ((INutrientPropertiesHaver) event.getItem().getItem()).getFoodNutrientProperties();
