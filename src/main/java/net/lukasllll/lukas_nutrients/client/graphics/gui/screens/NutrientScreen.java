@@ -74,7 +74,7 @@ public class NutrientScreen extends Screen {
         InputConstants.Key key = InputConstants.getKey(p_97765_, p_97766_);
         if(super.keyPressed(p_97765_, p_97766_, p_97767_)) {
             return true;
-        } else if (KeyBinding.OPEN_GUI_KEY.getKey().equals(key)) {
+        } else if (KeyBinding.OPEN_GUI_KEY.isActiveAndMatches(key)) {
             this.onClose();
             return true;
         }

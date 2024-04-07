@@ -25,6 +25,7 @@ import java.util.List;
 public class ClientEvents {
     @Mod.EventBusSubscriber(modid = LukasNutrients.MOD_ID, value = Dist.CLIENT)
     public static class ClientForgeEvents {
+
         @SubscribeEvent
         public static void onKeyRegister(RegisterKeyMappingsEvent event) {
             event.register(KeyBinding.OPEN_GUI_KEY);
@@ -32,8 +33,8 @@ public class ClientEvents {
 
         @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
-            if(KeyBinding.OPEN_GUI_KEY.consumeClick()) {
-                Minecraft mc = Minecraft.getInstance();
+            Minecraft mc = Minecraft.getInstance();
+            if(KeyBinding.OPEN_GUI_KEY.consumeClick() && mc.screen == null) {
                 mc.setScreen(new NutrientScreen());
             }
         }
