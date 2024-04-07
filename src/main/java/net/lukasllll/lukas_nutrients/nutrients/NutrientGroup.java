@@ -40,11 +40,11 @@ public class NutrientGroup {
     public static  NutrientGroup[] getNutrientGroups() {
         if(nutrientGroups !=null) return nutrientGroups;
         nutrientGroups = new NutrientGroup[5];
-        nutrientGroups[0] = new NutrientGroup("fruits", "Fruits", "minecraft:apple", 8, 12, 18, 22, 16);
-        nutrientGroups[1] = new NutrientGroup("grains", "Grains", "minecraft:bread", 8, 10, 18, 20, 16);
-        nutrientGroups[2] = new NutrientGroup("proteins", "Proteins", "minecraft:cooked_beef", 6, 10, 18, 22, 16);
-        nutrientGroups[3] = new NutrientGroup("vegetables", "Vegetables", "minecraft:carrot", 8, 16, 22, 24, 20);
-        nutrientGroups[4] = new NutrientGroup("sugars", "Sugars", "minecraft:honey_bottle", 0, 2, 6, 14, 0);
+        nutrientGroups[0] = new NutrientGroup("fruits", "Fruits", "minecraft:apple", 8, 12, 18, 22, 12);
+        nutrientGroups[1] = new NutrientGroup("grains", "Grains", "minecraft:bread", 8, 10, 18, 20, 10);
+        nutrientGroups[2] = new NutrientGroup("proteins", "Proteins", "minecraft:cooked_beef", 6, 10, 18, 22, 10);
+        nutrientGroups[3] = new NutrientGroup("vegetables", "Vegetables", "minecraft:carrot", 8, 16, 22, 24, 16);
+        nutrientGroups[4] = new NutrientGroup("sugars", "Sugars", "minecraft:honey_bottle", 0, 2, 6, 14, 2);
 
         return nutrientGroups;
     }
