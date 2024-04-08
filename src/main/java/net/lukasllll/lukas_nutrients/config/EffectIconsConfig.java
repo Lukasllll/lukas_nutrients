@@ -62,8 +62,8 @@ public class EffectIconsConfig {
         map.put(Attributes.MAX_HEALTH.getDescriptionId() + POSITIVE_SUFFIX, "health_boost");
         map.put(Attributes.MAX_HEALTH.getDescriptionId() + NEGATIVE_SUFFIX, "wither");
 
-        map.put(Attributes.ATTACK_SPEED.getDescriptionId() + POSITIVE_SUFFIX, "haste");
-        map.put(Attributes.ATTACK_SPEED.getDescriptionId() + NEGATIVE_SUFFIX, "mining_fatigue");
+        map.put(Attributes.ATTACK_DAMAGE.getDescriptionId() + POSITIVE_SUFFIX, "strength");
+        map.put(Attributes.ATTACK_DAMAGE.getDescriptionId() + NEGATIVE_SUFFIX, "weakness");
 
         map.put(Attributes.MOVEMENT_SPEED.getDescriptionId() + POSITIVE_SUFFIX, "speed");
         map.put(Attributes.MOVEMENT_SPEED.getDescriptionId() + NEGATIVE_SUFFIX, "slowness");

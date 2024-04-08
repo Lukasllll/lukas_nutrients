@@ -47,7 +47,7 @@ public class DietEffects {
             dietEffects.add(new DietEffect(7, 10,
                     new AssignedAttributeModifier(UUID.fromString("b15b0388-f0a1-4cbe-bd3d-67cdff89cd7d"),"health increase", Attributes.MAX_HEALTH, 2.0d, AttributeModifier.Operation.ADDITION)));
             dietEffects.add(new DietEffect(8, 10,
-                    new AssignedAttributeModifier(UUID.fromString("5a1d652d-b538-4dc1-a89c-148cfdeb6528"), "mining speed increase", Attributes.ATTACK_SPEED, 0.1d, AttributeModifier.Operation.MULTIPLY_TOTAL)));
+                    new AssignedAttributeModifier(UUID.fromString("5a1d652d-b538-4dc1-a89c-148cfdeb6528"), "attack damage increase", Attributes.ATTACK_DAMAGE, 1.0d, AttributeModifier.Operation.ADDITION)));
             dietEffects.add(new DietEffect(9, 10,
                     new AssignedAttributeModifier(UUID.fromString("5c623220-a0c9-4877-a2d3-3e2d113e572e"), "health increase", Attributes.MAX_HEALTH, 2.0d, AttributeModifier.Operation.ADDITION)));
             dietEffects.add(new DietEffect(10, 10,
