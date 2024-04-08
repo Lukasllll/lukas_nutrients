@@ -201,7 +201,7 @@ public class PlayerNutrients {
 
     //sends a packet to the client containing all relevant information
     public void updateClient(ServerPlayer player) {
-        ModMessages.sendToPlayer(new NutrientsDataSyncS2CPacket(getNutrientAmounts(), getExhaustionLevels(), getNutrientRanges(), getNutrientScores(), getTotalScore()), player);
+        ModMessages.sendToPlayer(new NutrientsDataSyncS2CPacket(getNutrientAmounts(), getExhaustionLevels(), getNutrientRanges(), getNutrientScores(), getTotalScore(), DietEffects.getSimplifiedList(player)), player);
         dirty = false;
     }
 

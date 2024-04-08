@@ -5,6 +5,7 @@ import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +21,7 @@ public class DietEffects {
     public static final int BASE_POINT = 5;
 
     private static List<DietEffect> dietEffects = getDietEffects();
+    private static List<DietEffect> baseEffects = getBaseEffects();
 
     public static int[] getPointRanges() {
         return POINT_RANGES;
@@ -29,12 +31,9 @@ public class DietEffects {
         return BASE_POINT;
     }
 
-    public static List getDietEffects() {
+    private static List<DietEffect> getDietEffects() {
         if(dietEffects == null) {
-            dietEffects = new ArrayList<DietEffect>();
-            //base effect
-            dietEffects.add(new DietEffect(0, 10,
-                    new AssignedAttributeModifier(UUID.fromString("9d4527a1-50c1-4729-884b-7812fc274d55"),"base health reduction", Attributes.MAX_HEALTH, -4.0d, AttributeModifier.Operation.ADDITION)));
+            dietEffects = new ArrayList<>();
             //negative effect
             dietEffects.add(new DietEffect(0, 0,
                     new AssignedAttributeModifier(UUID.fromString("9cd9e6c3-108a-4c56-8d80-60bff6b74156"),"health reduction", Attributes.MAX_HEALTH, -2.0d, AttributeModifier.Operation.ADDITION)));
@@ -54,7 +53,17 @@ public class DietEffects {
             dietEffects.add(new DietEffect(10, 10,
                     new AssignedAttributeModifier(UUID.fromString("33fb9a3f-cd76-4e33-8325-77604fec98b7"), "speed increase", Attributes.MOVEMENT_SPEED, 0.1d, AttributeModifier.Operation.MULTIPLY_TOTAL)));
         }
-        return  dietEffects;
+        return dietEffects;
+    }
+
+    private static List<DietEffect> getBaseEffects() {
+        if(baseEffects == null) {
+            baseEffects = new ArrayList<>();
+
+            baseEffects.add(new DietEffect(0, 10,
+                    new AssignedAttributeModifier(UUID.fromString("9d4527a1-50c1-4729-884b-7812fc274d55"),"base health reduction", Attributes.MAX_HEALTH, -4.0d, AttributeModifier.Operation.ADDITION)));
+        }
+        return baseEffects;
     }
 
     public static void apply(ServerPlayer player) {
@@ -63,8 +72,11 @@ public class DietEffects {
 
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
             int totalDietScore = nutrients.getTotalScore();
-            for(int i=0; i<dietEffects.size(); i++) {
-                dietEffects.get(i).apply(player, totalDietScore);
+            for(DietEffect baseEffect : getBaseEffects()) {
+                baseEffect.apply(player);
+            }
+            for(DietEffect dietEffect : getDietEffects()) {
+                dietEffect.apply(player, totalDietScore);
             }
         });
 
@@ -83,6 +95,50 @@ public class DietEffects {
         }
     }
 
+    /*
+    returns a list with all important information about active attributeModifiers. Similar modifiers are combined.
+    baseEffects are ignored for this list.
+     */
+    public static List< Triple<String, AttributeModifier.Operation, Double> > getSimplifiedList(ServerPlayer player) {
+        ArrayList<DietEffect> activeEffects = new ArrayList<>();
+
+        player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
+            for(DietEffect effect : dietEffects) {
+                if(effect.isActive(nutrients.getTotalScore())) {
+                    activeEffects.add(effect);
+                }
+            }
+        });
+
+        //merges entries that match in attribute and operation
+        //actually it doesn't technically merge them, it creates a new DietEffects object, that has the merged properties,
+        //then it removes the two old entries.
+        for(int i0 = 0; i0 < activeEffects.size(); i0++) {
+            for(int i1 = i0+1; i1 < activeEffects.size(); i1++) {
+                DietEffect effect = activeEffects.get(i0);
+                DietEffect otherEffect = activeEffects.get(i1);
+
+                if(effect.canCombineWith(otherEffect)) {
+                    DietEffect combined = effect.combineWith(otherEffect);
+                    if(combined.attributeModifier.getAmount() != 0 ) activeEffects.add(combined);
+                    activeEffects.remove(effect);
+                    activeEffects.remove(otherEffect);
+                    i0--;
+                    break;
+                }
+            }
+        }
+
+        ArrayList< Triple<String, AttributeModifier.Operation, Double> > out = new ArrayList<>();
+        for(DietEffect effect : activeEffects) {
+            out.add(Triple.of(effect.attributeModifier.getAttribute().getDescriptionId(),
+                    effect.attributeModifier.getOperation(),
+                    effect.attributeModifier.getAmount()));
+        }
+
+        return out;
+    }
+
     protected static class DietEffect {
         private final int minDietScore, maxDietScore;
         private final AssignedAttributeModifier attributeModifier;
@@ -95,15 +151,55 @@ public class DietEffects {
 
         public void apply(ServerPlayer player, int totalDietScore) {
             remove(player);
-            if(totalDietScore <= maxDietScore && totalDietScore >= minDietScore) {
+            if(isActive(totalDietScore)) {
                 player.getAttribute(attributeModifier.getAttribute()).addPermanentModifier(attributeModifier);
             }
+        }
+
+        public void apply(ServerPlayer player) {
+            remove(player);
+            player.getAttribute(attributeModifier.getAttribute()).addPermanentModifier(attributeModifier);
         }
 
         public void remove(ServerPlayer player) {
             player.getAttribute(attributeModifier.getAttribute()).removeModifier(attributeModifier.getId());
         }
 
+        public boolean isActive(int totalDietScore) {
+            return totalDietScore <= maxDietScore && totalDietScore >= minDietScore;
+        }
+
+        public boolean canCombineWith(DietEffect other) {
+            return (this.attributeModifier.getAttribute() == other.attributeModifier.getAttribute()
+                    && this.attributeModifier.getOperation() == other.attributeModifier.getOperation());
+        }
+
+        /*
+        returns a new DietEffect object. Only works, if the modified attribute and operation are identical.
+        The DietEffect.attributeModifier of the returned DietEffect object has a new amount based on the DietEffect
+        this object is combined with. The new amount is equivalent to the total change of applying both attributeModifiers
+        at the same time.
+        The returned objects min- and maxDietScore are both set to -1, since they're not used.
+         */
+        public DietEffect combineWith(DietEffect other) {
+            if(!canCombineWith(other)) return null;
+            double amount = this.attributeModifier.getAmount();
+            switch(this.attributeModifier.getOperation()) {
+                case ADDITION, MULTIPLY_BASE:
+                    //for these two operations, getting the amount resulting of applying both modifiers at the same time
+                    //is pretty easy.
+                    amount += other.attributeModifier.getAmount();
+                    break;
+                case MULTIPLY_TOTAL:
+                    //for MULTIPLY_TOTAL, it's a bit more tricky.
+                    //d_1*(1 + amount_1)*(1 + amount_2) = d_1*(1 + amount_1 + amount_2 + amount_1*amount_2)
+                    amount = this.attributeModifier.getAmount() + other.attributeModifier.getAmount() + this.attributeModifier.getAmount()*other.attributeModifier.getAmount();
+                    break;
+            }
+
+            return new DietEffect(-1, -1,
+                    new AssignedAttributeModifier(this.attributeModifier.getName(), this.attributeModifier.getAttribute(), amount, this.attributeModifier.getOperation()));
+        }
     }
 
 }

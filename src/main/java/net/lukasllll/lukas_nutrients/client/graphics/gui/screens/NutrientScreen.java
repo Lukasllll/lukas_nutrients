@@ -9,6 +9,7 @@ import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
 import net.lukasllll.lukas_nutrients.client.graphics.CustomTexture;
 import net.lukasllll.lukas_nutrients.client.graphics.NativeImageLoader;
+import net.lukasllll.lukas_nutrients.config.EffectIconsConfig;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.minecraft.client.Minecraft;
@@ -16,14 +17,21 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class NutrientScreen extends Screen {
 
     private static final Component TITLE = Component.translatable("gui." + LukasNutrients.MOD_ID +".nutrient_screen_title");
     private static final ResourceLocation BACKGROUND = new ResourceLocation("minecraft", "textures/gui/demo_background.png");
+    public static final ResourceLocation INVENTORY_LOCATION = new ResourceLocation("minecraft","textures/gui/container/inventory.png");
     private static final ResourceLocation ICONS = new ResourceLocation(LukasNutrients.MOD_ID, "textures/gui/icons.png");
 
     //the horizontal spacing between the different elements. In order:
@@ -57,6 +65,8 @@ public class NutrientScreen extends Screen {
     private int startX;
     private int startY;
 
+    private List<Component> tooltip;
+
     public NutrientScreen() {
         super(TITLE);
         Groups = ClientNutrientData.getFoodGroups();
@@ -83,11 +93,15 @@ public class NutrientScreen extends Screen {
 
     @Override
     public void render(PoseStack pose, int mouseX, int mouseY, float partialTick) {
+        tooltip = null;
         if(startX == 0) calculateDimensions();
         renderBackground(pose);
+        renderDietEffects(pose, mouseX, mouseY);
         renderLeftModule(pose);
         renderMiddleModule(pose);
         renderRightModule(pose);
+        if(tooltip != null)
+            renderComponentTooltip(pose, tooltip, mouseX, mouseY);
         super.render(pose, mouseX, mouseY, partialTick);
     }
 
@@ -215,6 +229,62 @@ public class NutrientScreen extends Screen {
             this.font.draw(pose, "" + totalScore, currentX + 2, currentY + 4, TEXT_COLOR);
         }
         this.font.draw(pose, "/10", currentX + 17, currentY + 4, TEXT_COLOR);
+    }
+
+    /*
+    Renders the icons for currently active diet effect and sets the appropriate tooltip, if moused-over
+     */
+    public void renderDietEffects(PoseStack pose, int mouseX, int mouseY) {
+        List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects = ClientNutrientData.getActiveDietEffects();
+
+        int x = startX + totalWidth + 2;
+        int y = startY;
+
+        int numberOfEffectsRendered = Math.min(activeDietEffects.size(), 2 * totalHeight/32);
+
+        for(int i = 0; i < numberOfEffectsRendered; i++) {
+            //background
+            RenderSystem.setShaderTexture(0, INVENTORY_LOCATION);
+            this.blit(pose, x, y, 0, 198, 32, 32);
+
+            //effect image
+            ResourceLocation effectLocation = new ResourceLocation(
+                    "minecraft","textures/mob_effect/" +
+                    EffectIconsConfig.getEffectIcon(activeDietEffects.get(i).getLeft(), activeDietEffects.get(i).getRight()) + ".png");
+
+            RenderSystem.setShaderTexture(0, effectLocation);
+            this.blit(pose, x + 7, y + 7, 0, (float) 0.0, (float) 0.0, 18, 18, 18, 18);
+
+            /*
+            The tooltip is just created here. It is rendered, once renderComponentTooltip is called
+             */
+            if(mouseX >= x && mouseX < x+32 && mouseY >= y && mouseY < y+32) {
+                tooltip = new ArrayList<>();
+                switch (activeDietEffects.get(i).getMiddle()) {
+                    case ADDITION:
+                        if(activeDietEffects.get(i).getRight() >= 0)
+                            tooltip.add(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + activeDietEffects.get(i).getRight()), Component.translatable(activeDietEffects.get(i).getLeft())));
+                        else
+                            tooltip.add(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight())), Component.translatable(activeDietEffects.get(i).getLeft())));
+                        break;
+                    case MULTIPLY_TOTAL:
+                        if(activeDietEffects.get(i).getRight() >= 0)
+                            tooltip.add(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + activeDietEffects.get(i).getRight() * 100.0), Component.translatable(activeDietEffects.get(i).getLeft())));
+                        else
+                            tooltip.add(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight()) * 100.0), Component.translatable(activeDietEffects.get(i).getLeft())));
+                        break;
+                    case MULTIPLY_BASE:
+                        tooltip.add(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + activeDietEffects.get(i).getRight())) * 100.0), Component.translatable(activeDietEffects.get(i).getLeft())));
+                        break;
+                }
+            }
+
+            y += 34;
+            if(y >= startY + totalHeight - 32) {
+                y = startY;
+                x += 34;
+            }
+        }
     }
 
 

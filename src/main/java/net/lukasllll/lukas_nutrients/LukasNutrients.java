@@ -8,6 +8,7 @@ import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
@@ -24,6 +25,7 @@ public class LukasNutrients
 
         //Register the commonSetup method for modloading
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(this::clientSetup);
 
         //Register ourselves for server and other game events we are interested in
         MinecraftForge.EVENT_BUS.register(this);
@@ -32,6 +34,10 @@ public class LukasNutrients
     private void commonSetup(final FMLCommonSetupEvent event)
     {
         ModMessages.register();
-        Config.loadConfigs();
+        Config.loadCommonConfigs();
+    }
+
+    private void clientSetup(final FMLClientSetupEvent event) {
+        Config.loadClientConfigs();
     }
 }

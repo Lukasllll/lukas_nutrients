@@ -123,9 +123,9 @@ public class NutrientsCommand {
     }
 
     private int reloadConfigs(CommandSourceStack source) {
-        Config.loadConfigs();
+        Config.loadCommonConfigs();
         FoodNutrientProvider.reassignAllItems();
-        source.sendSuccess(Component.literal("Configs reloaded!"), true);
+        source.sendSuccess(Component.literal("Common configs reloaded!"), true);
         return 1;
     }
 
