@@ -1,6 +1,7 @@
 package net.lukasllll.lukas_nutrients.config;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.minecraftforge.fml.loading.FMLPaths;
 
@@ -17,6 +18,8 @@ public class Config {
 
     public static void loadCommonConfigs() {
         createFolder();
+        NutrientGroupsConfig.read();
+        NutrientGroup.loadGroupsFromConfig();
         BaseNutrientsConfig.read();
         EdibleBlocksConfig.read();
         FoodNutrientProvider.addNutrientPropertiesFromConfig();
