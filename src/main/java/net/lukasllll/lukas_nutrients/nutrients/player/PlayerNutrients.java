@@ -31,6 +31,8 @@ public class PlayerNutrients {
         this.exhaustionLevels = new double[this.groups.length];
         this.ranges = new int[this.groups.length];
         this.scores = new int[this.groups.length];
+
+        this.setToDefault();
     }
 
 

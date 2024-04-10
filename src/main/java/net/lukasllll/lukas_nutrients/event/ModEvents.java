@@ -11,7 +11,6 @@ import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
@@ -44,8 +43,8 @@ public class ModEvents {
 
     @SubscribeEvent
     public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
-        if(event.getObject() instanceof Player) {
-            if(!event.getObject().getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).isPresent()) {
+        if(event.getObject() instanceof ServerPlayer player) {
+            if(!player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).isPresent()) {
                 event.addCapability(new ResourceLocation(LukasNutrients.MOD_ID, "nutrient_data"), new PlayerNutrientProvider());
             }
         }
