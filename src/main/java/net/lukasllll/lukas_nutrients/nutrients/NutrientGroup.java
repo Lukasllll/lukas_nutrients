@@ -37,11 +37,11 @@ public class NutrientGroup {
     public static NutrientGroup[] getNutrientGroups() {
         if(nutrientGroups !=null) return nutrientGroups;
 
-        loadGroupsFromConfig();
+        getFromConfig();
         return nutrientGroups;
     }
 
-    public static void loadGroupsFromConfig() {
+    public static void getFromConfig() {
         nutrientGroups = NutrientGroupsConfig.getNutrientGroups();
     }
 

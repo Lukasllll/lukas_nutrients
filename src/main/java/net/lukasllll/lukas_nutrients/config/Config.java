@@ -3,11 +3,10 @@ package net.lukasllll.lukas_nutrients.config;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 
 public class Config {
     /*
@@ -19,10 +18,12 @@ public class Config {
     public static void loadCommonConfigs() {
         createFolder();
         NutrientGroupsConfig.read();
-        NutrientGroup.loadGroupsFromConfig();
+        NutrientGroup.getFromConfig();
+        NutrientEffectsConfig.read();
+        DietEffects.getFromConfig();
         BaseNutrientsConfig.read();
         EdibleBlocksConfig.read();
-        FoodNutrientProvider.addNutrientPropertiesFromConfig();
+        FoodNutrientProvider.getFromConfig();
     }
 
     public static void loadClientConfigs() {

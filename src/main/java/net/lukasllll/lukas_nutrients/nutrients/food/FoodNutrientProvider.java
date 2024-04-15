@@ -34,7 +34,7 @@ public class FoodNutrientProvider {
     private static Map<Item, Recipe<?>> smokerRecipesByInput;
     private static List<Item> currentlyWorkingOn = new ArrayList<>();
 
-    public static void addNutrientPropertiesFromConfig() {
+    public static void getFromConfig() {
         if(BaseNutrientsConfig.DATA == null) return;
 
         for(String key : BaseNutrientsConfig.DATA.baseNutrients.keySet()) {
@@ -111,7 +111,7 @@ public class FoodNutrientProvider {
     //This function is called by the reload command (commands.NutrientsCommand.reloadConfigs())
     public static void reassignAllItems() {
         unassignAllItems();
-        addNutrientPropertiesFromConfig();
+        getFromConfig();
         assignUnassignedItems();
     }
 
