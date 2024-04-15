@@ -3,6 +3,7 @@ package net.lukasllll.lukas_nutrients.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.minecraft.core.Registry;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import org.apache.commons.lang3.tuple.Triple;
@@ -59,20 +60,21 @@ public class EffectIconsConfig {
     private static EffectIconsConfig getDefaultEffectIcons() {
         HashMap<String, String> map = new HashMap<>();
 
-        map.put(Attributes.MAX_HEALTH.getDescriptionId() + POSITIVE_SUFFIX, "health_boost");
-        map.put(Attributes.MAX_HEALTH.getDescriptionId() + NEGATIVE_SUFFIX, "wither");
+        map.put(Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH) + POSITIVE_SUFFIX, "health_boost");
+        map.put(Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH) + NEGATIVE_SUFFIX, "wither");
 
-        map.put(Attributes.ATTACK_DAMAGE.getDescriptionId() + POSITIVE_SUFFIX, "strength");
-        map.put(Attributes.ATTACK_DAMAGE.getDescriptionId() + NEGATIVE_SUFFIX, "weakness");
+        map.put(Registry.ATTRIBUTE.getKey(Attributes.ATTACK_DAMAGE) + POSITIVE_SUFFIX, "strength");
+        map.put(Registry.ATTRIBUTE.getKey(Attributes.ATTACK_DAMAGE) + NEGATIVE_SUFFIX, "weakness");
 
-        map.put(Attributes.MOVEMENT_SPEED.getDescriptionId() + POSITIVE_SUFFIX, "speed");
-        map.put(Attributes.MOVEMENT_SPEED.getDescriptionId() + NEGATIVE_SUFFIX, "slowness");
+        map.put(Registry.ATTRIBUTE.getKey(Attributes.MOVEMENT_SPEED) + POSITIVE_SUFFIX, "speed");
+        map.put(Registry.ATTRIBUTE.getKey(Attributes.MOVEMENT_SPEED) + NEGATIVE_SUFFIX, "slowness");
 
         return new EffectIconsConfig(map);
     }
 
     public static String getEffectIcon(String attributeDescriptionId, double modifier) {
         if(DATA == null) return null;
+        LukasNutrients.LOGGER.debug(attributeDescriptionId);
         return DATA.effectIconMapping.getOrDefault(attributeDescriptionId + (modifier >= 0 ? POSITIVE_SUFFIX : NEGATIVE_SUFFIX), "regeneration");
     }
 }

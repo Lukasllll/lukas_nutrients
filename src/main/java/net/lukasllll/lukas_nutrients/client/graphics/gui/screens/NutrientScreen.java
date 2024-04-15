@@ -16,6 +16,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
@@ -263,18 +264,18 @@ public class NutrientScreen extends Screen {
                 switch (activeDietEffects.get(i).getMiddle()) {
                     case ADDITION:
                         if(activeDietEffects.get(i).getRight() >= 0)
-                            tooltip.add(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + activeDietEffects.get(i).getRight()), Component.translatable(activeDietEffects.get(i).getLeft())));
+                            tooltip.add(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + activeDietEffects.get(i).getRight()), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         else
-                            tooltip.add(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight())), Component.translatable(activeDietEffects.get(i).getLeft())));
+                            tooltip.add(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight())), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         break;
                     case MULTIPLY_TOTAL:
                         if(activeDietEffects.get(i).getRight() >= 0)
-                            tooltip.add(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + activeDietEffects.get(i).getRight() * 100.0), Component.translatable(activeDietEffects.get(i).getLeft())));
+                            tooltip.add(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + activeDietEffects.get(i).getRight() * 100.0), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         else
-                            tooltip.add(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight()) * 100.0), Component.translatable(activeDietEffects.get(i).getLeft())));
+                            tooltip.add(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight()) * 100.0), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         break;
                     case MULTIPLY_BASE:
-                        tooltip.add(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + activeDietEffects.get(i).getRight())) * 100.0), Component.translatable(activeDietEffects.get(i).getLeft())));
+                        tooltip.add(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + activeDietEffects.get(i).getRight())) * 100.0), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         break;
                 }
             }

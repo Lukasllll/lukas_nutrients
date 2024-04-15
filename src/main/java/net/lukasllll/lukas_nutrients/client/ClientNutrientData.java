@@ -1,11 +1,9 @@
 package net.lukasllll.lukas_nutrients.client;
 
-import net.lukasllll.lukas_nutrients.config.EffectIconsConfig;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import org.apache.commons.lang3.tuple.Triple;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ClientNutrientData {
@@ -25,12 +23,7 @@ public class ClientNutrientData {
         ClientNutrientData.scores = scores;
         ClientNutrientData.totalScore = totalScore;
 
-        ClientNutrientData.activeEffects = activeEffects; /*new ArrayList<>();
-        for(Triple<String, AttributeModifier.Operation, Double> effect : activeEffects) {
-            ClientNutrientData.activeEffects.add(Triple.of(
-                    EffectIconsConfig.getEffectIcon(effect.getLeft(), effect.getRight()),
-                    effect.getMiddle(), effect.getRight() ));
-        }*/
+        ClientNutrientData.activeEffects = activeEffects;
     }
 
     public static double[] getPlayerNutrientAmounts() {
@@ -56,12 +49,6 @@ public class ClientNutrientData {
     public static NutrientGroup[] getFoodGroups() {return Groups;}
 
     public static List<Triple<String, AttributeModifier.Operation, Double>> getActiveDietEffects() {
-        /*ArrayList<Triple<String, AttributeModifier.Operation, Double>> out = new ArrayList<>();
-        out.add(Triple.of("health_boost", AttributeModifier.Operation.ADDITION, 1.0));
-        out.add(Triple.of("haste", AttributeModifier.Operation.MULTIPLY_TOTAL, 0.1));
-        out.add(Triple.of("speed", AttributeModifier.Operation.MULTIPLY_TOTAL, 0.1));
-
-        return out;*/
         return activeEffects;
     }
 
