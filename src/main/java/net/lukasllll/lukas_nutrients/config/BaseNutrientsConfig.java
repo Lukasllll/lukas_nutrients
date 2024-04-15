@@ -105,7 +105,7 @@ public class BaseNutrientsConfig{
 
 
         map.put(Registry.ITEM.getKey(Items.HONEY_BOTTLE).toString(), buildEntry( 2.0, sugars));
-        map.put(Registry.ITEM.getKey(Items.COCOA_BEANS).toString(), buildEntry( 0.6, sugars));
+        map.put(Registry.ITEM.getKey(Items.COCOA_BEANS).toString(), buildEntry( 1.0, sugars));
 
         map.put(Registry.ITEM.getKey(Items.GLASS_BOTTLE).toString(), buildEntry( 0.0, none));
         map.put(Registry.ITEM.getKey(Items.BOWL).toString(), buildEntry( 0.0, none));
