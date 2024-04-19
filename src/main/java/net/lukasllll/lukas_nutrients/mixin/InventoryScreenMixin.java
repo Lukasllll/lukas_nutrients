@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.screens.NutrientScreen;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
@@ -51,7 +52,7 @@ public abstract class InventoryScreenMixin extends AbstractContainerScreen {
     so this.left isn't yet updated and I haven't found another suitable function to inject to.
      */
     @Inject(method = "render", at = @At("HEAD"))
-    protected void onRender(PoseStack p_98875_, int p_98876_, int p_98877_, float p_98878_, CallbackInfo ci) {
+    protected void onRender(GuiGraphics p_283246_, int p_98876_, int p_98877_, float p_98878_, CallbackInfo ci) {
         nutrientButton.setPosition(this.leftPos + buttonXOffset, this.height / 2 - 22);
     }
 }

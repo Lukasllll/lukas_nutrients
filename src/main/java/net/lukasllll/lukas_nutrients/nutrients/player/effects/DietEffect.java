@@ -1,14 +1,17 @@
 package net.lukasllll.lukas_nutrients.nutrients.player.effects;
 
-import net.minecraft.core.Registry;
+import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.UUID;
 
 public class DietEffect {
+    public static final String EFFECT_NAME = LukasNutrients.MOD_ID + ":nutrient_effect";
+
     private final int minDietScore, maxDietScore;
     private final AssignedAttributeModifier attributeModifier;
 
@@ -33,9 +36,8 @@ public class DietEffect {
                 operation = AttributeModifier.Operation.MULTIPLY_TOTAL;
                 break;
         }
-
-        Attribute attribute = Registry.ATTRIBUTE.get(new ResourceLocation( attributeString ));
-        this.attributeModifier = new AssignedAttributeModifier(UUID.randomUUID(), "nutrient effect", attribute, amount, operation);
+        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attributeString));
+        this.attributeModifier = new AssignedAttributeModifier(UUID.randomUUID(), EFFECT_NAME, attribute, amount, operation);
     }
 
     public void apply(ServerPlayer player, int totalDietScore) {
