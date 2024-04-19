@@ -42,13 +42,11 @@ public class ClientEvents {
         @SubscribeEvent
         public static void onRenderTooltip(RenderTooltipEvent.GatherComponents event) {
             Item item = event.getItemStack().getItem();
-            LukasNutrients.LOGGER.debug("Item: " + event.getItemStack().isEdible());
             //I only want the tooltip to be rendered on edible items that have nutrients assigned to them or items that can be placed to create edible blocks like cake
             if(item == null || !((INutrientPropertiesHaver) item).hasFoodNutrientProperties() ||
                     ( !item.isEdible() && !((INutrientPropertiesHaver) item).getFoodNutrientProperties().getPlaceableEdible()) ) {
                 return;
             }
-            LukasNutrients.LOGGER.debug("1. check");
             double[] nutrientAmounts = ((INutrientPropertiesHaver) item).getFoodNutrientProperties().getNutrientAmounts();
             int servings = ((INutrientPropertiesHaver) item).getFoodNutrientProperties().getServings();
             NutrientGroup[] groups = NutrientGroup.getNutrientGroups();
@@ -59,7 +57,6 @@ public class ClientEvents {
             //to the nutrientTooltipElements list. If the list turns out empty at the end, nothing is rendered at all.
             List<Either<FormattedText, TooltipComponent>> nutrientTooltipElements = new ArrayList<>();
             for(int i=0; i< groups.length; i++) {
-                LukasNutrients.LOGGER.debug("2. check");
                 if(nutrientAmounts[i] == 0) continue;
                 String text = "+" + round(nutrientAmounts[i] / servings) + " " + groups[i].getDisplayname();
                 nutrientTooltipElements.add(Either.left(Component.literal(text).withStyle(ChatFormatting.GOLD)));
@@ -67,7 +64,6 @@ public class ClientEvents {
             if(nutrientTooltipElements.isEmpty()) {
                 return;
             }
-            LukasNutrients.LOGGER.debug("3. check");
             //If it's not empty, for edible items first add the "when eaten" tooltip
             if(item.isEdible()) {
                 toolTipElements.add(Either.left(Component.literal("When eaten:").withStyle(ChatFormatting.GRAY)));
@@ -83,7 +79,6 @@ public class ClientEvents {
             }
             //add the nutrients
             toolTipElements.addAll(nutrientTooltipElements);
-            LukasNutrients.LOGGER.debug("4. check");
         }
 
         private static double round(double in) {
