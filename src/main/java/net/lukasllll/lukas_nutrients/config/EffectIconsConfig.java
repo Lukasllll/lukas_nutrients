@@ -3,17 +3,14 @@ package net.lukasllll.lukas_nutrients.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
-import net.minecraft.core.Registry;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import org.apache.commons.lang3.tuple.Triple;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 
 public class EffectIconsConfig {
     public static final String FILE_PATH = Config.FOLDER_FILE_PATH + "/effect_icons.json";
@@ -60,21 +57,20 @@ public class EffectIconsConfig {
     private static EffectIconsConfig getDefaultEffectIcons() {
         HashMap<String, String> map = new HashMap<>();
 
-        map.put(Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH) + POSITIVE_SUFFIX, "health_boost");
-        map.put(Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH) + NEGATIVE_SUFFIX, "wither");
+        map.put(ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH) + POSITIVE_SUFFIX, "health_boost");
+        map.put(ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH) + NEGATIVE_SUFFIX, "wither");
 
-        map.put(Registry.ATTRIBUTE.getKey(Attributes.ATTACK_DAMAGE) + POSITIVE_SUFFIX, "strength");
-        map.put(Registry.ATTRIBUTE.getKey(Attributes.ATTACK_DAMAGE) + NEGATIVE_SUFFIX, "weakness");
+        map.put(ForgeRegistries.ATTRIBUTES.getKey(Attributes.ATTACK_DAMAGE) + POSITIVE_SUFFIX, "strength");
+        map.put(ForgeRegistries.ATTRIBUTES.getKey(Attributes.ATTACK_DAMAGE) + NEGATIVE_SUFFIX, "weakness");
 
-        map.put(Registry.ATTRIBUTE.getKey(Attributes.MOVEMENT_SPEED) + POSITIVE_SUFFIX, "speed");
-        map.put(Registry.ATTRIBUTE.getKey(Attributes.MOVEMENT_SPEED) + NEGATIVE_SUFFIX, "slowness");
+        map.put(ForgeRegistries.ATTRIBUTES.getKey(Attributes.MOVEMENT_SPEED) + POSITIVE_SUFFIX, "speed");
+        map.put(ForgeRegistries.ATTRIBUTES.getKey(Attributes.MOVEMENT_SPEED) + NEGATIVE_SUFFIX, "slowness");
 
         return new EffectIconsConfig(map);
     }
 
     public static String getEffectIcon(String attributeDescriptionId, double modifier) {
         if(DATA == null) return null;
-        LukasNutrients.LOGGER.debug(attributeDescriptionId);
         return DATA.effectIconMapping.getOrDefault(attributeDescriptionId + (modifier >= 0 ? POSITIVE_SUFFIX : NEGATIVE_SUFFIX), "regeneration");
     }
 }

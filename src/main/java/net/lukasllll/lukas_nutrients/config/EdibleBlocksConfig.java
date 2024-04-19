@@ -3,8 +3,8 @@ package net.lukasllll.lukas_nutrients.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
-import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.File;
 import java.io.FileReader;
@@ -55,7 +55,7 @@ public class EdibleBlocksConfig{
         HashMap<String, Integer> map = new HashMap<>();
 
         //minecraft
-        map.put(Registry.BLOCK.getKey(Blocks.CAKE).toString(), 7);
+        map.put(ForgeRegistries.BLOCKS.getKey(Blocks.CAKE).toString(), 7);
 
         //farmers delight
         String farmersdelightNamespace = "farmersdelight";

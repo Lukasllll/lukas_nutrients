@@ -2,8 +2,6 @@ package net.lukasllll.lukas_nutrients.client.graphics.gui.screens;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
@@ -13,15 +11,14 @@ import net.lukasllll.lukas_nutrients.config.EffectIconsConfig;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.contents.TranslatableContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.awt.*;
@@ -93,39 +90,38 @@ public class NutrientScreen extends Screen {
     }
 
     @Override
-    public void render(PoseStack pose, int mouseX, int mouseY, float partialTick) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         tooltip = null;
         if(startX == 0) calculateDimensions();
-        renderBackground(pose);
-        renderDietEffects(pose, mouseX, mouseY);
-        renderLeftModule(pose);
-        renderMiddleModule(pose);
-        renderRightModule(pose);
+        renderBackground(graphics);
+        renderDietEffects(graphics, mouseX, mouseY);
+        renderLeftModule(graphics);
+        renderMiddleModule(graphics);
+        renderRightModule(graphics);
         if(tooltip != null)
-            renderComponentTooltip(pose, tooltip, mouseX, mouseY);
-        super.render(pose, mouseX, mouseY, partialTick);
+            graphics.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);
+        super.render(graphics, mouseX, mouseY, partialTick);
     }
 
-    public void renderLeftModule(PoseStack pose) {
+    public void renderLeftModule(GuiGraphics graphics) {
         int currentY = startY + verticalSpacing[0];
         for(int i = 0; i < Groups.length; i++) {
             //render Item
-            this.itemRenderer.renderGuiItem(Groups[i].getDisplayItemStack(), startX + horizontalSpacing[0], currentY);
+            graphics.renderItem(Groups[i].getDisplayItemStack(), startX + horizontalSpacing[0], currentY);
             //render Name
-            this.font.draw(pose, Groups[i].getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR);
+            graphics.drawString(this.font, Groups[i].getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
             currentY += 16 + verticalSpacing[1];
         }
         currentY -= verticalSpacing[1];
         currentY += verticalSpacing[2] + 2 + verticalSpacing[3];
 
         //render sum symbol
-        RenderSystem.setShaderTexture(0, ICONS);
-        GuiComponent.blit(pose, startX + horizontalSpacing[0], currentY, 16, 16, 0, 0, 16, 16, 256, 256);
+        graphics.blit(ICONS, startX + horizontalSpacing[0], currentY, 16, 16, 0, 0, 16, 16, 256, 256);
         //render Diet
-        this.font.draw(pose, "Diet", startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR);
+        graphics.drawString(this.font, "Diet", startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
     }
 
-    public void renderMiddleModule(PoseStack pose) {
+    public void renderMiddleModule(GuiGraphics graphics) {
         ResourceLocation[] nutrientBars = getGroupBarLocations();
         ResourceLocation effectBar = getDietEffectBarLocation();
         ResourceLocation[] arrows = getBarArrowsLocation();
@@ -135,37 +131,32 @@ public class NutrientScreen extends Screen {
         //draw nutrient amount bars
         for(int i = 0; i < Groups.length; i++) {
             //render empty bar
-            RenderSystem.setShaderTexture(0, nutrientBars[i]);
-            GuiComponent.blit(pose, currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
+            graphics.blit(nutrientBars[i], currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
 
             int amount = (int) ClientNutrientData.getPlayerNutrientAmounts()[i];
             int range = ClientNutrientData.getPlayerNutrientRanges()[i];
 
             int barLength = 1 + range + amount * 4;
             //render full bar
-            RenderSystem.setShaderTexture(0, nutrientBars[i]);
-            GuiComponent.blit(pose, currentX, currentY + 7, barLength, 5, 0, 0, barLength, 5, 256, 256);
+            graphics.blit(nutrientBars[i], currentX, currentY + 7, barLength, 5, 0, 0, barLength, 5, 256, 256);
             //render arrow
             if(barLength == 1) {
                 barLength += 1;
             } else if(barLength == 101) {
                 barLength -= 1;
             }
-            RenderSystem.setShaderTexture(0, arrows[ClientNutrientData.getPlayerNutrientScores()[i]]);
-            GuiComponent.blit(pose, currentX + barLength - 3, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
+            graphics.blit(arrows[ClientNutrientData.getPlayerNutrientScores()[i]], currentX + barLength - 3, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
             //render exhaustion bar
             double exhaustionLevel = ClientNutrientData.getPlayerExhaustionLevels()[i];
             barLength = (int) ((4.0 - exhaustionLevel)/4.0 * 98.0);
-            RenderSystem.setShaderTexture(0, ICONS);
-            GuiComponent.blit(pose, currentX, currentY + 12, barLength, 2, 16, 10, barLength, 2, 256, 256);
+            graphics.blit(ICONS, currentX, currentY + 12, barLength, 2, 16, 10, barLength, 2, 256, 256);
 
             currentY += 16 + verticalSpacing[1];
         }
         currentY -= verticalSpacing[1];
         currentY += verticalSpacing[2] + 2 + verticalSpacing[3];
         //draw diet effects bar
-        RenderSystem.setShaderTexture(0, effectBar);
-        GuiComponent.blit(pose, currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
+        graphics.blit(effectBar, currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
 
         int totalScore=ClientNutrientData.getTotalScore();
 
@@ -183,8 +174,7 @@ public class NutrientScreen extends Screen {
             effectsBarEndX = 10 * DietEffects.BASE_POINT + 1;
         }
 
-        RenderSystem.setShaderTexture(0, effectBar);
-        GuiComponent.blit(pose, currentX + effectsBarStartX, currentY + 7, effectsBarEndX - effectsBarStartX, 5, effectsBarStartX, 0, effectsBarEndX - effectsBarStartX, 5, 256, 256);
+        graphics.blit(effectBar, currentX + effectsBarStartX, currentY + 7, effectsBarEndX - effectsBarStartX, 5, effectsBarStartX, 0, effectsBarEndX - effectsBarStartX, 5, 256, 256);
 
         //draw diet effects bar arrow;
         int arrowArrayIndex = 1;
@@ -198,11 +188,10 @@ public class NutrientScreen extends Screen {
         if(totalScore == 0) arrowX += 1;
         else if(totalScore == 10) arrowX -= 1;
 
-        RenderSystem.setShaderTexture(0, arrows[arrowArrayIndex]);
-        GuiComponent.blit(pose, currentX + arrowX, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
+        graphics.blit(arrows[arrowArrayIndex], currentX + arrowX, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
     }
 
-    public void renderRightModule(PoseStack pose) {
+    public void renderRightModule(GuiGraphics graphics) {
 
         int currentY = startY + verticalSpacing[0];
         int currentX =  startX + horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3];
@@ -211,31 +200,29 @@ public class NutrientScreen extends Screen {
 
         for(int i = 0; i < Groups.length; i++) {
             //render box
-            RenderSystem.setShaderTexture(0, ICONS);
-            GuiComponent.blit(pose, currentX + 6, currentY + 2, 9, 11, 0, 16, 9, 11, 256, 256);
+            graphics.blit(ICONS, currentX + 6, currentY + 2, 9, 11, 0, 16, 9, 11, 256, 256);
             //render number
-            this.font.draw(pose, ""+ClientNutrientData.getPlayerNutrientScores()[i], currentX + 8, currentY + 4, TEXT_COLOR);
-            this.font.draw(pose, "/2", currentX + 17, currentY + 4, TEXT_COLOR);
+            graphics.drawString(this.font, ""+ClientNutrientData.getPlayerNutrientScores()[i], currentX + 8, currentY + 4, TEXT_COLOR, false);
+            graphics.drawString(this.font, "/2", currentX + 17, currentY + 4, TEXT_COLOR, false);
             currentY += 16 + verticalSpacing[1];
         }
         currentY -= verticalSpacing[1];
         currentY += verticalSpacing[2] + 2 + verticalSpacing[3];
         //render box
-        RenderSystem.setShaderTexture(0, ICONS);
-        GuiComponent.blit(pose, currentX, currentY + 2, 15, 11, 0, 27, 15, 11, 256, 256);
+        graphics.blit(ICONS, currentX, currentY + 2, 15, 11, 0, 27, 15, 11, 256, 256);
         //render number
         if(totalScore < 10) {
-            this.font.draw(pose, "" + totalScore, currentX + 5, currentY + 4, TEXT_COLOR);
+            graphics.drawString(this.font, "" + totalScore, currentX + 5, currentY + 4, TEXT_COLOR, false);
         } else {
-            this.font.draw(pose, "" + totalScore, currentX + 2, currentY + 4, TEXT_COLOR);
+            graphics.drawString(this.font, "" + totalScore, currentX + 2, currentY + 4, TEXT_COLOR, false);
         }
-        this.font.draw(pose, "/10", currentX + 17, currentY + 4, TEXT_COLOR);
+        graphics.drawString(this.font, "/10", currentX + 17, currentY + 4, TEXT_COLOR, false);
     }
 
     /*
     Renders the icons for currently active diet effect and sets the appropriate tooltip, if moused-over
      */
-    public void renderDietEffects(PoseStack pose, int mouseX, int mouseY) {
+    public void renderDietEffects(GuiGraphics graphics, int mouseX, int mouseY) {
         List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects = ClientNutrientData.getActiveDietEffects();
 
         int x = startX + totalWidth + 2;
@@ -245,16 +232,14 @@ public class NutrientScreen extends Screen {
 
         for(int i = 0; i < numberOfEffectsRendered; i++) {
             //background
-            RenderSystem.setShaderTexture(0, INVENTORY_LOCATION);
-            this.blit(pose, x, y, 0, 198, 32, 32);
+            graphics.blit(INVENTORY_LOCATION, x, y, 0, 198, 32, 32);
 
             //effect image
             ResourceLocation effectLocation = new ResourceLocation(
                     "minecraft","textures/mob_effect/" +
                     EffectIconsConfig.getEffectIcon(activeDietEffects.get(i).getLeft(), activeDietEffects.get(i).getRight()) + ".png");
 
-            RenderSystem.setShaderTexture(0, effectLocation);
-            this.blit(pose, x + 7, y + 7, 0, (float) 0.0, (float) 0.0, 18, 18, 18, 18);
+            graphics.blit(effectLocation, x + 7, y + 7, 0, (float) 0.0, (float) 0.0, 18, 18, 18, 18);
 
             /*
             The tooltip is just created here. It is rendered, once renderComponentTooltip is called
@@ -264,18 +249,18 @@ public class NutrientScreen extends Screen {
                 switch (activeDietEffects.get(i).getMiddle()) {
                     case ADDITION:
                         if(activeDietEffects.get(i).getRight() >= 0)
-                            tooltip.add(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + activeDietEffects.get(i).getRight()), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
+                            tooltip.add(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + activeDietEffects.get(i).getRight()), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         else
-                            tooltip.add(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight())), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
+                            tooltip.add(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight())), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         break;
                     case MULTIPLY_TOTAL:
                         if(activeDietEffects.get(i).getRight() >= 0)
-                            tooltip.add(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + activeDietEffects.get(i).getRight() * 100.0), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
+                            tooltip.add(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + activeDietEffects.get(i).getRight() * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         else
-                            tooltip.add(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight()) * 100.0), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
+                            tooltip.add(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight()) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         break;
                     case MULTIPLY_BASE:
-                        tooltip.add(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + activeDietEffects.get(i).getRight())) * 100.0), Component.translatable(Registry.ATTRIBUTE.get(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
+                        tooltip.add(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + activeDietEffects.get(i).getRight())) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
                         break;
                 }
             }
@@ -291,27 +276,26 @@ public class NutrientScreen extends Screen {
 
     //this function draws the background. Not very interesting.
     @Override
-    public void renderBackground(PoseStack pose) {
-        super.renderBackground(pose);
+    public void renderBackground(GuiGraphics graphics) {
+        super.renderBackground(graphics);
 
-        RenderSystem.setShaderTexture(0, BACKGROUND);
         //top line:
-        GuiComponent.blit(pose, startX, startY, 4, 4, 0, 0, 4, 4, 256, 256);  //left corner
-        GuiComponent.blit(pose, startX + 4, startY, totalWidth - 8, 4, 4, 0, 240, 4, 256, 256);    //main line
-        GuiComponent.blit(pose, startX + totalWidth - 4, startY, 4, 4, 244, 0, 4, 4, 256, 256);  //right corner
+        graphics.blit(BACKGROUND, startX, startY, 4, 4, 0, 0, 4, 4, 256, 256);  //left corner
+        graphics.blit(BACKGROUND, startX + 4, startY, totalWidth - 8, 4, 4, 0, 240, 4, 256, 256);    //main line
+        graphics.blit(BACKGROUND, startX + totalWidth - 4, startY, 4, 4, 244, 0, 4, 4, 256, 256);  //right corner
         //left line:
-        GuiComponent.blit(pose, startX, startY + 4, 4, totalHeight - 8, 0, 4, 4, 158, 256, 256);
+        graphics.blit(BACKGROUND, startX, startY + 4, 4, totalHeight - 8, 0, 4, 4, 158, 256, 256);
         //right line:
-        GuiComponent.blit(pose, startX + totalWidth - 4, startY + 4, 4, totalHeight - 8, 244, 4, 4, 158, 256, 256);
+        graphics.blit(BACKGROUND, startX + totalWidth - 4, startY + 4, 4, totalHeight - 8, 244, 4, 4, 158, 256, 256);
         //meat:
-        GuiComponent.blit(pose, startX + 4, startY + 4, totalWidth - 8, totalHeight - 8, 4, 4, 240, 158, 256, 256);
+        graphics.blit(BACKGROUND, startX + 4, startY + 4, totalWidth - 8, totalHeight - 8, 4, 4, 240, 158, 256, 256);
         //bottom line:
-        GuiComponent.blit(pose, startX, startY + totalHeight - 4, 4, 4, 0, 162, 4, 4, 256, 256);  //left corner
-        GuiComponent.blit(pose, startX + 4, startY + totalHeight - 4, totalWidth - 8, 4, 4, 162, 240, 4, 256, 256);    //main line
-        GuiComponent.blit(pose, startX + totalWidth -4, startY + totalHeight - 4, 4, 4, 244, 162, 4, 4, 256, 256);  //right corner
+        graphics.blit(BACKGROUND, startX, startY + totalHeight - 4, 4, 4, 0, 162, 4, 4, 256, 256);  //left corner
+        graphics.blit(BACKGROUND, startX + 4, startY + totalHeight - 4, totalWidth - 8, 4, 4, 162, 240, 4, 256, 256);    //main line
+        graphics.blit(BACKGROUND, startX + totalWidth -4, startY + totalHeight - 4, 4, 4, 244, 162, 4, 4, 256, 256);  //right corner
 
         //separator
-        GuiComponent.fill(pose, startX + 6, startY + verticalSpacing[0] + mainSectionHeight + verticalSpacing[2], startX + totalWidth - 6,  startY + verticalSpacing[0] + mainSectionHeight + verticalSpacing[2] + 2, SEPARATOR_COLOR);
+        graphics.fill(startX + 6, startY + verticalSpacing[0] + mainSectionHeight + verticalSpacing[2], startX + totalWidth - 6,  startY + verticalSpacing[0] + mainSectionHeight + verticalSpacing[2] + 2, SEPARATOR_COLOR);
 
     }
 

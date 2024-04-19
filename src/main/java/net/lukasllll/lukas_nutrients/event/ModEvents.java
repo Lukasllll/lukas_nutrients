@@ -57,6 +57,7 @@ public class ModEvents {
                 player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                     nutrients.recalculateAll();
                     nutrients.updateClient(player);
+                    DietEffects.removeAll(player);
                     DietEffects.apply(player);
                 });
             }

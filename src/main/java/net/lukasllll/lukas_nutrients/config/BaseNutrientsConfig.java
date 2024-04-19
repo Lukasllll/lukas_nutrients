@@ -3,8 +3,8 @@ package net.lukasllll.lukas_nutrients.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
-import net.minecraft.core.Registry;
 import net.minecraft.world.item.Items;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.File;
 import java.io.FileReader;
@@ -67,48 +67,48 @@ public class BaseNutrientsConfig{
         String none = "none";       //none is no official group, just a placeholder to assign specifically no nutrients to an item
 
         //minecraft food
-        map.put(Registry.ITEM.getKey(Items.APPLE).toString(), buildEntry(0.9, fruits));
-        map.put(Registry.ITEM.getKey(Items.CHORUS_FRUIT).toString(), buildEntry( 0.4, fruits));
-        map.put(Registry.ITEM.getKey(Items.MELON_SLICE).toString(), buildEntry( 0.9, fruits));
-        map.put(Registry.ITEM.getKey(Items.PUMPKIN).toString(), buildEntry( 1.0, fruits));
-        map.put(Registry.ITEM.getKey(Items.SWEET_BERRIES).toString(), buildEntry( 1.4, fruits));
-        map.put(Registry.ITEM.getKey(Items.GLOW_BERRIES).toString(), buildEntry( 0.9, fruits));
-        map.put(Registry.ITEM.getKey(Items.ENCHANTED_GOLDEN_APPLE).toString(), buildEntry( 0.9, fruits));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.APPLE).toString(), buildEntry(0.9, fruits));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.CHORUS_FRUIT).toString(), buildEntry( 0.4, fruits));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.MELON_SLICE).toString(), buildEntry( 0.9, fruits));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.PUMPKIN).toString(), buildEntry( 1.0, fruits));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.SWEET_BERRIES).toString(), buildEntry( 1.4, fruits));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.GLOW_BERRIES).toString(), buildEntry( 0.9, fruits));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.ENCHANTED_GOLDEN_APPLE).toString(), buildEntry( 0.9, fruits));
 
-        map.put(Registry.ITEM.getKey(Items.BREAD).toString(), buildEntry( 1.0, grains));
-        map.put(Registry.ITEM.getKey(Items.WHEAT).toString(), buildEntry( 0.43, grains));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.BREAD).toString(), buildEntry( 1.0, grains));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.WHEAT).toString(), buildEntry( 0.43, grains));
 
-        map.put(Registry.ITEM.getKey(Items.CHICKEN).toString(), buildEntry( 1.6, proteins));
-        map.put(Registry.ITEM.getKey(Items.PORKCHOP).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.MUTTON).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.BEEF).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.RABBIT).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.COD).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.SALMON).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.TROPICAL_FISH).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.PUFFERFISH).toString(), buildEntry( 1.5, proteins));
-        map.put(Registry.ITEM.getKey(Items.SPIDER_EYE).toString(), buildEntry( 0.9, proteins));
-        map.put(Registry.ITEM.getKey(Items.MILK_BUCKET).toString(), buildEntry( 0.1, proteins));
-        map.put(Registry.ITEM.getKey(Items.EGG).toString(), buildEntry( 0.5, proteins));
-        map.put(Registry.ITEM.getKey(Items.ROTTEN_FLESH).toString(), buildEntry( 0.5, proteins));
-        map.put(Registry.ITEM.getKey(Items.BONE).toString(), buildEntry( 0.2, proteins));
-
-
-        map.put(Registry.ITEM.getKey(Items.CARROT).toString(), buildEntry( 0.9, vegetables));
-        map.put(Registry.ITEM.getKey(Items.BEETROOT).toString(), buildEntry( 1.8, vegetables));
-        map.put(Registry.ITEM.getKey(Items.KELP).toString(), buildEntry( 0.1, vegetables));
-        map.put(Registry.ITEM.getKey(Items.POTATO).toString(), buildEntry( 0.7, vegetables));
-        map.put(Registry.ITEM.getKey(Items.POISONOUS_POTATO).toString(), buildEntry( 0.4, vegetables));
-        map.put(Registry.ITEM.getKey(Items.MUSHROOM_STEW).toString(), buildEntry( 1.0, vegetables));
-        map.put(Registry.ITEM.getKey(Items.RED_MUSHROOM).toString(), buildEntry( 0.54, vegetables));
-        map.put(Registry.ITEM.getKey(Items.BROWN_MUSHROOM).toString(), buildEntry( 1.0, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.CHICKEN).toString(), buildEntry( 1.6, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.PORKCHOP).toString(), buildEntry( 0.9, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.MUTTON).toString(), buildEntry( 0.9, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.BEEF).toString(), buildEntry( 0.9, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.RABBIT).toString(), buildEntry( 0.9, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.COD).toString(), buildEntry( 0.9, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.SALMON).toString(), buildEntry( 0.9, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.TROPICAL_FISH).toString(), buildEntry( 0.9, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.PUFFERFISH).toString(), buildEntry( 1.5, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.SPIDER_EYE).toString(), buildEntry( 0.9, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.MILK_BUCKET).toString(), buildEntry( 0.1, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.EGG).toString(), buildEntry( 0.5, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.ROTTEN_FLESH).toString(), buildEntry( 0.5, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.BONE).toString(), buildEntry( 0.2, proteins));
 
 
-        map.put(Registry.ITEM.getKey(Items.HONEY_BOTTLE).toString(), buildEntry( 2.0, sugars));
-        map.put(Registry.ITEM.getKey(Items.COCOA_BEANS).toString(), buildEntry( 1.0, sugars));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.CARROT).toString(), buildEntry( 0.9, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.BEETROOT).toString(), buildEntry( 1.8, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.KELP).toString(), buildEntry( 0.1, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.POTATO).toString(), buildEntry( 0.7, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.POISONOUS_POTATO).toString(), buildEntry( 0.4, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.MUSHROOM_STEW).toString(), buildEntry( 1.0, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.RED_MUSHROOM).toString(), buildEntry( 0.54, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.BROWN_MUSHROOM).toString(), buildEntry( 1.0, vegetables));
 
-        map.put(Registry.ITEM.getKey(Items.GLASS_BOTTLE).toString(), buildEntry( 0.0, none));
-        map.put(Registry.ITEM.getKey(Items.BOWL).toString(), buildEntry( 0.0, none));
+
+        map.put(ForgeRegistries.ITEMS.getKey(Items.HONEY_BOTTLE).toString(), buildEntry( 2.0, sugars));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.COCOA_BEANS).toString(), buildEntry( 1.0, sugars));
+
+        map.put(ForgeRegistries.ITEMS.getKey(Items.GLASS_BOTTLE).toString(), buildEntry( 0.0, none));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.BOWL).toString(), buildEntry( 0.0, none));
 
         //farmer's delight
         String farmersdelightNamespace = "farmersdelight";

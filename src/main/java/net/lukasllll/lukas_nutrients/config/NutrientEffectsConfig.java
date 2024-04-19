@@ -4,8 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffect;
-import net.minecraft.core.Registry;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import java.io.File;
 import java.io.FileReader;
@@ -80,18 +80,18 @@ public class NutrientEffectsConfig {
 
 
         ArrayList<ConfigNutrientEffect> baseEffectsList = new ArrayList<>();
-        baseEffectsList.add(new ConfigNutrientEffect(-1, -1, Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH).toString(), -4.0d, addition));
+        baseEffectsList.add(new ConfigNutrientEffect(-1, -1, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -4.0d, addition));
 
         ArrayList<ConfigNutrientEffect> nutrientEffectsList = new ArrayList<>();
-        nutrientEffectsList.add(new ConfigNutrientEffect(0,0, Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(0,1, Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(0,2, Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(0,3, Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect(0,0, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect(0,1, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect(0,2, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect(0,3, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
 
-        nutrientEffectsList.add(new ConfigNutrientEffect(7,10, Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH).toString(), 2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(8,10, Registry.ATTRIBUTE.getKey(Attributes.ATTACK_DAMAGE).toString(), 1.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(9,10, Registry.ATTRIBUTE.getKey(Attributes.MAX_HEALTH).toString(), 2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(10,10, Registry.ATTRIBUTE.getKey(Attributes.MOVEMENT_SPEED).toString(), 0.1d, multiply_total));
+        nutrientEffectsList.add(new ConfigNutrientEffect(7,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), 2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect(8,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.ATTACK_DAMAGE).toString(), 1.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect(9,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), 2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect(10,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MOVEMENT_SPEED).toString(), 0.1d, multiply_total));
 
         ConfigNutrientEffect[] baseEffects = baseEffectsList.toArray(ConfigNutrientEffect[]::new);
         ConfigNutrientEffect[] nutrientEffects = nutrientEffectsList.toArray(ConfigNutrientEffect[]::new);

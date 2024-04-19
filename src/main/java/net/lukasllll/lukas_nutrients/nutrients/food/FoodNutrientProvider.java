@@ -7,7 +7,6 @@ import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
@@ -18,11 +17,10 @@ import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.*;
-
-import net.minecraft.world.level.block.Blocks;
 
 public class FoodNutrientProvider {
     //this class provides (almost) every edible item (and some non-edible items) with NutrientProperties
@@ -38,7 +36,7 @@ public class FoodNutrientProvider {
         if(BaseNutrientsConfig.DATA == null) return;
 
         for(String key : BaseNutrientsConfig.DATA.baseNutrients.keySet()) {
-            Item item = Registry.ITEM.get(new ResourceLocation(key));                           //key is the full path (namespace:path) of the item e.g. "minecraft:apple"
+            Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(key));      //key is the full path (namespace:path) of the item e.g. "minecraft:apple"
             if(item == null || item == Items.AIR) continue;
 
             List<String> entry = BaseNutrientsConfig.DATA.baseNutrients.get(key);
@@ -59,7 +57,7 @@ public class FoodNutrientProvider {
         if(EdibleBlocksConfig.DATA == null) return;
 
         for(String key : EdibleBlocksConfig.DATA.edibleBlocks.keySet()) {
-            Block block = Registry.BLOCK.get(new ResourceLocation(key));        //key is the full path (namespace:path) of the block e.g. minecraft:cake
+            Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(key));        //key is the full path (namespace:path) of the block e.g. minecraft:cake
             if(block == null || block == Blocks.AIR) continue;
 
             Item blockItem = block.asItem();
@@ -151,7 +149,7 @@ public class FoodNutrientProvider {
         double largestTotalNutrientAmounts_0 = 0;
         //we now loop through each recipe to find the largest amount of nutrients they can provide
         for(Recipe<?> currentRecipe: recipes) {
-            int outputStackCount = currentRecipe.getResultItem().getCount();
+            int outputStackCount = currentRecipe.getResultItem(Minecraft.getInstance().level.registryAccess()).getCount();
             double[] currentRecipeNutrientAmounts = new double[NutrientGroup.getNutrientGroups().length]; //this saves the nutrient amount of the currentRecipe
             double currentRecipeTotalNutrientAmounts = 0;
             //for each ingredient
@@ -248,7 +246,7 @@ public class FoodNutrientProvider {
         Map<Item, List<Recipe<?>>> out = new HashMap<>();
 
         for(Recipe<?> currentRecipe: recipeManager.getRecipes()) {
-            ItemStack outputStack = currentRecipe.getResultItem();
+            ItemStack outputStack = currentRecipe.getResultItem(Minecraft.getInstance().level.registryAccess());
             if(outputStack == null || outputStack.getItem() == Items.AIR) {
                 continue;
             }
@@ -276,7 +274,7 @@ public class FoodNutrientProvider {
 
         for(Recipe<?> currentRecipe: recipeManager.getRecipes()) {
             if(currentRecipe.getType() != RecipeType.SMOKING) continue;
-            ItemStack outputStack = currentRecipe.getResultItem();
+            ItemStack outputStack = currentRecipe.getResultItem(Minecraft.getInstance().level.registryAccess());
             if(outputStack == null || outputStack.getItem() == Items.AIR) {
                 continue;
             }

@@ -20,6 +20,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 
 import java.util.Collection;
+import java.util.function.Supplier;
 
 public class NutrientsCommand {
 
@@ -54,13 +55,13 @@ public class NutrientsCommand {
 
     private static void logNutrientChange(CommandSourceStack source, ServerPlayer player, PlayerNutrients nutrients, String nutrientID, int amount) {
         if (source.getEntity() == player) {
-            source.sendSuccess(Component.literal("Set own " + nutrients.getDisplayName(nutrientID) + " to " + amount), true);
+            source.sendSuccess(() -> Component.literal("Set own " + nutrients.getDisplayName(nutrientID) + " to " + amount), true);
         } else {
             if (source.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
                 player.sendSystemMessage(Component.literal(nutrients.getDisplayName(nutrientID) + " was set to " + amount));
             }
 
-            source.sendSuccess(Component.literal("Set " + nutrients.getDisplayName(nutrientID) + " to " + amount + " for ").append(player.getDisplayName()), true);
+            source.sendSuccess(() -> Component.literal("Set " + nutrients.getDisplayName(nutrientID) + " to " + amount + " for ").append(player.getDisplayName()), true);
         }
 
     }
@@ -71,9 +72,9 @@ public class NutrientsCommand {
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 double amount = nutrients.getNutrientAmount(nutrientID);
                 if(source.getEntity() == player)
-                    source.sendSuccess(Component.literal("Own " + nutrients.getDisplayName(nutrientID) + ": " + amount), true);
+                    source.sendSuccess(() -> Component.literal("Own " + nutrients.getDisplayName(nutrientID) + ": " + amount), true);
                 else {
-                    source.sendSuccess(Component.empty().append(player.getDisplayName()).append(Component.literal(" " + nutrients.getDisplayName(nutrientID) + ": " + amount)), true);
+                    source.sendSuccess(() -> Component.empty().append(player.getDisplayName()).append(Component.literal(" " + nutrients.getDisplayName(nutrientID) + ": " + amount)), true);
                 }
             });
         }
@@ -96,9 +97,9 @@ public class NutrientsCommand {
                 }
                 message.append("]");
                 if(source.getEntity() == player)
-                    source.sendSuccess(Component.literal("Own nutrients: ").append(message), true);
+                    source.sendSuccess(() -> Component.literal("Own nutrients: ").append(message), true);
                 else {
-                    source.sendSuccess(Component.empty().append(player.getDisplayName()).append(Component.literal(" nutrients: ")).append(message), true);
+                    source.sendSuccess(() -> Component.empty().append(player.getDisplayName()).append(Component.literal(" nutrients: ")).append(message), true);
                 }
             });
         }
@@ -117,7 +118,8 @@ public class NutrientsCommand {
                 message += ", ";
         }
 
-        source.sendSuccess(Component.literal(message), true);
+        String finalMessage = message;
+        source.sendSuccess(() -> Component.literal(finalMessage), true);
 
         return Groups.length;
     }
@@ -125,7 +127,7 @@ public class NutrientsCommand {
     private int reloadConfigs(CommandSourceStack source) {
         Config.loadCommonConfigs();
         FoodNutrientProvider.reassignAllItems();
-        source.sendSuccess(Component.literal("Common configs reloaded!"), true);
+        source.sendSuccess(() -> Component.literal("Common configs reloaded!"), true);
         return 1;
     }
 

@@ -3,14 +3,17 @@ package net.lukasllll.lukas_nutrients.nutrients.player.effects;
 
 import net.lukasllll.lukas_nutrients.config.NutrientEffectsConfig;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
-import net.minecraft.core.Registry;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class DietEffects {
 
@@ -67,6 +70,30 @@ public class DietEffects {
     }
 
     /*
+    This function removes all diet effect attribute modifiers from a player.
+    Diet effect modifiers are identified via their name.
+    This function is needed to remove attribute modifiers that might not have been removed at ModEvents:onPlayerLeaveServer.
+    This can happen, because the event isn't fired, when the game closes unexpectedly (e.g. using alt+f4).
+     */
+    public static void removeAll(ServerPlayer player) {
+        for(Attribute attribute : ForgeRegistries.ATTRIBUTES.getValues()) {
+            if(player.getAttributes().hasAttribute(attribute)) {
+                AttributeInstance attributeInstance = player.getAttributes().getInstance(attribute);
+                Set<AttributeModifier> modifiers = attributeInstance.getModifiers();
+
+                if(modifiers == null) continue;
+
+                for(AttributeModifier modifier : modifiers) {
+                    if(modifier.getName().equals(DietEffect.EFFECT_NAME)) {
+                        attributeInstance.removeModifier(modifier);
+                    }
+                }
+
+            }
+        }
+    }
+
+    /*
     returns a list with all important information about active attributeModifiers. Similar modifiers are combined.
     baseEffects are ignored for this list.
      */
@@ -102,7 +129,7 @@ public class DietEffects {
 
         ArrayList< Triple<String, AttributeModifier.Operation, Double> > out = new ArrayList<>();
         for(DietEffect effect : activeEffects) {
-            out.add(Triple.of(Registry.ATTRIBUTE.getKey(effect.getAttributeModifier().getAttribute()).toString(),
+            out.add(Triple.of(ForgeRegistries.ATTRIBUTES.getKey(effect.getAttributeModifier().getAttribute()).toString(),
                     effect.getAttributeModifier().getOperation(),
                     effect.getAttributeModifier().getAmount()));
         }
