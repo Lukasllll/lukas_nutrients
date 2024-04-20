@@ -40,9 +40,18 @@ public class DietEffects {
         dietEffects = NutrientEffectsConfig.DATA.getNutrientEffects();
     }
 
+    /*
+    The apply method is split into two, so that you can manually specify, what the previousMaxHealth was. This is
+    useful, when all effects have previously been removed e.g. using removeAll. If the previousMaxHealth is not manually
+    specified in such a case, just calling apply(player) may lead to the player gaining health.
+    Otherwise, just call apply(player) and it will probably be fine.
+     */
     public static void apply(ServerPlayer player) {
-
         int previousMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
+        apply(player, previousMaxHealth);
+    }
+
+    public static void apply(ServerPlayer player, int previousMaxHealth) {
 
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
             int totalDietScore = nutrients.getTotalScore();
@@ -55,7 +64,7 @@ public class DietEffects {
         });
 
         int currentMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
-
+        //heals the player if they gain max_health or caps the current health at max_health if the player lost max_health
         if(currentMaxHealth > previousMaxHealth) {
             player.heal(currentMaxHealth - previousMaxHealth);
         } else if(previousMaxHealth > currentMaxHealth) {
@@ -88,7 +97,6 @@ public class DietEffects {
                         attributeInstance.removeModifier(modifier);
                     }
                 }
-
             }
         }
     }
