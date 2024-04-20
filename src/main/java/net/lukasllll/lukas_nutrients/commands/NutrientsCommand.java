@@ -133,7 +133,7 @@ public class NutrientsCommand {
         for(ServerPlayer player : players) {
             DietEffects.removeAll(player);
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
-                nutrients.recalculateAll();
+                nutrients.reload();
                     });
             DietEffects.apply(player);
         }

@@ -8,6 +8,9 @@ import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodData;
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.HashMap;
 
 public class PlayerNutrients {
 
@@ -35,6 +38,37 @@ public class PlayerNutrients {
         this.setToDefault();
     }
 
+    /*
+    is called during the /nutrients reload command
+    Fetches the NutrientGroups. If there is no change in the amount of groups and their ids, it just recalculatesAll.
+    If something changed, it saves all nutrient amounts and exhaustionLevels in a temporary HashMap with the nutrientID as key.
+    It then saves the new groups and sets everything to its default value. Then the method goes through the nutrientIDs
+    and looks if any of them have been present before the reload. If that's the case, it sets the nutrient amount and
+    exhaustion back to what it was before the reload.
+     */
+    public void reload() {
+        HashMap<String, Pair<Double, Double>> previousAmountsAndExhaustion = new HashMap<>();
+        for(int i=0; i<groups.length; i++) {
+            previousAmountsAndExhaustion.put(groups[i].getID(), Pair.of(amounts[i], exhaustionLevels[i]));
+        }
+
+        this.groups = NutrientGroup.getNutrientGroups();
+        this.amounts = new double[this.groups.length];
+        this.exhaustionLevels = new double[this.groups.length];
+        this.ranges = new int[this.groups.length];
+        this.scores = new int[this.groups.length];
+
+        totalScore = 0;
+
+        this.setToDefault();
+
+        for(int i=0; i<groups.length; i++) {
+            if(previousAmountsAndExhaustion.containsKey(groups[i].getID())) {
+                exhaustionLevels[i] = previousAmountsAndExhaustion.get(groups[i].getID()).getRight();
+                setAmount(i, previousAmountsAndExhaustion.get(groups[i].getID()).getLeft());
+            }
+        }
+    }
 
     public void recalculateAll() {
         for(int i = 0; i< groups.length; i++) {
@@ -203,7 +237,7 @@ public class PlayerNutrients {
 
     //sends a packet to the client containing all relevant information
     public void updateClient(ServerPlayer player) {
-        ModMessages.sendToPlayer(new NutrientsDataSyncS2CPacket(getNutrientAmounts(), getExhaustionLevels(), getNutrientRanges(), getNutrientScores(), getTotalScore(), DietEffects.getSimplifiedList(player)), player);
+        ModMessages.sendToPlayer(new NutrientsDataSyncS2CPacket(groups, getNutrientAmounts(), getExhaustionLevels(), getNutrientRanges(), getNutrientScores(), getTotalScore(), DietEffects.getSimplifiedList(player)), player);
         dirty = false;
     }
 
