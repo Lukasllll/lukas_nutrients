@@ -1,5 +1,6 @@
 package net.lukasllll.lukas_nutrients.event;
 
+import net.lukasllll.lukas_nutrients.BasicGameTest;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.commands.NutrientsCommand;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
@@ -13,17 +14,18 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegisterCommandsEvent;
+import net.minecraftforge.event.RegisterGameTestsEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEntityUseItemEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.event.entity.player.PlayerEvent;
-import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
 import net.minecraftforge.server.command.ConfigCommand;
 
 @Mod.EventBusSubscriber(modid = LukasNutrients.MOD_ID)
@@ -122,6 +124,10 @@ public class ModEvents {
                 DietEffects.apply(player);
             });
         }
+    }
+    @SubscribeEvent
+    public static void onRegisterGameTests(RegisterGameTestsEvent event){
+        event.register(BasicGameTest.class);
     }
 
 }
