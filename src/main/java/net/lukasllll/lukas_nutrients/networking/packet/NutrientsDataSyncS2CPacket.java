@@ -14,7 +14,7 @@ import java.util.function.Supplier;
 
 public class NutrientsDataSyncS2CPacket {
 
-    private static NutrientGroup[] Groups= NutrientGroup.getNutrientGroups();
+    private final NutrientGroup[] nutrientGroups;
 
     private final double[] nutrientAmounts;
     private final double[] exhaustionLevels;
@@ -23,8 +23,9 @@ public class NutrientsDataSyncS2CPacket {
     private int totalScore;
     List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects;
 
-    public NutrientsDataSyncS2CPacket(double[] amounts, double[] exhaustionLevels, int[] ranges, int[] scores, int totalScore,
+    public NutrientsDataSyncS2CPacket(NutrientGroup[] nutrientGroups, double[] amounts, double[] exhaustionLevels, int[] ranges, int[] scores, int totalScore,
                                       List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects) {
+        this.nutrientGroups = nutrientGroups;
         this.nutrientAmounts = amounts;
         this.exhaustionLevels = exhaustionLevels;
         this.nutrientRanges = ranges;
@@ -34,10 +35,15 @@ public class NutrientsDataSyncS2CPacket {
     }
 
     public NutrientsDataSyncS2CPacket(FriendlyByteBuf buf) {
-        this.nutrientAmounts = new double[Groups.length];
-        this.exhaustionLevels = new double[Groups.length];
-        this.nutrientRanges = new int[Groups.length];
-        this.nutrientScores = new int[Groups.length];
+        int tempArrayLength = buf.readInt();
+        this.nutrientGroups = new NutrientGroup[tempArrayLength];
+        for(int i=0; i < tempArrayLength; i++) {
+            this.nutrientGroups[i] = new NutrientGroup(buf);
+        }
+        this.nutrientAmounts = new double[nutrientGroups.length];
+        this.exhaustionLevels = new double[nutrientGroups.length];
+        this.nutrientRanges = new int[nutrientGroups.length];
+        this.nutrientScores = new int[nutrientGroups.length];
         this.activeDietEffects = new ArrayList<>();
         for(int i=0; i< nutrientAmounts.length; i++) {
             this.nutrientAmounts[i] = buf.readDouble();
@@ -59,6 +65,10 @@ public class NutrientsDataSyncS2CPacket {
     }
 
     public void toBytes(FriendlyByteBuf buf) {
+        buf.writeInt(nutrientGroups.length);
+        for(int i=0; i < nutrientGroups.length; i++) {
+            nutrientGroups[i].toBytes(buf);
+        }
         for(int i=0; i< nutrientAmounts.length; i++) {
             buf.writeDouble(nutrientAmounts[i]);
             buf.writeDouble(exhaustionLevels[i]);
@@ -80,7 +90,7 @@ public class NutrientsDataSyncS2CPacket {
         NetworkEvent.Context context = supplier.get();;
         context.enqueueWork(() -> {
             //CLIENT CODE
-            ClientNutrientData.set(nutrientAmounts, exhaustionLevels, nutrientRanges, nutrientScores, totalScore, activeDietEffects);
+            ClientNutrientData.set(nutrientGroups, nutrientAmounts, exhaustionLevels, nutrientRanges, nutrientScores, totalScore, activeDietEffects);
         });
 
         return true;

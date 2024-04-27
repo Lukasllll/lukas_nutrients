@@ -12,6 +12,7 @@ import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -59,8 +60,9 @@ public class ModEvents {
                 player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                     nutrients.recalculateAll();
                     nutrients.updateClient(player);
+                    int previousMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
                     DietEffects.removeAll(player);
-                    DietEffects.apply(player);
+                    DietEffects.apply(player, previousMaxHealth);
                 });
             }
         }

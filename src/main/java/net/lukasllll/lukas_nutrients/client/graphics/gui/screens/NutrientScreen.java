@@ -14,7 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -47,12 +46,12 @@ public class NutrientScreen extends Screen {
     private static final int TEXT_COLOR = new Color(63, 63, 63).getRGB();
     private static final int SEPARATOR_COLOR = new Color(139, 139, 139).getRGB();
 
-    private static NutrientGroup[] Groups;
+    private NutrientGroup[] nutrientGroups;
 
-    private static NativeImage ICONS_BASE_IMAGE = null;
-    private static ResourceLocation[] GroupBarLocations;
-    private static ResourceLocation DietEffectBarLocation;
-    private static ResourceLocation[] BarArrowsLocation;
+    private NativeImage iconsBaseImage = null;
+    private ResourceLocation[] groupBarLocations;
+    private ResourceLocation dietEffectBarLocation;
+    private ResourceLocation[] barArrowsLocation;
 
 
     private int leftModuleWidth, middleModuleWidth, rightModuleWidth;
@@ -67,7 +66,7 @@ public class NutrientScreen extends Screen {
 
     public NutrientScreen() {
         super(TITLE);
-        Groups = ClientNutrientData.getFoodGroups();
+        nutrientGroups = ClientNutrientData.getNutrientGroups();
     }
 
     @Override
@@ -105,11 +104,11 @@ public class NutrientScreen extends Screen {
 
     public void renderLeftModule(GuiGraphics graphics) {
         int currentY = startY + verticalSpacing[0];
-        for(int i = 0; i < Groups.length; i++) {
+        for(int i = 0; i < nutrientGroups.length; i++) {
             //render Item
-            graphics.renderItem(Groups[i].getDisplayItemStack(), startX + horizontalSpacing[0], currentY);
+            graphics.renderItem(nutrientGroups[i].getDisplayItemStack(), startX + horizontalSpacing[0], currentY);
             //render Name
-            graphics.drawString(this.font, Groups[i].getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+            graphics.drawString(this.font, nutrientGroups[i].getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
             currentY += 16 + verticalSpacing[1];
         }
         currentY -= verticalSpacing[1];
@@ -129,7 +128,7 @@ public class NutrientScreen extends Screen {
         int currentY = startY + verticalSpacing[0];
         int currentX =  startX + horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2];
         //draw nutrient amount bars
-        for(int i = 0; i < Groups.length; i++) {
+        for(int i = 0; i < nutrientGroups.length; i++) {
             //render empty bar
             graphics.blit(nutrientBars[i], currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
 
@@ -198,7 +197,7 @@ public class NutrientScreen extends Screen {
 
         int totalScore = ClientNutrientData.getTotalScore();
 
-        for(int i = 0; i < Groups.length; i++) {
+        for(int i = 0; i < nutrientGroups.length; i++) {
             //render box
             graphics.blit(ICONS, currentX + 6, currentY + 2, 9, 11, 0, 16, 9, 11, 256, 256);
             //render number
@@ -310,7 +309,7 @@ public class NutrientScreen extends Screen {
         //the total width with the spacing between modules
         totalWidth = horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3] + rightModuleWidth + horizontalSpacing[4];
 
-        NutrientGroup[] Groups = ClientNutrientData.getFoodGroups();
+        NutrientGroup[] Groups = ClientNutrientData.getNutrientGroups();
         //the main section contains the food groups and their bars, its height depends on how many food groups there are.
         mainSectionHeight = Groups.length * (16 + verticalSpacing[1]) - verticalSpacing[1];
         //the bottom section contains the sum score of all food groups. It's always 16 pixels high
@@ -328,8 +327,8 @@ public class NutrientScreen extends Screen {
     //the longest food group name is. This function returns exactly that.
     private int findLongestTextDisplayWidth() {
         int longest=0;
-        for(int i=0; i< Groups.length; i++) {
-            int textDisplayWidth = this.font.width(Groups[i].getDisplayname());
+        for(int i = 0; i< nutrientGroups.length; i++) {
+            int textDisplayWidth = this.font.width(nutrientGroups[i].getDisplayname());
             if(textDisplayWidth > longest) {
                 longest = textDisplayWidth;
             }
@@ -337,43 +336,43 @@ public class NutrientScreen extends Screen {
         return longest;
     }
 
-    private static ResourceLocation[] getGroupBarLocations() {
-        if(GroupBarLocations == null) {
-            GroupBarLocations = new ResourceLocation[Groups.length];
-            for(int i = 0; i < Groups.length; i++) {
-                GroupBarLocations[i] = createNutrientBar(Groups[i]);
+    private ResourceLocation[] getGroupBarLocations() {
+        if(groupBarLocations == null) {
+            groupBarLocations = new ResourceLocation[nutrientGroups.length];
+            for(int i = 0; i < nutrientGroups.length; i++) {
+                groupBarLocations[i] = createNutrientBar(nutrientGroups[i]);
             }
         }
 
-        return GroupBarLocations;
+        return groupBarLocations;
     }
 
-    private static ResourceLocation[] getBarArrowsLocation() {
+    private ResourceLocation[] getBarArrowsLocation() {
         int[] hues = {
                 0,          //red
                 44,         //yellow
                 114         //green
         };
 
-        if(BarArrowsLocation == null) {
-            BarArrowsLocation = new ResourceLocation[hues.length];
+        if(barArrowsLocation == null) {
+            barArrowsLocation = new ResourceLocation[hues.length];
             for(int i = 0; i < hues.length; i++) {
-                BarArrowsLocation[i] = createBarArrow(hues[i]);
+                barArrowsLocation[i] = createBarArrow(hues[i]);
             }
         }
 
-        return BarArrowsLocation;
+        return barArrowsLocation;
     }
 
-    private static ResourceLocation getDietEffectBarLocation() {
-        if(DietEffectBarLocation == null) {
-            DietEffectBarLocation = createDietEffectsBar();
+    private ResourceLocation getDietEffectBarLocation() {
+        if(dietEffectBarLocation == null) {
+            dietEffectBarLocation = createDietEffectsBar();
         }
 
-        return DietEffectBarLocation;
+        return dietEffectBarLocation;
     }
 
-    private static ResourceLocation createDietEffectsBar() {
+    private ResourceLocation createDietEffectsBar() {
         int[] hues = {
                 0,          //red
                 44,         //yellow
@@ -440,7 +439,7 @@ public class NutrientScreen extends Screen {
         return out;
     }
 
-    private static ResourceLocation createNutrientBar(NutrientGroup group) {
+    private ResourceLocation createNutrientBar(NutrientGroup group) {
         int[] hues = {
                 0,          //red
                 44,         //yellow
@@ -515,7 +514,7 @@ public class NutrientScreen extends Screen {
         return out;
     }
 
-    private static ResourceLocation createBarArrow(int hue) {
+    private ResourceLocation createBarArrow(int hue) {
         int saturation = 87;
 
         String locationPath = "textures/gui/generated/bar_arrow_" + hue;
@@ -582,11 +581,11 @@ public class NutrientScreen extends Screen {
 
     //when first called, loads a NativeImage of the .png containing the icons and bars
     //it then returns that NativeImage
-    private static NativeImage getIconsBaseImage() {
-        if(ICONS_BASE_IMAGE == null) {
-            ICONS_BASE_IMAGE = NativeImageLoader.loadFromPath(ICONS);
+    private NativeImage getIconsBaseImage() {
+        if(iconsBaseImage == null) {
+            iconsBaseImage = NativeImageLoader.loadFromPath(ICONS);
         }
 
-        return ICONS_BASE_IMAGE;
+        return iconsBaseImage;
     }
 }

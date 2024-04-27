@@ -7,7 +7,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import java.util.List;
 
 public class ClientNutrientData {
-    private static NutrientGroup[] Groups= NutrientGroup.getNutrientGroups();
+    private static NutrientGroup[] Groups;
     private static double[] amounts;
     private static double[] exhaustionLevels;
     private static int[] ranges;
@@ -16,7 +16,8 @@ public class ClientNutrientData {
     private static List<Triple<String, AttributeModifier.Operation, Double>> activeEffects;
 
 
-    public static void set(double[] amounts, double exhaustionLevels[], int[] ranges, int[] scores, int totalScore, List<Triple<String, AttributeModifier.Operation, Double>> activeEffects) {
+    public static void set(NutrientGroup[] Groups, double[] amounts, double exhaustionLevels[], int[] ranges, int[] scores, int totalScore, List<Triple<String, AttributeModifier.Operation, Double>> activeEffects) {
+        ClientNutrientData.Groups = Groups;
         ClientNutrientData.amounts = amounts;
         ClientNutrientData.exhaustionLevels = exhaustionLevels;
         ClientNutrientData.ranges = ranges;
@@ -46,7 +47,7 @@ public class ClientNutrientData {
         return ClientNutrientData.totalScore;
     }
 
-    public static NutrientGroup[] getFoodGroups() {return Groups;}
+    public static NutrientGroup[] getNutrientGroups() {return Groups;}
 
     public static List<Triple<String, AttributeModifier.Operation, Double>> getActiveDietEffects() {
         return activeEffects;

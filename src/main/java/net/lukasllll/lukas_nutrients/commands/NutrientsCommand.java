@@ -16,9 +16,11 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.GameRules;
 
 import java.util.Collection;
+import java.util.List;
 
 public class NutrientsCommand {
 
@@ -126,6 +128,19 @@ public class NutrientsCommand {
         Config.loadCommonConfigs();
         FoodNutrientProvider.reassignAllItems();
         source.sendSuccess(() -> Component.literal("Common configs reloaded!"), true);
+        //remove all diet effects and recalculate everything.
+        source.sendSuccess(() -> Component.literal("Resetting all diet effects..."), true);
+        List<ServerPlayer> players = source.getServer().getPlayerList().getPlayers();
+        for(ServerPlayer player : players) {
+            int previousMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
+            DietEffects.removeAll(player);
+            player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
+                nutrients.reload();
+                    });
+            DietEffects.apply(player, previousMaxHealth);
+        }
+        source.sendSuccess(() -> Component.literal("Diet effects have been reset for " + players.size() + (players.size() == 1 ? " player" : " players") + "!"), true);
+
         return 1;
     }
 
