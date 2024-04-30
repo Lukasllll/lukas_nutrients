@@ -3,11 +3,13 @@ package net.lukasllll.lukas_nutrients.event;
 import com.mojang.datafixers.util.Either;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
+import net.lukasllll.lukas_nutrients.client.graphics.gui.NutrientButton;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.screens.NutrientScreen;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
@@ -16,6 +18,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.RenderTooltipEvent;
+import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -23,8 +26,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ClientEvents {
+
     @Mod.EventBusSubscriber(modid = LukasNutrients.MOD_ID, value = Dist.CLIENT)
     public static class ClientForgeEvents {
+
+        /*
+        add a NutrientButton to the inventory screen
+         */
+        @SubscribeEvent
+        public static void onInitScreen(ScreenEvent.Init.Post event) {
+            if(!(event.getScreen() instanceof InventoryScreen)) return;
+            InventoryScreen screen = (InventoryScreen) event.getScreen();
+            NutrientButton nutrientButton = new NutrientButton(screen);
+            event.addListener(nutrientButton);
+        }
 
         @SubscribeEvent
         public static void onKeyRegister(RegisterKeyMappingsEvent event) {
