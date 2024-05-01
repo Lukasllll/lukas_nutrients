@@ -1,73 +1,111 @@
 package net.lukasllll.lukas_nutrients;
 
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
-
-import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.common.util.LogicalSidedProvider;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
+import net.minecraftforge.server.ServerLifecycleHooks;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.commands.Commands;
 import net.minecraft.world.entity.player.Player;
-
-
 
 @PrefixGameTestTemplate(false)
 @GameTestHolder(LukasNutrients.MOD_ID)
 public class BasicGameTest {
-  // @PrefixGameTestTemplate(false)
-  // @GameTest(template ="faildemo")
-  @GameTest(template ="faildemo")
-  public static void demoTest(GameTestHelper helper){
-    LukasNutrients.LOGGER.info("shits fucked");
-    helper.succeedIf(() -> helper.assertBlock(new BlockPos(1, 1, 1), b -> b == Blocks.AIR, "Block was not air"));
+
+  @GameTest(template = "2x2empty")
+  public static void TestSetCommand(GameTestHelper helper) {
+    LukasNutrients.LOGGER.info("Initialising TestSetCommand gametest");
+
+    /**
+     * MockPlayer creation failing might be out of our control.
+     * So far I have only found one repo actually using it (WilderWild and it's the
+     * fabric variant of GameTestHelper), but versions >1.20.1 (which also won't
+     * build for me). Additionally NeoForge marked makeMockServerPlayerInLevel as
+     * obsolete. Instead the Test will be ran on the first connected OP player that
+     * is in the Player list.
+     * 
+     * makeMockServerPlayerInLevel():
+     * - Fails on MC 1.20.1
+     * - Fails on Forge 47.2.0 to 47.2.30
+     * - Fails in Singleplayer and Multiplayer
+     **/
+    // ServerPlayer mockplayer = helper.makeMockServerPlayerInLevel();
+
+    ServerPlayer mockplayer = findAnOp();
+    if (mockplayer == null) {
+      helper.fail("TestSetCommand failed! No OP player connected!");
+    }
+    String opPlayer = (mockplayer.getName()).getString();
+
+    String nutrientID = "fruits";
+
+    LukasNutrients.LOGGER.info("TestSetCommand: Testing valid values");
+    for (int i = 1; i <= 24; i += 1) {
+      final int nurishmentVal = i;
+
+      String command = String.format("nutrients set %s %s %s", opPlayer, nutrientID, nurishmentVal);
+      runMockPlayerCommand(mockplayer, command);
+
+      mockplayer.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
+        double actualNurishment = nutrients.getNutrientAmount(nutrientID);
+        if (actualNurishment != Double.valueOf(nurishmentVal)) {
+          helper.fail(String.format("Failed TestSetCommand. Expected %s, actual %s", Double.toString(nurishmentVal),
+              Double.toString(actualNurishment)));
+        }
+      });
+    }
+
+    LukasNutrients.LOGGER.info("TestSetCommand: Testing invalid value");
+    int nurishmentVal = 10;
+    String command = String.format("nutrients set %s %s %s", opPlayer, nutrientID, nurishmentVal);
+    runMockPlayerCommand(mockplayer, command);
+    Object[] badArray = { 99, 2.0, "I'm a String" };
+
+    for (Object arrEntry : badArray) {
+      command = String.format("nutrients set Dev %s %s", nutrientID, arrEntry.toString());
+      runMockPlayerCommand(mockplayer, command);
+      mockplayer.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
+        double actualNurishment = nutrients.getNutrientAmount(nutrientID);
+        if (actualNurishment != Double.valueOf(nurishmentVal)) {
+          helper.fail(String.format("Failed TestSetCommand. Expected %s, actual %s", Double.toString(nurishmentVal),
+              Double.toString(actualNurishment)));
+        }
+      });
+    }
+    helper.succeed();
   }
 
-   @GameTest(template="2x2empty") 
-   public static void doTest(GameTestHelper helper){
-      // throw new UnsupportedOperationException();
-      LukasNutrients.LOGGER.info("Initialising basic gametest");
-        // var mockplayer = helper.makeMockSurvivalPlayer();
-        var mockplayer = helper.makeMockSurvivalPlayer();
+  private static ServerPlayer getServerPlayerByName(String playerName) {
+    MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+    ServerPlayer player = server.getPlayerList().getPlayerByName(playerName);
+    return player;
+  }
 
-        // this apperently should run a command
-      String command="nutriens set @s fruits 21";
+  private static ServerPlayer findAnOp() {
+    MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+    PlayerList playerList = server.getPlayerList();
+    for (ServerPlayer player : playerList.getPlayers()) {
+      if (player.hasPermissions(4)) {
+        return player;
+      }
+    }
+    ServerPlayer notThere = null;
+    return notThere;
+  }
 
-      // trying to get the nutrientvalue of player
-      var hey=runMockPlayerCommand(mockplayer, "say hey");
-      var reload=runMockPlayerCommand(mockplayer, "nutrients reload");
-      var setOut = runMockPlayerCommand(mockplayer, command);
-      //belongs to runnign command
-      
-      // trying to get some entitydata. maybe nutrients need to be manually intialized for th emock player?
-      var test = mockplayer.getEntityData();
-
-      var ugly=runMockPlayerCommand(mockplayer, "nutrients get @s fruits");
-      var nutrientID="fruits";
-      mockplayer.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
-        double amount = nutrients.getNutrientAmount(nutrientID);
-        LukasNutrients.LOGGER.info(Double.toString(amount));
-      });
-
-      helper.fail("designated epic fail :)");
-      // currently still garbage
-        // helper.succeedIf(() -> helper.assertEntityProperty(mockplayer, null,"lukas_nutrients_nutrients_sugar");, b -> b == Blocks.AIR, "Block was not air"));
-
-   }
-
-   private static int runMockPlayerCommand(Player mockplayer, String command){
-      CommandSourceStack commandSourceStack = mockplayer.createCommandSourceStack().withSuppressedOutput().withPermission(4);
-      CommandDispatcher<CommandSourceStack> commanddispatcher = mockplayer.getServer().getCommands().getDispatcher();
-      ParseResults<CommandSourceStack> results = commanddispatcher.parse(command, commandSourceStack);
-      int result = mockplayer.getServer().getCommands().performCommand(results, command);
-      LukasNutrients.LOGGER.info("ran \'"+command+"\' for mockplayer");
-      return result;
-   }
+  private static int runMockPlayerCommand(Player mockplayer, String command) {
+    CommandSourceStack commandSourceStack = mockplayer.createCommandSourceStack().withSuppressedOutput()
+        .withPermission(4);
+    CommandDispatcher<CommandSourceStack> commanddispatcher = mockplayer.getServer().getCommands().getDispatcher();
+    ParseResults<CommandSourceStack> results = commanddispatcher.parse(command, commandSourceStack);
+    int result = mockplayer.getServer().getCommands().performCommand(results, command);
+    LukasNutrients.LOGGER.info("ran \'" + command + "\' for mockplayer");
+    return result;
+  }
 }
