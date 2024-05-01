@@ -3,6 +3,8 @@ package net.lukasllll.lukas_nutrients.nutrients.food;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.config.BaseNutrientsConfig;
 import net.lukasllll.lukas_nutrients.config.EdibleBlocksConfig;
+import net.lukasllll.lukas_nutrients.integration.IntegrationHelper;
+import net.lukasllll.lukas_nutrients.integration.farmersdelight.FarmersDelightFoodNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
@@ -126,6 +128,11 @@ public class FoodNutrientProvider {
     }
 
     public static void assignUnassignedItems() {
+
+        if(IntegrationHelper.isFarmersDelightLoaded()) {
+            FarmersDelightFoodNutrientProvider.assignUniqueItems();
+        }
+
         Collection<Item> items = ForgeRegistries.ITEMS.getValues();
         for(Item item : items) {
             if(item.isEdible() && !((INutrientPropertiesHaver) item).hasFoodNutrientProperties()) {
@@ -136,7 +143,7 @@ public class FoodNutrientProvider {
         assignEdibleBlocksFromConfig();
     }
 
-    private static void assignNutrientsThroughRecipe(Item item) {
+    public static void assignNutrientsThroughRecipe(Item item) {
         currentlyWorkingOn.add(item);
         LukasNutrients.LOGGER.info("adding recipe for " + item.toString());
         List<Recipe<?>> recipes = getAllRecipes().get(item);
@@ -172,7 +179,7 @@ public class FoodNutrientProvider {
                         assignNutrientsThroughRecipe(currentItem);
                     }
                     //clone the nutrient amount array, so that it can be modified, without modifying the original
-                    double[] currentItemNutrientAmounts = cloneArray(((INutrientPropertiesHaver) currentItem).getFoodNutrientProperties().getNutrientAmounts());
+                    double[] currentItemNutrientAmounts = ((INutrientPropertiesHaver) currentItem).getFoodNutrientProperties().getNutrientAmounts().clone();
                     double currentItemTotalNutrientAmount = 0;
 
                     //calculate how many nutrients this item would contribute to the new item
@@ -228,7 +235,7 @@ public class FoodNutrientProvider {
         currentlyWorkingOn.remove(item);
     }
 
-    private static void assignNoNutrients(Item item) {
+    public static void assignNoNutrients(Item item) {
         double[] nutrientAmounts = new double[NutrientGroup.getNutrientGroups().length];
         boolean isIngredient = !item.isEdible();
         ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(nutrientAmounts, isIngredient));
@@ -293,22 +300,14 @@ public class FoodNutrientProvider {
         return out;
     }
 
-    private static double[] cloneArray(double[] in) {
-        double[] out = new double[in.length];
-        for(int i=0; i<in.length; i++) {
-            out[i] = in[i];
-        }
-        return out;
-    }
-
-    private static void addArrays(double[] base, double[] add) {
+    public static void addArrays(double[] base, double[] add) {
         if(base.length != add.length) return;
         for(int i=0; i<base.length; i++) {
             base[i] += add[i];
         }
     }
 
-    private static void scaleArray(double[] base, double amount) {
+    public static void scaleArray(double[] base, double amount) {
         for(int i=0; i<base.length; i++) {
             base[i] *= amount;
         }

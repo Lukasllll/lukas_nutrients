@@ -2,6 +2,7 @@ package net.lukasllll.lukas_nutrients;
 
 import com.mojang.logging.LogUtils;
 import net.lukasllll.lukas_nutrients.config.Config;
+import net.lukasllll.lukas_nutrients.integration.IntegrationHelper;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -28,6 +29,7 @@ public class LukasNutrients
 
     private void commonSetup(final FMLCommonSetupEvent event)
     {
+        IntegrationHelper.init();
         ModMessages.register();
         Config.loadCommonConfigs();
     }
