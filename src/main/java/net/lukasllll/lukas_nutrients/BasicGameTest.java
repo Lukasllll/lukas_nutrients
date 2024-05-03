@@ -14,12 +14,50 @@ import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.world.entity.player.Player;
 
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.Resource;
+import java.util.Optional;
+
 @PrefixGameTestTemplate(false)
 @GameTestHolder(LukasNutrients.MOD_ID)
 public class BasicGameTest {
+  private final String modID = LukasNutrients.MOD_ID;
+
+  // !!! DEFINE TEMPLATES HERE !!! For now we need to manually check if they exist to
+  // avoid a world of pain!
+  // Base templates only. Preferably don't call these directly when setting the
+  // template for a Gametest
+  private final String twoXtwo = "2x2empty";
+
+  // fixed template names for actual Tests
+  private final String testTemplateTemplate = twoXtwo;
+  private final String testSetCommandTemplate = twoXtwo;
+
+  private static boolean checkTemplateExists(String tName, String modID) {
+    MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
+    var locInRes = new String("structures/" + tName + ".nbt");
+    var templateLoc = new ResourceLocation(modID, locInRes);
+    ResourceManager resManager = server.getResourceManager();
+    Optional<Resource> template = resManager.getResource(templateLoc);
+
+    return template.isPresent();
+  }
+
+  @GameTest(template = testTemplateTemplate)
+  public void testTemplateExisting(GameTestHelper helper) {
+
+    if (!checkTemplateExists(testTemplateTemplate, modID)) {
+      helper.fail(missingTemplatString(testTemplateTemplate));
+    }
+    if (checkTemplateExists("wrongtemplate", modID)) {
+      helper.fail("Non existing template passed!");
+    }
+    helper.succeed();
+  }
 
   @GameTest(template = "2x2empty")
-  public static void TestSetCommand(GameTestHelper helper) {
+  public void TestSetCommand(GameTestHelper helper) {
     LukasNutrients.LOGGER.info("Initialising TestSetCommand gametest");
 
     /**
@@ -36,6 +74,10 @@ public class BasicGameTest {
      * - Fails in Singleplayer and Multiplayer
      **/
     // ServerPlayer mockplayer = helper.makeMockServerPlayerInLevel();
+
+    if (!checkTemplateExists(testSetCommandTemplate, modID)) {
+      helper.fail(missingTemplatString(testTemplateTemplate));
+    }
 
     ServerPlayer mockplayer = findAnOp();
     if (mockplayer == null) {
@@ -107,5 +149,9 @@ public class BasicGameTest {
     int result = mockplayer.getServer().getCommands().performCommand(results, command);
     LukasNutrients.LOGGER.info("ran \'" + command + "\' for mockplayer");
     return result;
+  }
+
+  private static String missingTemplatString(String templatename) {
+    return String.format("Template %s not found", templatename);
   }
 }
