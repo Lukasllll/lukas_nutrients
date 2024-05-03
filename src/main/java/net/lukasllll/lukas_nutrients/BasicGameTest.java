@@ -6,6 +6,7 @@ import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.level.ServerPlayerGameMode;
 import net.minecraft.server.players.PlayerList;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
@@ -24,8 +25,8 @@ import java.util.Optional;
 public class BasicGameTest {
   private final String modID = LukasNutrients.MOD_ID;
 
-  // !!! DEFINE TEMPLATES HERE !!! For now we need to manually check if they exist to
-  // avoid a world of pain!
+  // !!! DEFINE TEMPLATES HERE !!! For now we need to manually check if they exist
+  // to avoid a world of pain!
   // Base templates only. Preferably don't call these directly when setting the
   // template for a Gametest
   private final String twoXtwo = "2x2empty";
@@ -85,6 +86,11 @@ public class BasicGameTest {
     }
     String opPlayer = (mockplayer.getName()).getString();
 
+    // Get gamemode
+    ServerPlayerGameMode spg = mockplayer.gameMode;
+    String gameMode = spg.getGameModeForPlayer().getName();
+    runMockPlayerCommand(mockplayer, "gamemode survival");
+
     String nutrientID = "fruits";
 
     LukasNutrients.LOGGER.info("TestSetCommand: Testing valid values");
@@ -99,6 +105,7 @@ public class BasicGameTest {
         if (actualNurishment != Double.valueOf(nurishmentVal)) {
           helper.fail(String.format("Failed TestSetCommand. Expected %s, actual %s", Double.toString(nurishmentVal),
               Double.toString(actualNurishment)));
+        runMockPlayerCommand(mockplayer, "gamemode " + gameMode);
         }
       });
     }
@@ -117,9 +124,12 @@ public class BasicGameTest {
         if (actualNurishment != Double.valueOf(nurishmentVal)) {
           helper.fail(String.format("Failed TestSetCommand. Expected %s, actual %s", Double.toString(nurishmentVal),
               Double.toString(actualNurishment)));
+          runMockPlayerCommand(mockplayer, "gamemode " + gameMode);
         }
       });
     }
+
+    runMockPlayerCommand(mockplayer, "gamemode " + gameMode);
     helper.succeed();
   }
 
