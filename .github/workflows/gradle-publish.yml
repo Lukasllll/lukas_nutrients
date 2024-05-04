@@ -40,5 +40,6 @@ jobs:
     - name: Publish to GitHub Packages
       run: ./gradlew publish
       env:
+        PUBLISH_TO_GITHUB: "true"
         USERNAME: ${{ github.actor }}
         TOKEN: ${{ secrets.GITHUB_TOKEN }}
