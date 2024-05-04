@@ -9,7 +9,7 @@ name: Gradle Package
 
 on:
   release:
-    types: [published]
+    types: [created]
 
 jobs:
   build:
@@ -35,6 +35,12 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: nutrients_jar
+        path: build/libs/*.jar
+
     # The USERNAME and TOKEN need to correspond to the credentials environment variables used in
     # the publishing section of your build.gradle
     - name: Publish to GitHub Packages
@@ -43,3 +49,28 @@ jobs:
         PUBLISH_TO_GITHUB: "true"
         USERNAME: ${{ github.actor }}
         TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Create Release
+      if: github.event_name == 'release' && github.event.action == 'created'
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        # prerelease: false
+
+  
+
+    - name: Upload Release Asset
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifact/*.jar
+          asset_name: mod.jar  # This can be set to match the file name of the jar
+          asset_content_type: application/java-archive
