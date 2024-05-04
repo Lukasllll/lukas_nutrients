@@ -72,11 +72,14 @@ public class Sum implements DisplayElement {
             if(onClient) {
                 for (String id : this.getSummandIDs()) {
                     Nutrient nutrient = ClientNutrientData.getNutrient(id);
+                    if(nutrient == null) continue;
                     max += nutrient.getMaxScore();
                 }
             } else {
                 for (String id : this.getSummandIDs()) {
-                    Nutrient nutrient = NutrientManager.getNutrients()[NutrientManager.getNutrientArrayIndex(id)];
+                    int arrayIndex = NutrientManager.getNutrientArrayIndex(id);
+                    if(arrayIndex == -1) continue;
+                    Nutrient nutrient = NutrientManager.getNutrients()[arrayIndex];
                     max += nutrient.getMaxScore();
                 }
             }

@@ -1,6 +1,5 @@
 package net.lukasllll.lukas_nutrients.client;
 
-import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.Sum;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -70,23 +69,34 @@ public class ClientNutrientData {
     }
 
     public static Nutrient getNutrient(String id) {
-        return nutrients[nutrientArrayIndexMap.get(id)];
+        int nutrientIndex = nutrientArrayIndexMap.getOrDefault(id, -1);
+        if(nutrientIndex == -1) return null;
+        return nutrients[nutrientIndex];
     }
 
     public static int getNutrientScore(String id) {
-        return nutrientScores[nutrientArrayIndexMap.get(id)];
+        int nutrientIndex = nutrientArrayIndexMap.getOrDefault(id, -1);
+        if(nutrientIndex == -1) return -1;
+        return nutrientScores[nutrientIndex];
+
     }
 
     public static int getNutrientRange(String id) {
-        return ranges[nutrientArrayIndexMap.get(id)];
+        int nutrientIndex = nutrientArrayIndexMap.getOrDefault(id, -1);
+        if(nutrientIndex == -1) return -1;
+        return ranges[nutrientIndex];
     }
 
     public static double getNutrientAmount(String id) {
-        return amounts[nutrientArrayIndexMap.get(id)];
+        int nutrientIndex = nutrientArrayIndexMap.getOrDefault(id, -1);
+        if(nutrientIndex == -1) return -1;
+        return amounts[nutrientIndex];
     }
 
     public static int getSumScore(String id) {
-        return sumScores[sumArrayIndexMap.get(id)];
+        int sumIndex = sumArrayIndexMap.getOrDefault(id, -1);
+        if(sumIndex == -1) return -1;
+        return sumScores[sumIndex];
     }
 
 
