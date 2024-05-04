@@ -7,9 +7,11 @@ import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
 import net.lukasllll.lukas_nutrients.client.graphics.CustomTexture;
 import net.lukasllll.lukas_nutrients.client.graphics.NativeImageLoader;
+import net.lukasllll.lukas_nutrients.client.graphics.gui.DisplayElement;
 import net.lukasllll.lukas_nutrients.config.EffectIconsConfig;
-import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
-import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
+import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
+import net.lukasllll.lukas_nutrients.nutrients.Sum;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,6 +25,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class NutrientScreen extends Screen {
 
@@ -40,23 +43,24 @@ public class NutrientScreen extends Screen {
     //the horizontal spacing between the different elements. In order:
     //icon distance from top, icon distance to next icon, last icon distance to separator, separator distance to summary icon, summary icon distance to bottom
     private static final int[] verticalSpacing = {
-            10, 4, 7, 5, 10
+            10, 4, 3, 5, 6
     };
 
     private static final int TEXT_COLOR = new Color(63, 63, 63).getRGB();
     private static final int SEPARATOR_COLOR = new Color(139, 139, 139).getRGB();
 
-    private NutrientGroup[] nutrientGroups;
+    private Nutrient[] nutrients;
+    private Sum[] sums;
+    private String[] displayOrder;
 
     private NativeImage iconsBaseImage = null;
-    private ResourceLocation[] groupBarLocations;
-    private ResourceLocation dietEffectBarLocation;
+    private ResourceLocation[] nutrientBarLocations;
+    private ResourceLocation[] sumBarLocations;
     private ResourceLocation[] barArrowsLocation;
 
 
     private int leftModuleWidth, middleModuleWidth, rightModuleWidth;
     private int totalWidth;
-    private int mainSectionHeight, bottomSectionHeight;
     private int totalHeight;
 
     private int startX;
@@ -66,7 +70,9 @@ public class NutrientScreen extends Screen {
 
     public NutrientScreen() {
         super(TITLE);
-        nutrientGroups = ClientNutrientData.getNutrientGroups();
+        nutrients = ClientNutrientData.getNutrients();
+        sums = ClientNutrientData.getSums();
+        displayOrder = ClientNutrientData.getDisplayOrder();
     }
 
     @Override
@@ -75,7 +81,7 @@ public class NutrientScreen extends Screen {
     }
     /*
     Method is needed to close the screen on pressing 'n' again.
-    I don't now, what all these parameters do, so I didn't change their names.
+    I don't know what all these parameters do, so I didn't change their names.
      */
     public boolean keyPressed(int p_97765_, int p_97766_, int p_97767_){
         InputConstants.Key key = InputConstants.getKey(p_97765_, p_97766_);
@@ -93,6 +99,7 @@ public class NutrientScreen extends Screen {
         tooltip = null;
         if(startX == 0) calculateDimensions();
         renderBackground(graphics);
+        renderDividers(graphics);
         renderDietEffects(graphics, mouseX, mouseY);
         renderLeftModule(graphics);
         renderMiddleModule(graphics);
@@ -102,120 +109,157 @@ public class NutrientScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
     }
 
+    public void renderDividers(GuiGraphics graphics) {
+        int currentY = startY + verticalSpacing[0];
+
+        for(int i=0; i<displayOrder.length; i++) {
+            DisplayElement element = getDisplayElementFromID(displayOrder[i]);
+            if (element == null) continue;
+            if (Objects.equals(element.getID(), NutrientManager.DIVIDER_ID)) {
+                currentY += verticalSpacing[2];
+                graphics.fill(startX + 6, currentY, startX + totalWidth - 6,  currentY + 2, SEPARATOR_COLOR);
+                currentY += 2 + verticalSpacing[3];
+            } else {
+                currentY += 16 + verticalSpacing[1];
+            }
+        }
+    }
+
     public void renderLeftModule(GuiGraphics graphics) {
         int currentY = startY + verticalSpacing[0];
-        for(int i = 0; i < nutrientGroups.length; i++) {
-            //render Item
-            graphics.renderItem(nutrientGroups[i].getDisplayItemStack(), startX + horizontalSpacing[0], currentY);
-            //render Name
-            graphics.drawString(this.font, nutrientGroups[i].getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
-            currentY += 16 + verticalSpacing[1];
-        }
-        currentY -= verticalSpacing[1];
-        currentY += verticalSpacing[2] + 2 + verticalSpacing[3];
 
-        //render sum symbol
-        graphics.blit(ICONS, startX + horizontalSpacing[0], currentY, 16, 16, 0, 0, 16, 16, 256, 256);
-        //render Diet
-        graphics.drawString(this.font, "Diet", startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+        for(int i=0; i<displayOrder.length; i++) {
+            DisplayElement element = getDisplayElementFromID(displayOrder[i]);
+            if (element == null) continue;
+            if (Objects.equals(element.getID(), NutrientManager.DIVIDER_ID)) {
+                currentY += verticalSpacing[2] + 2 + verticalSpacing[3]; //divider
+            } else if (element instanceof Nutrient) {
+                //render display item
+                graphics.renderItem(((Nutrient)element).getDisplayItemStack(), startX + horizontalSpacing[0], currentY);
+                //render Name
+                graphics.drawString(this.font, ((Nutrient)element).getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+                currentY += 16 + verticalSpacing[1];
+            } else if(element instanceof Sum) {
+                //render sum symbol
+                graphics.blit(ICONS, startX + horizontalSpacing[0], currentY, 16, 16, 0, 0, 16, 16, 256, 256);
+                //render Name
+                graphics.drawString(this.font, ((Sum)element).getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+                currentY += 16 + verticalSpacing[1];
+            }
+        }
     }
 
     public void renderMiddleModule(GuiGraphics graphics) {
-        ResourceLocation[] nutrientBars = getGroupBarLocations();
-        ResourceLocation effectBar = getDietEffectBarLocation();
+        ResourceLocation[] nutrientBars = getNutrientBarLocations();
+        ResourceLocation[] sumBars = getSumBarLocations();
         ResourceLocation[] arrows = getBarArrowsLocation();
 
         int currentY = startY + verticalSpacing[0];
         int currentX =  startX + horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2];
-        //draw nutrient amount bars
-        for(int i = 0; i < nutrientGroups.length; i++) {
-            //render empty bar
-            graphics.blit(nutrientBars[i], currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
 
-            int amount = (int) ClientNutrientData.getPlayerNutrientAmounts()[i];
-            int range = ClientNutrientData.getPlayerNutrientRanges()[i];
+        for(int i=0; i<displayOrder.length; i++) {
+            DisplayElement element = getDisplayElementFromID(displayOrder[i]);
+            if(element == null) continue;
+            if(Objects.equals(element.getID(), NutrientManager.DIVIDER_ID)) {
+                currentY += verticalSpacing[2] + 2 + verticalSpacing[3]; //divider
+            } else if(element instanceof Nutrient) {
+                //render empty bar
+                graphics.blit(nutrientBars[ClientNutrientData.getNutrientArrayIndex(element.getID())], currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
 
-            int barLength = 1 + range + amount * 4;
-            //render full bar
-            graphics.blit(nutrientBars[i], currentX, currentY + 7, barLength, 5, 0, 0, barLength, 5, 256, 256);
-            //render arrow
-            if(barLength == 1) {
-                barLength += 1;
-            } else if(barLength == 101) {
-                barLength -= 1;
+                int amount = (int) ClientNutrientData.getNutrientAmount(element.getID());
+
+                int barLength = 1 + ClientNutrientData.getNutrientRange(element.getID()) + amount * 4;
+                //render full bar
+                graphics.blit(nutrientBars[ClientNutrientData.getNutrientArrayIndex(element.getID())], currentX, currentY + 7, barLength, 5, 0, 0, barLength, 5, 256, 256);
+                //render arrow
+                if(barLength == 1) {
+                    barLength += 1;
+                } else if(barLength == 101) {
+                    barLength -= 1;
+                }
+                graphics.blit(arrows[ClientNutrientData.getNutrientScore(element.getID())], currentX + barLength - 3, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
+                //render exhaustion bar
+                double exhaustionLevel = ClientNutrientData.getPlayerExhaustionLevels()[ClientNutrientData.getNutrientArrayIndex(element.getID())];
+                barLength = (int) ((4.0 - exhaustionLevel)/4.0 * 98.0);
+                graphics.blit(ICONS, currentX, currentY + 12, barLength, 2, 16, 10, barLength, 2, 256, 256);
+
+                currentY += 16 + verticalSpacing[1];
+            } else if(element instanceof Sum) {
+                //draw diet effects bar
+                graphics.blit(sumBars[ClientNutrientData.getSumArrayIndex(element.getID())], currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
+
+                int totalScore=ClientNutrientData.getSumScore(element.getID());
+
+                int effectsBarStartX, effectsBarEndX;
+                boolean toTheRight = false;
+                int basePoint = ((Sum) element).getBasePoint();
+                int divisions = ((Sum) element).getMax(true);
+                if(totalScore > basePoint) {
+                    effectsBarStartX = getPieceStartX(basePoint, divisions);
+                    effectsBarEndX = getPieceStartX(totalScore, divisions) + 1;
+                    toTheRight = true;
+                } else if(totalScore < basePoint) {
+                    effectsBarStartX = getPieceStartX(totalScore, divisions);
+                    effectsBarEndX = getPieceStartX(basePoint, divisions) + 1;
+                } else {
+                    effectsBarStartX = getPieceStartX(basePoint, divisions);
+                    effectsBarEndX = effectsBarStartX + 1;
+                }
+
+                //LukasNutrients.LOGGER.debug("start = " + effectsBarStartX + ", end = " + effectsBarEndX + ", totalScore = " + totalScore + ", basePoint = " + basePoint +", divisons = " + divisions + ", toTheRight = " + toTheRight);
+
+                graphics.blit(sumBars[ClientNutrientData.getSumArrayIndex(element.getID())], currentX + effectsBarStartX, currentY + 7, effectsBarEndX - effectsBarStartX, 5, effectsBarStartX, 0, effectsBarEndX - effectsBarStartX, 5, 256, 256);
+
+                //draw diet effects bar arrow;
+                int arrowArrayIndex = 1;
+                if(totalScore < ((Sum) element).getPointRanges()[0]) {
+                    arrowArrayIndex = 0;
+                } else if(totalScore > ((Sum) element).getPointRanges()[1]) {
+                    arrowArrayIndex = 2;
+                }
+
+                int arrowX = (toTheRight ? effectsBarEndX - 3 : effectsBarStartX - 2);
+                if(totalScore == 0) arrowX += 1;
+                else if(totalScore == divisions) arrowX -= 2;
+
+                graphics.blit(arrows[arrowArrayIndex], currentX + arrowX, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
+
+                currentY += 16 + verticalSpacing[1];
             }
-            graphics.blit(arrows[ClientNutrientData.getPlayerNutrientScores()[i]], currentX + barLength - 3, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
-            //render exhaustion bar
-            double exhaustionLevel = ClientNutrientData.getPlayerExhaustionLevels()[i];
-            barLength = (int) ((4.0 - exhaustionLevel)/4.0 * 98.0);
-            graphics.blit(ICONS, currentX, currentY + 12, barLength, 2, 16, 10, barLength, 2, 256, 256);
-
-            currentY += 16 + verticalSpacing[1];
         }
-        currentY -= verticalSpacing[1];
-        currentY += verticalSpacing[2] + 2 + verticalSpacing[3];
-        //draw diet effects bar
-        graphics.blit(effectBar, currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
-
-        int totalScore=ClientNutrientData.getTotalScore();
-
-        int effectsBarStartX, effectsBarEndX;
-        boolean toTheRight = false;
-        if(totalScore > DietEffects.BASE_POINT) {
-            effectsBarStartX = 10 * DietEffects.BASE_POINT;
-            effectsBarEndX = totalScore * 10 + 1;
-            toTheRight = true;
-        } else if(totalScore < DietEffects.BASE_POINT) {
-            effectsBarEndX = 10 * DietEffects.BASE_POINT + 1;
-            effectsBarStartX = 10 * totalScore;
-        } else {
-            effectsBarStartX = 10 * DietEffects.BASE_POINT;
-            effectsBarEndX = 10 * DietEffects.BASE_POINT + 1;
-        }
-
-        graphics.blit(effectBar, currentX + effectsBarStartX, currentY + 7, effectsBarEndX - effectsBarStartX, 5, effectsBarStartX, 0, effectsBarEndX - effectsBarStartX, 5, 256, 256);
-
-        //draw diet effects bar arrow;
-        int arrowArrayIndex = 1;
-        if(totalScore < DietEffects.getPointRanges()[0]) {
-            arrowArrayIndex = 0;
-        } else if(totalScore > DietEffects.getPointRanges()[1]) {
-            arrowArrayIndex = 2;
-        }
-
-        int arrowX = (toTheRight ? effectsBarEndX - 3 : effectsBarStartX - 2);
-        if(totalScore == 0) arrowX += 1;
-        else if(totalScore == 10) arrowX -= 1;
-
-        graphics.blit(arrows[arrowArrayIndex], currentX + arrowX, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
     }
 
     public void renderRightModule(GuiGraphics graphics) {
 
         int currentY = startY + verticalSpacing[0];
-        int currentX =  startX + horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3];
+        int currentX = startX + horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3];
 
-        int totalScore = ClientNutrientData.getTotalScore();
-
-        for(int i = 0; i < nutrientGroups.length; i++) {
-            //render box
-            graphics.blit(ICONS, currentX + 6, currentY + 2, 9, 11, 0, 16, 9, 11, 256, 256);
-            //render number
-            graphics.drawString(this.font, ""+ClientNutrientData.getPlayerNutrientScores()[i], currentX + 8, currentY + 4, TEXT_COLOR, false);
-            graphics.drawString(this.font, "/2", currentX + 17, currentY + 4, TEXT_COLOR, false);
-            currentY += 16 + verticalSpacing[1];
+        for(int i=0; i<displayOrder.length; i++) {
+            DisplayElement element = getDisplayElementFromID(displayOrder[i]);
+            if(element == null) continue;
+            if(Objects.equals(element.getID(), NutrientManager.DIVIDER_ID)) {
+                currentY += verticalSpacing[2] + 2 + verticalSpacing[3]; //divider
+            } else if(element instanceof Nutrient) {
+                //render box
+                graphics.blit(ICONS, currentX + 6, currentY + 2, 9, 11, 0, 16, 9, 11, 256, 256);
+                //render number
+                graphics.drawString(this.font, ""+ClientNutrientData.getNutrientScore(element.getID()), currentX + 8, currentY + 4, TEXT_COLOR, false);
+                graphics.drawString(this.font, "/" + ClientNutrientData.getNutrient(element.getID()).getMaxScore(), currentX + 17, currentY + 4, TEXT_COLOR, false);
+                currentY += 16 + verticalSpacing[1];
+            } else if(element instanceof Sum) {
+                //render box
+                graphics.blit(ICONS, currentX, currentY + 2, 15, 11, 0, 27, 15, 11, 256, 256);
+                //render number
+                int sumScore = ClientNutrientData.getSumScore(element.getID());
+                if(sumScore < 10) {
+                    graphics.drawString(this.font, "" + sumScore, currentX + 5, currentY + 4, TEXT_COLOR, false);
+                } else {
+                    graphics.drawString(this.font, "" + sumScore, currentX + 2, currentY + 4, TEXT_COLOR, false);
+                }
+                graphics.drawString(this.font, "/" + ((Sum) element).getMax(true), currentX + 17, currentY + 4, TEXT_COLOR, false);
+                currentY += 16 + verticalSpacing[1];
+            }
         }
-        currentY -= verticalSpacing[1];
-        currentY += verticalSpacing[2] + 2 + verticalSpacing[3];
-        //render box
-        graphics.blit(ICONS, currentX, currentY + 2, 15, 11, 0, 27, 15, 11, 256, 256);
-        //render number
-        if(totalScore < 10) {
-            graphics.drawString(this.font, "" + totalScore, currentX + 5, currentY + 4, TEXT_COLOR, false);
-        } else {
-            graphics.drawString(this.font, "" + totalScore, currentX + 2, currentY + 4, TEXT_COLOR, false);
-        }
-        graphics.drawString(this.font, "/10", currentX + 17, currentY + 4, TEXT_COLOR, false);
     }
 
     /*
@@ -292,10 +336,6 @@ public class NutrientScreen extends Screen {
         graphics.blit(BACKGROUND, startX, startY + totalHeight - 4, 4, 4, 0, 162, 4, 4, 256, 256);  //left corner
         graphics.blit(BACKGROUND, startX + 4, startY + totalHeight - 4, totalWidth - 8, 4, 4, 162, 240, 4, 256, 256);    //main line
         graphics.blit(BACKGROUND, startX + totalWidth -4, startY + totalHeight - 4, 4, 4, 244, 162, 4, 4, 256, 256);  //right corner
-
-        //separator
-        graphics.fill(startX + 6, startY + verticalSpacing[0] + mainSectionHeight + verticalSpacing[2], startX + totalWidth - 6,  startY + verticalSpacing[0] + mainSectionHeight + verticalSpacing[2] + 2, SEPARATOR_COLOR);
-
     }
 
     //calculates how much space each of the modules and sections need.
@@ -309,13 +349,18 @@ public class NutrientScreen extends Screen {
         //the total width with the spacing between modules
         totalWidth = horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3] + rightModuleWidth + horizontalSpacing[4];
 
-        NutrientGroup[] Groups = ClientNutrientData.getNutrientGroups();
-        //the main section contains the food groups and their bars, its height depends on how many food groups there are.
-        mainSectionHeight = Groups.length * (16 + verticalSpacing[1]) - verticalSpacing[1];
-        //the bottom section contains the sum score of all food groups. It's always 16 pixels high
-        bottomSectionHeight = 16;
-        //total height including spacings
-        totalHeight = verticalSpacing[0] + mainSectionHeight + verticalSpacing[2] + 2 + verticalSpacing[3] + bottomSectionHeight + verticalSpacing[4];
+        totalHeight = verticalSpacing[0];
+        //add the height of all display elements (nutrients, sums, dividers)
+        for(int i=0; i<displayOrder.length; i++) {
+            DisplayElement element = getDisplayElementFromID(displayOrder[i]);
+            if(element == null) continue;
+            if(Objects.equals(element.getID(), NutrientManager.DIVIDER_ID)) {
+                totalHeight += verticalSpacing[2] + 2 + verticalSpacing[3]; //divider
+            } else {
+                totalHeight += 16 + verticalSpacing[1];                     //nutrient or sum
+            }
+        }
+        totalHeight += verticalSpacing[4];
 
         //where on the screen the gui is supposed to be rendered
         startX = (this.width - totalWidth) / 2;
@@ -327,8 +372,8 @@ public class NutrientScreen extends Screen {
     //the longest food group name is. This function returns exactly that.
     private int findLongestTextDisplayWidth() {
         int longest=0;
-        for(int i = 0; i< nutrientGroups.length; i++) {
-            int textDisplayWidth = this.font.width(nutrientGroups[i].getDisplayname());
+        for(int i = 0; i< displayOrder.length; i++) {
+            int textDisplayWidth = getTextDisplayWidthFromID(displayOrder[i]);
             if(textDisplayWidth > longest) {
                 longest = textDisplayWidth;
             }
@@ -336,15 +381,48 @@ public class NutrientScreen extends Screen {
         return longest;
     }
 
-    private ResourceLocation[] getGroupBarLocations() {
-        if(groupBarLocations == null) {
-            groupBarLocations = new ResourceLocation[nutrientGroups.length];
-            for(int i = 0; i < nutrientGroups.length; i++) {
-                groupBarLocations[i] = createNutrientBar(nutrientGroups[i]);
+    private int getTextDisplayWidthFromID(String id) {
+        if(id.equals(NutrientManager.DIVIDER_ID)) return 0;
+        for(Sum sum : sums) {
+            if(sum.getID().equals(id)) return this.font.width(sum.getDisplayname());
+        }
+        for(Nutrient nutrient : nutrients) {
+            if(nutrient.getID().equals(id)) return this.font.width(nutrient.getDisplayname());
+        }
+        return 0;
+    }
+
+    private DisplayElement getDisplayElementFromID(String id) {
+        if(id.equals(NutrientManager.DIVIDER_ID)) return () -> {return id; };
+        for(Sum sum : sums) {
+            if(sum.getID().equals(id)) return sum;
+        }
+        for(Nutrient nutrient : nutrients) {
+            if(nutrient.getID().equals(id)) return nutrient;
+        }
+        return null;
+    }
+
+    private ResourceLocation[] getSumBarLocations() {
+        if(sumBarLocations == null) {
+            sumBarLocations = new ResourceLocation[sums.length];
+            for(int i = 0; i < sums.length; i++) {
+                sumBarLocations[i] = createSumBar(sums[i]);
             }
         }
 
-        return groupBarLocations;
+        return sumBarLocations;
+    }
+
+    private ResourceLocation[] getNutrientBarLocations() {
+        if(nutrientBarLocations == null) {
+            nutrientBarLocations = new ResourceLocation[nutrients.length];
+            for(int i = 0; i < nutrients.length; i++) {
+                nutrientBarLocations[i] = createNutrientBar(nutrients[i]);
+            }
+        }
+
+        return nutrientBarLocations;
     }
 
     private ResourceLocation[] getBarArrowsLocation() {
@@ -364,15 +442,7 @@ public class NutrientScreen extends Screen {
         return barArrowsLocation;
     }
 
-    private ResourceLocation getDietEffectBarLocation() {
-        if(dietEffectBarLocation == null) {
-            dietEffectBarLocation = createDietEffectsBar();
-        }
-
-        return dietEffectBarLocation;
-    }
-
-    private ResourceLocation createDietEffectsBar() {
+    private ResourceLocation createSumBar(Sum sum) {
         int[] hues = {
                 0,          //red
                 44,         //yellow
@@ -381,7 +451,7 @@ public class NutrientScreen extends Screen {
 
         int saturation = 87;
 
-        String locationPath = "textures/gui/generated/diet_effects_bar";
+        String locationPath = "textures/gui/generated/" + sum.getID() + "_bar";
         ResourceLocation out =  new ResourceLocation(LukasNutrients.MOD_ID, locationPath);
 
         NativeImage baseImage = getIconsBaseImage();
@@ -389,43 +459,39 @@ public class NutrientScreen extends Screen {
         //creates a new empty NativeImage with width = height = 256. I don't really know what that boolean does.
         NativeImage barImage = new NativeImage(256, 256, true);
 
-        int[] pointRanges = DietEffects.getPointRanges();
-        int base_point = DietEffects.getBasePoint();
+        int divisions = sum.getMax(true);
+        int[] pointRanges = sum.getPointRanges();
+        int basePoint = sum.getBasePoint();
 
-        //draw left side
-        for(int i = base_point; i > 0; i--) {
-            int hue = hues[1];
-            if(i <= pointRanges[0]) hue = hues[0];
-            switch (i) {
-                case 1:
-                    copyRectangleOverAndShiftHue(baseImage, barImage, 16, 16, 10, 5, (i - 1) * 10, 5, hue, saturation);
-                    copyRectangleOverAndShiftHue(baseImage, barImage, 16, 21, 10, 5, (i - 1) * 10, 0, hue, saturation);
-                    break;
-                default:
-                    copyRectangleOverAndShiftHue(baseImage, barImage, 26, 16, 10, 5, (i - 1) * 10, 5, hue, saturation);
-                    copyRectangleOverAndShiftHue(baseImage, barImage, 26, 21, 10, 5, (i - 1) * 10, 0, hue, saturation);
-                    break;
+        //draw bar
+        for(int i = 0; i < divisions; i++) {
+            //determine hue based on point ranges
+            int hueIndex = 1;
+            if(i < pointRanges[0]) hueIndex = 0;
+            else if(i >= pointRanges[1]) hueIndex = 2;
+
+            int hue = hues[hueIndex];   //set hue accordingly
+
+            //where the piece of the bar should be drawn. pieceStartX gets the "+ 1" to account for the "middle bit" being drawn separately further down
+            //this also results in pieceLength being shorter by 1 than it otherwise would be, again accounting for the "middle bit" being drawn separately
+            int pieceStartX = getPieceStartX(i, divisions) + 1;
+            int pieceNextX = getPieceStartX(i + 1, divisions);
+            int pieceLength = pieceNextX - pieceStartX;
+
+            //the first and last piece are the end caps and have their own draw methods
+            if(i == 0) {
+                drawSumBarLeftPiece(baseImage, barImage, pieceStartX, pieceLength, hue, saturation);                    //left end cap
+            } else if( i == divisions-1) {
+                drawSumBarRightPiece(baseImage, barImage, pieceStartX, pieceLength, hue, saturation);                   //right end cap
+            } else {
+                drawSumBarMiddlePiece(baseImage, barImage, pieceStartX, pieceLength, hue, saturation);                  //middle pieces
+            }
+            //drawing the "middle bit"
+            if(i != divisions-1) {                                                                                      //"middle bit" doesn't need to be drawn for the last iteration
+                if(i == pointRanges[0] - 1) hue = hues[Math.max(0, hueIndex+1)];                                        //I don't feel like explaining this part. Makes the bar prettier.
+                drawSumBarMiddleBit(baseImage, barImage, pieceNextX, hue, saturation);
             }
         }
-
-        //draw right side
-        for(int i = base_point; i < 10; i++) {
-            int hue = hues[1];
-            if(i >= pointRanges[1]) hue = hues[2];
-            switch (i) {
-                case 9:
-                    copyRectangleOverAndShiftHue(baseImage, barImage, 37, 16, 10, 5, 1 + i * 10, 5, hue, saturation);
-                    copyRectangleOverAndShiftHue(baseImage, barImage, 37, 21, 10, 5, 1 + i * 10, 0, hue, saturation);
-                    break;
-                default:
-                    copyRectangleOverAndShiftHue(baseImage, barImage, 27, 16, 10, 5, 1 + i * 10, 5, hue, saturation);
-                    copyRectangleOverAndShiftHue(baseImage, barImage, 27, 21, 10, 5, 1 + i * 10, 0, hue, saturation);
-                    break;
-            }
-        }
-
-        //draw middle
-        copyRectangleOverAndShiftHue(baseImage, barImage, 26, 21, 1, 5, 50, 0, hues[1], saturation);
 
         //creates a new custom texture containing the new image
         AbstractTexture generatedTexture = new CustomTexture(barImage);
@@ -439,7 +505,65 @@ public class NutrientScreen extends Screen {
         return out;
     }
 
-    private ResourceLocation createNutrientBar(NutrientGroup group) {
+    private int getPieceStartX(int i, int divisions) {
+        return 101/divisions * i + Math.min(i, 101%divisions) - ((i == 0 || i == divisions) ? 0 : 1);
+    }
+
+    //You know... the middle bit... idk what else to call it :/
+    private void drawSumBarMiddleBit(NativeImage baseImage, NativeImage barImage, int x, int hue, int saturation) {
+        copyRectangleOverAndShiftHue(baseImage, barImage, 26, 16, 1, 5, x, 5, hue, saturation);
+        copyRectangleOverAndShiftHue(baseImage, barImage, 26, 21, 1, 5, x, 0, hue, saturation);
+    }
+
+    private void drawSumBarLeftPiece(NativeImage baseImage, NativeImage barImage, int x, int length, int hue, int saturation) {
+        int rx=0;
+        //draw the left tip
+        copyRectangleOverAndShiftHue(baseImage, barImage, 16, 16, 3, 5, x + rx, 5, hue, saturation);
+        copyRectangleOverAndShiftHue(baseImage, barImage, 16, 21, 3, 5, x + rx, 0, hue, saturation);
+        rx += 3;
+        //draw the body
+        for(; rx <= length - 7; rx += 5) {
+            copyRectangleOverAndShiftHue(baseImage, barImage, 19, 16, 5, 5, x + rx, 5, hue, saturation);
+            copyRectangleOverAndShiftHue(baseImage, barImage, 19, 21, 5, 5, x + rx, 0, hue, saturation);
+        }
+        //draw the remainder
+        copyRectangleOverAndShiftHue(baseImage, barImage, 26 - length + rx, 16, length - rx, 5, x + rx, 5, hue, saturation);
+        copyRectangleOverAndShiftHue(baseImage, barImage, 26 - length + rx, 21, length - rx, 5, x + rx, 0, hue, saturation);
+    }
+
+    private void drawSumBarMiddlePiece(NativeImage baseImage, NativeImage barImage, int x, int length, int hue, int saturation) {
+        int rx = 0;
+        //draw the left tip
+        copyRectangleOverAndShiftHue(baseImage, barImage, 27, 16, 3, 5, x + rx, 5, hue, saturation);
+        copyRectangleOverAndShiftHue(baseImage, barImage, 27, 21, 3, 5, x + rx, 0, hue, saturation);
+        rx += 2;
+        //draw the body
+        for(; rx <= length - 6; rx += 5) {
+            copyRectangleOverAndShiftHue(baseImage, barImage, 29, 16, 5, 5, x + rx, 5, hue, saturation);
+            copyRectangleOverAndShiftHue(baseImage, barImage, 29, 21, 5, 5, x + rx, 0, hue, saturation);
+        }
+        //draw the remainder
+        copyRectangleOverAndShiftHue(baseImage, barImage, 36 - length + rx, 16, length - rx, 5, x + rx, 5, hue, saturation);
+        copyRectangleOverAndShiftHue(baseImage, barImage, 36 - length + rx, 21, length - rx, 5, x + rx, 0, hue, saturation);
+    }
+
+    private void drawSumBarRightPiece(NativeImage baseImage, NativeImage barImage, int x, int length, int hue, int saturation) {
+        int rx = 0;
+        //draw the left tip
+        copyRectangleOverAndShiftHue(baseImage, barImage, 37, 16, 3, 5, x + rx, 5, hue, saturation);
+        copyRectangleOverAndShiftHue(baseImage, barImage, 37, 21, 3, 5, x + rx, 0, hue, saturation);
+        rx += 2;
+        //draw the body
+        for(; rx <= length - 6; rx += 5) {
+            copyRectangleOverAndShiftHue(baseImage, barImage, 39, 16, 5, 5, x + rx, 5, hue, saturation);
+            copyRectangleOverAndShiftHue(baseImage, barImage, 39, 21, 5, 5, x + rx, 0, hue, saturation);
+        }
+        //draw the remainder
+        copyRectangleOverAndShiftHue(baseImage, barImage, 47 - length + rx, 16, length - rx, 5, x + rx, 5, hue, saturation);
+        copyRectangleOverAndShiftHue(baseImage, barImage, 47 - length + rx, 21, length - rx, 5, x + rx, 0, hue, saturation);
+    }
+
+    private ResourceLocation createNutrientBar(Nutrient nutrient) {
         int[] hues = {
                 0,          //red
                 44,         //yellow
@@ -450,7 +574,7 @@ public class NutrientScreen extends Screen {
 
         int saturation = 87;
 
-        String locationPath = "textures/gui/generated/" + group.getID() + "_bar";
+        String locationPath = "textures/gui/generated/" + nutrient.getID() + "_bar";
         ResourceLocation out =  new ResourceLocation(LukasNutrients.MOD_ID, locationPath);
 
         NativeImage baseImage = getIconsBaseImage();
@@ -458,10 +582,10 @@ public class NutrientScreen extends Screen {
         //creates a new empty NativeImage with width = height = 256. I don't really know what that boolean does.
         NativeImage barImage = new NativeImage(256, 256, true);
         //draw the bars
-        int[] pointRanges = group.getPointRanges();
+        int[] pointRanges = nutrient.getPointRanges();
         int currentSegment = 0;
         for(int n = 0; n < pointRanges.length; n++) {
-            for(currentSegment = currentSegment; currentSegment < pointRanges[n]/2; currentSegment++) {
+            for(; currentSegment < pointRanges[n]/2; currentSegment++) {
                 switch (currentSegment) {
                     case 0:
                         for(int i=0; i <= n; i++) {
@@ -482,7 +606,7 @@ public class NutrientScreen extends Screen {
                 }
             }
         }
-        for(currentSegment = currentSegment; currentSegment < 12; currentSegment ++) {
+        for(; currentSegment < 12; currentSegment ++) {
             int n = 4;
             switch (currentSegment) {
                 case 0:

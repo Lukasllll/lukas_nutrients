@@ -3,7 +3,7 @@ package net.lukasllll.lukas_nutrients.config;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
-import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffect;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffect;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -57,16 +57,16 @@ public class NutrientEffectsConfig {
         this.nutrientEffects = nutrientEffects;
     }
 
-    public List<DietEffect> getBaseEffects() {
-        ArrayList<DietEffect> out = new ArrayList<>();
+    public List<NutrientEffect> getBaseEffects() {
+        ArrayList<NutrientEffect> out = new ArrayList<>();
         for(int i = 0; i < baseEffects.length; i++) {
             out.add(baseEffects[i].getEffect());
         }
         return out;
     }
 
-    public List<DietEffect> getNutrientEffects() {
-        ArrayList<DietEffect> out = new ArrayList<>();
+    public List<NutrientEffect> getNutrientEffects() {
+        ArrayList<NutrientEffect> out = new ArrayList<>();
         for(int i = 0; i < nutrientEffects.length; i++) {
             out.add(nutrientEffects[i].getEffect());
         }
@@ -80,18 +80,18 @@ public class NutrientEffectsConfig {
 
 
         ArrayList<ConfigNutrientEffect> baseEffectsList = new ArrayList<>();
-        baseEffectsList.add(new ConfigNutrientEffect(-1, -1, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -4.0d, addition));
+        baseEffectsList.add(new ConfigNutrientEffect("total",-1, -1, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -4.0d, addition));
 
         ArrayList<ConfigNutrientEffect> nutrientEffectsList = new ArrayList<>();
-        nutrientEffectsList.add(new ConfigNutrientEffect(0,0, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(0,1, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(0,2, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(0,3, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect("total",0,0, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect("total",0,1, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect("total",0,2, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect("total",0,3, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), -2.0d, addition));
 
-        nutrientEffectsList.add(new ConfigNutrientEffect(7,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), 2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(8,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.ATTACK_DAMAGE).toString(), 1.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(9,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), 2.0d, addition));
-        nutrientEffectsList.add(new ConfigNutrientEffect(10,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MOVEMENT_SPEED).toString(), 0.1d, multiply_total));
+        nutrientEffectsList.add(new ConfigNutrientEffect("total",7,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), 2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect("total",8,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.ATTACK_DAMAGE).toString(), 1.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect("total",9,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MAX_HEALTH).toString(), 2.0d, addition));
+        nutrientEffectsList.add(new ConfigNutrientEffect("total",10,10, ForgeRegistries.ATTRIBUTES.getKey(Attributes.MOVEMENT_SPEED).toString(), 0.1d, multiply_total));
 
         ConfigNutrientEffect[] baseEffects = baseEffectsList.toArray(ConfigNutrientEffect[]::new);
         ConfigNutrientEffect[] nutrientEffects = nutrientEffectsList.toArray(ConfigNutrientEffect[]::new);
@@ -100,22 +100,24 @@ public class NutrientEffectsConfig {
     }
 
     private static class ConfigNutrientEffect{
-       int minScore;
-       int maxScore;
-       String attribute;
-       double amount;
-       String operation;
+        String targetID;
+        int minScore;
+        int maxScore;
+        String attribute;
+        double amount;
+        String operation;
 
-       public ConfigNutrientEffect(int minScore, int maxScore, String attribute, double amount, String operation) {
-           this.minScore = minScore;
-           this.maxScore = maxScore;
-           this.attribute = attribute;
-           this.amount = amount;
-           this.operation = operation;
-       }
+        public ConfigNutrientEffect(String targetID, int minScore, int maxScore, String attribute, double amount, String operation) {
+            this.targetID = targetID;
+            this.minScore = minScore;
+            this.maxScore = maxScore;
+            this.attribute = attribute;
+            this.amount = amount;
+            this.operation = operation;
+        }
 
-       public DietEffect getEffect() {
-           return new DietEffect(minScore, maxScore, attribute, amount, operation);
-       }
+        public NutrientEffect getEffect() {
+            return new NutrientEffect(targetID, minScore, maxScore, attribute, amount, operation);
+        }
     }
 }

@@ -9,19 +9,22 @@ import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.UUID;
 
-public class DietEffect {
+public class NutrientEffect {
     public static final String EFFECT_NAME = LukasNutrients.MOD_ID + ":nutrient_effect";
 
+    private final String targetID;
     private final int minDietScore, maxDietScore;
     private final AssignedAttributeModifier attributeModifier;
 
-    public DietEffect(int minDietScore, int maxDietScore, AssignedAttributeModifier attributeModifier) {
+    public NutrientEffect(String targetID, int minDietScore, int maxDietScore, AssignedAttributeModifier attributeModifier) {
+        this.targetID = targetID;
         this.minDietScore = minDietScore;
         this.maxDietScore = maxDietScore;
         this.attributeModifier = attributeModifier;
     }
 
-    public DietEffect(int minDietScore, int maxDietScore, String attributeString, double amount, String operationString) {
+    public NutrientEffect(String targetID,int minDietScore, int maxDietScore, String attributeString, double amount, String operationString) {
+        this.targetID = targetID;
         this.minDietScore = minDietScore;
         this.maxDietScore = maxDietScore;
         AttributeModifier.Operation operation = null;
@@ -60,21 +63,24 @@ public class DietEffect {
         return totalDietScore <= maxDietScore && totalDietScore >= minDietScore;
     }
 
+    public String getTargetID() { return targetID; }
+
     public AssignedAttributeModifier getAttributeModifier() { return attributeModifier; }
 
-    public boolean canCombineWith(DietEffect other) {
+    public boolean canCombineWith(NutrientEffect other) {
         return (this.attributeModifier.getAttribute() == other.attributeModifier.getAttribute()
-                && this.attributeModifier.getOperation() == other.attributeModifier.getOperation());
+                && this.attributeModifier.getOperation() == other.attributeModifier.getOperation()
+                && this.getTargetID().equals(other.getTargetID()));
     }
 
     /*
-    returns a new DietEffect object. Only works, if the modified attribute and operation are identical.
-    The DietEffect.attributeModifier of the returned DietEffect object has a new amount based on the DietEffect
+    returns a new NutrientEffect object. Only works, if the modified attribute and operation are identical.
+    The NutrientEffect.attributeModifier of the returned NutrientEffect object has a new amount based on the NutrientEffect
     this object is combined with. The new amount is equivalent to the total change of applying both attributeModifiers
     at the same time.
     The returned objects min- and maxDietScore are both set to -1, since they're not used.
      */
-    public DietEffect combineWith(DietEffect other) {
+    public NutrientEffect combineWith(NutrientEffect other) {
         if(!canCombineWith(other)) return null;
         double amount = this.attributeModifier.getAmount();
         switch(this.attributeModifier.getOperation()) {
@@ -90,7 +96,7 @@ public class DietEffect {
                 break;
         }
 
-        return new DietEffect(-1, -1,
+        return new NutrientEffect(this.getTargetID(), -1, -1,
                 new AssignedAttributeModifier(this.attributeModifier.getName(), this.attributeModifier.getAttribute(), amount, this.attributeModifier.getOperation()));
     }
 }

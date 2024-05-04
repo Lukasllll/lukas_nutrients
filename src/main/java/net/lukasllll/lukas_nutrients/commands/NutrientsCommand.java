@@ -5,11 +5,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.lukasllll.lukas_nutrients.config.Config;
-import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
+import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
-import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffects;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -27,14 +28,14 @@ public class NutrientsCommand {
     public NutrientsCommand(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("nutrients").requires((command) -> {
             return command.hasPermission(2);
-        }).then(Commands.literal("set").then(Commands.argument("target", EntityArgument.players()).then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(NutrientGroupSuggestionProvider.getProvider()).then(Commands.argument("amount", IntegerArgumentType.integer(0, 24)).executes((command) -> {
+        }).then(Commands.literal("set").then(Commands.argument("target", EntityArgument.players()).then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(NutrientSuggestionProvider.getProvider()).then(Commands.argument("amount", IntegerArgumentType.integer(0, 24)).executes((command) -> {
             return setNutrients(command.getSource(), EntityArgument.getPlayers(command, "target"), StringArgumentType.getString(command, "nutrient id"), IntegerArgumentType.getInteger(command, "amount"));
         }))))).then(Commands.literal("get").then(Commands.argument("target", EntityArgument.players()).executes((command) -> {
             return getAllNutrients(command.getSource(), EntityArgument.getPlayers(command, "target"));
-                }).then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(NutrientGroupSuggestionProvider.getProvider()).executes((command) -> {
+                }).then(Commands.argument("nutrient id", StringArgumentType.string()).suggests(NutrientSuggestionProvider.getProvider()).executes((command) -> {
             return getNutrients(command.getSource(), EntityArgument.getPlayers(command, "target"), StringArgumentType.getString(command, "nutrient id"));
         })))).then(Commands.literal("list").executes((command) -> {
-            return listNutrientGroups(command.getSource());
+            return listNutrients(command.getSource());
         })).then(Commands.literal("reload").executes((command) -> {
             return reloadConfigs(command.getSource());
         })));
@@ -45,7 +46,7 @@ public class NutrientsCommand {
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 nutrients.setAmount(nutrientID, amount);
                 nutrients.updateClient(player);
-                DietEffects.apply(player);
+                NutrientEffects.apply(player);
                 logNutrientChange(source, player, nutrients, nutrientID, amount);
             });
         }
@@ -85,15 +86,15 @@ public class NutrientsCommand {
     private int getAllNutrients(CommandSourceStack source, Collection<ServerPlayer> players) {
 
         for(ServerPlayer player : players) {
-            player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
+            player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(playerNutrients -> {
                 MutableComponent message = Component.empty().append("[");
-                NutrientGroup[] Groups = NutrientGroup.getNutrientGroups();
-                for(int i = 0; i < Groups.length; i++) {
-                    String nutrientID = Groups[i].getID();
-                    String displayName = Groups[i].getDisplayname();
-                    double amount = nutrients.getNutrientAmount(nutrientID);
+                Nutrient[] nutrients = NutrientManager.getNutrients();
+                for(int i = 0; i < nutrients.length; i++) {
+                    String nutrientID = nutrients[i].getID();
+                    String displayName = nutrients[i].getDisplayname();
+                    double amount = playerNutrients.getNutrientAmount(nutrientID);
                     message.append(displayName + ": " + amount);
-                    if(i < Groups.length - 1) message.append(", ");
+                    if(i < nutrients.length - 1) message.append(", ");
                 }
                 message.append("]");
                 if(source.getEntity() == player)
@@ -107,21 +108,21 @@ public class NutrientsCommand {
         return players.size();
     }
 
-    private int listNutrientGroups(CommandSourceStack source) {
+    private int listNutrients(CommandSourceStack source) {
 
-        NutrientGroup[] Groups = NutrientGroup.getNutrientGroups();
+        Nutrient[] nutrients = NutrientManager.getNutrients();
 
         String message = "Food Groups: ";
-        for(int i=0; i<Groups.length; i++) {
-            message += Groups[i].getID();
-            if(i!=Groups.length-1)
+        for(int i=0; i<nutrients.length; i++) {
+            message += nutrients[i].getID();
+            if(i!=nutrients.length-1)
                 message += ", ";
         }
 
         String finalMessage = message;
         source.sendSuccess(() -> Component.literal(finalMessage), true);
 
-        return Groups.length;
+        return nutrients.length;
     }
 
     private int reloadConfigs(CommandSourceStack source) {
@@ -132,12 +133,13 @@ public class NutrientsCommand {
         source.sendSuccess(() -> Component.literal("Resetting all diet effects..."), true);
         List<ServerPlayer> players = source.getServer().getPlayerList().getPlayers();
         for(ServerPlayer player : players) {
+            NutrientManager.updateClient(player);
             int previousMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
-            DietEffects.removeAll(player);
+            NutrientEffects.removeAll(player);
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 nutrients.reload();
                     });
-            DietEffects.apply(player, previousMaxHealth);
+            NutrientEffects.apply(player, previousMaxHealth);
         }
         source.sendSuccess(() -> Component.literal("Diet effects have been reset for " + players.size() + (players.size() == 1 ? " player" : " players") + "!"), true);
 

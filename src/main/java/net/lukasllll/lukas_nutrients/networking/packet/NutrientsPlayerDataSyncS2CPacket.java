@@ -1,7 +1,7 @@
 package net.lukasllll.lukas_nutrients.networking.packet;
 
+import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
-import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.network.NetworkEvent;
@@ -12,48 +12,45 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class NutrientsDataSyncS2CPacket {
-
-    private final NutrientGroup[] nutrientGroups;
+public class NutrientsPlayerDataSyncS2CPacket {
 
     private final double[] nutrientAmounts;
     private final double[] exhaustionLevels;
-    private final int[] nutrientRanges;
-    private final int[] nutrientScores;
-    private int totalScore;
+    private final int[] nutrientScores;                   //the score of the given range
+    private final int[] ranges;
+    private final int[] sumScores;
     List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects;
 
-    public NutrientsDataSyncS2CPacket(NutrientGroup[] nutrientGroups, double[] amounts, double[] exhaustionLevels, int[] ranges, int[] scores, int totalScore,
-                                      List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects) {
-        this.nutrientGroups = nutrientGroups;
+    public NutrientsPlayerDataSyncS2CPacket(double[] amounts, double[] exhaustionLevels, int[] nutrientScores, int[] ranges, int[] sumScores,
+                                            List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects) {
         this.nutrientAmounts = amounts;
         this.exhaustionLevels = exhaustionLevels;
-        this.nutrientRanges = ranges;
-        this.nutrientScores = scores;
-        this.totalScore = totalScore;
+        this.nutrientScores = nutrientScores;
+        this.ranges = ranges;
+        this.sumScores = sumScores;
         this.activeDietEffects = activeDietEffects;
     }
 
-    public NutrientsDataSyncS2CPacket(FriendlyByteBuf buf) {
+    public NutrientsPlayerDataSyncS2CPacket(FriendlyByteBuf buf) {
         int tempArrayLength = buf.readInt();
-        this.nutrientGroups = new NutrientGroup[tempArrayLength];
-        for(int i=0; i < tempArrayLength; i++) {
-            this.nutrientGroups[i] = new NutrientGroup(buf);
+        nutrientAmounts = new double[tempArrayLength];
+        exhaustionLevels = new double[tempArrayLength];
+        nutrientScores = new int[tempArrayLength];
+        ranges = new int[tempArrayLength];
+        for(int i=0; i<tempArrayLength; i++) {
+            nutrientAmounts[i] = buf.readDouble();
+            exhaustionLevels[i] = buf.readDouble();
+            nutrientScores[i] = buf.readInt();
+            ranges[i] = buf.readInt();
         }
-        this.nutrientAmounts = new double[nutrientGroups.length];
-        this.exhaustionLevels = new double[nutrientGroups.length];
-        this.nutrientRanges = new int[nutrientGroups.length];
-        this.nutrientScores = new int[nutrientGroups.length];
-        this.activeDietEffects = new ArrayList<>();
-        for(int i=0; i< nutrientAmounts.length; i++) {
-            this.nutrientAmounts[i] = buf.readDouble();
-            this.exhaustionLevels[i] = buf.readDouble();
-            this.nutrientRanges[i] = buf.readInt();
-            this.nutrientScores[i] = buf.readInt();
+        tempArrayLength = buf.readInt();
+        sumScores = new int[tempArrayLength];
+        for(int i=0; i<tempArrayLength; i++) {
+            sumScores[i] = buf.readInt();
         }
-        this.totalScore = buf.readInt();
 
         int listLength = buf.readInt();
+        activeDietEffects = new ArrayList<>();
         for(int i=0; i < listLength; i++) {
             int stringLength = buf.readInt();
             String attributeDescriptionId = buf.readCharSequence(stringLength, Charset.defaultCharset()).toString();
@@ -65,17 +62,17 @@ public class NutrientsDataSyncS2CPacket {
     }
 
     public void toBytes(FriendlyByteBuf buf) {
-        buf.writeInt(nutrientGroups.length);
-        for(int i=0; i < nutrientGroups.length; i++) {
-            nutrientGroups[i].toBytes(buf);
-        }
+        buf.writeInt(nutrientAmounts.length);
         for(int i=0; i< nutrientAmounts.length; i++) {
             buf.writeDouble(nutrientAmounts[i]);
             buf.writeDouble(exhaustionLevels[i]);
-            buf.writeInt(nutrientRanges[i]);
             buf.writeInt(nutrientScores[i]);
+            buf.writeInt(ranges[i]);
         }
-        buf.writeInt(totalScore);
+        buf.writeInt(sumScores.length);
+        for(int i=0; i<sumScores.length; i++) {
+            buf.writeInt(sumScores[i]);
+        }
 
         buf.writeInt(activeDietEffects.size());
         for(int i=0; i < activeDietEffects.size(); i++) {
@@ -90,7 +87,7 @@ public class NutrientsDataSyncS2CPacket {
         NetworkEvent.Context context = supplier.get();;
         context.enqueueWork(() -> {
             //CLIENT CODE
-            ClientNutrientData.set(nutrientGroups, nutrientAmounts, exhaustionLevels, nutrientRanges, nutrientScores, totalScore, activeDietEffects);
+            ClientNutrientData.setPlayerData(nutrientAmounts, exhaustionLevels, nutrientScores, ranges, sumScores, activeDietEffects);
         });
 
         return true;

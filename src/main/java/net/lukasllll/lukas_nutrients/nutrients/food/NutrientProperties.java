@@ -1,6 +1,6 @@
 package net.lukasllll.lukas_nutrients.nutrients.food;
 
-import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 
 public class NutrientProperties {
     //Through the ItemMixin class, every item now has NutrientProperties
@@ -40,7 +40,7 @@ public class NutrientProperties {
     public boolean getPlaceableEdible() { return placeableEdible; }
 
     public double getNutrientAmount(String nutrientID) {
-        int arrayIndex = NutrientGroup.getArrayIndex(nutrientID);
+        int arrayIndex = NutrientManager.getNutrientArrayIndex(nutrientID);
         return getNutrientAmount(arrayIndex);
     }
 

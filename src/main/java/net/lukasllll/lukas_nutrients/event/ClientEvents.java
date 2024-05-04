@@ -2,10 +2,12 @@ package net.lukasllll.lukas_nutrients.event;
 
 import com.mojang.datafixers.util.Either;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.NutrientButton;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.screens.NutrientScreen;
-import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
+import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
@@ -64,16 +66,16 @@ public class ClientEvents {
             }
             double[] nutrientAmounts = ((INutrientPropertiesHaver) item).getFoodNutrientProperties().getNutrientAmounts();
             int servings = ((INutrientPropertiesHaver) item).getFoodNutrientProperties().getServings();
-            NutrientGroup[] groups = NutrientGroup.getNutrientGroups();
+            Nutrient[] nutrients = ClientNutrientData.getNutrients();
             //The Either.class is weird and I don't like it
             List<Either<FormattedText, TooltipComponent>> toolTipElements = event.getTooltipElements();     //tooltips added to this list will be rendered
 
             //I first loop through all nutrient groups and check whether any nutrients of that type are present. If not, nothing is added
             //to the nutrientTooltipElements list. If the list turns out empty at the end, nothing is rendered at all.
             List<Either<FormattedText, TooltipComponent>> nutrientTooltipElements = new ArrayList<>();
-            for(int i=0; i< groups.length; i++) {
+            for(int i=0; i< nutrients.length; i++) {
                 if(nutrientAmounts[i] == 0) continue;
-                String text = "+" + round(nutrientAmounts[i] / servings) + " " + groups[i].getDisplayname();
+                String text = "+" + round(nutrientAmounts[i] / servings) + " " + nutrients[i].getDisplayname();
                 nutrientTooltipElements.add(Either.left(Component.literal(text).withStyle(ChatFormatting.GOLD)));
             }
             if(nutrientTooltipElements.isEmpty()) {

@@ -3,11 +3,12 @@ package net.lukasllll.lukas_nutrients.event;
 import net.lukasllll.lukas_nutrients.BasicGameTest;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.commands.NutrientsCommand;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.food.NutrientProperties;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
-import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffects;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -61,9 +62,10 @@ public class ModEvents {
                     nutrients.recalculateAll();
                     nutrients.updateClient(player);
                     int previousMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
-                    DietEffects.removeAll(player);
-                    DietEffects.apply(player, previousMaxHealth);
+                    NutrientEffects.removeAll(player);
+                    NutrientEffects.apply(player, previousMaxHealth);
                 });
+                NutrientManager.updateClient(player);
             }
         }
     }
@@ -76,7 +78,7 @@ public class ModEvents {
     @SubscribeEvent
     public static  void onPlayerLeaveServer(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer player) {
-            DietEffects.remove(player);
+            NutrientEffects.remove(player);
         }
     }
 
@@ -86,7 +88,7 @@ public class ModEvents {
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 nutrients.setToDefault();
                 nutrients.updateClient(player);
-                DietEffects.apply(player);
+                NutrientEffects.apply(player);
             });
         }
     }
@@ -109,7 +111,7 @@ public class ModEvents {
                 player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                     nutrients.addAmounts(properties.getNutrientAmounts(), properties.getServings());
                     nutrients.updateClient(player);
-                    DietEffects.apply(player);
+                    NutrientEffects.apply(player);
                 });
             }
         }
@@ -123,7 +125,7 @@ public class ModEvents {
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 nutrients.addAmounts(properties.getNutrientAmounts(), properties.getServings());
                 nutrients.updateClient(player);
-                DietEffects.apply(player);
+                NutrientEffects.apply(player);
             });
         }
     }

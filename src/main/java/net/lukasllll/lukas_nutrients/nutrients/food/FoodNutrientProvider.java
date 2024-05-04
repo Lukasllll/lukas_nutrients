@@ -5,7 +5,7 @@ import net.lukasllll.lukas_nutrients.config.BaseNutrientsConfig;
 import net.lukasllll.lukas_nutrients.config.EdibleBlocksConfig;
 import net.lukasllll.lukas_nutrients.integration.IntegrationHelper;
 import net.lukasllll.lukas_nutrients.integration.farmersdelight.FarmersDelightFoodNutrientProvider;
-import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
 import net.minecraft.client.Minecraft;
@@ -96,9 +96,9 @@ public class FoodNutrientProvider {
             eachAmount = nutrientEffectiveness * 1.0 / differentNutrientGroups;
             isIngredient = true;
         }
-        double[] amounts = new double[NutrientGroup.getNutrientGroups().length];
+        double[] amounts = new double[NutrientManager.getNutrients().length];
         for(int i=0; i<ids.size(); i++) {
-            int arrayIndex = NutrientGroup.getArrayIndex(ids.get(i));
+            int arrayIndex = NutrientManager.getNutrientArrayIndex(ids.get(i));
             if(arrayIndex != -1) {
                 amounts[arrayIndex] = eachAmount;
             }
@@ -157,12 +157,12 @@ public class FoodNutrientProvider {
         //we now loop through each recipe to find the largest amount of nutrients they can provide
         for(Recipe<?> currentRecipe: recipes) {
             int outputStackCount = currentRecipe.getResultItem(Minecraft.getInstance().level.registryAccess()).getCount();
-            double[] currentRecipeNutrientAmounts = new double[NutrientGroup.getNutrientGroups().length]; //this saves the nutrient amount of the currentRecipe
+            double[] currentRecipeNutrientAmounts = new double[NutrientManager.getNutrients().length]; //this saves the nutrient amount of the currentRecipe
             double currentRecipeTotalNutrientAmounts = 0;
             //for each ingredient
             for(Ingredient ingredient: currentRecipe.getIngredients()) {
                 //find the largest amount of nutrients of that ingredient
-                double[] largestNutrientAmounts_2 = new double[NutrientGroup.getNutrientGroups().length];   // this saves the largest amount of nutrients provided
+                double[] largestNutrientAmounts_2 = new double[NutrientManager.getNutrients().length];   // this saves the largest amount of nutrients provided
                                                                                                             // by any item that can be used for this ingredient
                 double largestTotalNutrientAmounts_2 = 0;
                 ItemStack[] ingredientStacks = ingredient.getItems();
@@ -236,7 +236,7 @@ public class FoodNutrientProvider {
     }
 
     public static void assignNoNutrients(Item item) {
-        double[] nutrientAmounts = new double[NutrientGroup.getNutrientGroups().length];
+        double[] nutrientAmounts = new double[NutrientManager.getNutrients().length];
         boolean isIngredient = !item.isEdible();
         ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(nutrientAmounts, isIngredient));
     }

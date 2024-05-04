@@ -1,6 +1,7 @@
 package net.lukasllll.lukas_nutrients.networking;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
-import net.lukasllll.lukas_nutrients.networking.packet.NutrientsDataSyncS2CPacket;
+import net.lukasllll.lukas_nutrients.networking.packet.NutrientsGlobalDataSyncS2CPacket;
+import net.lukasllll.lukas_nutrients.networking.packet.NutrientsPlayerDataSyncS2CPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkDirection;
@@ -26,15 +27,16 @@ public class ModMessages {
 
         INSTANCE = net;
 
-        net.messageBuilder(NutrientsDataSyncS2CPacket.class, generateID(), NetworkDirection.PLAY_TO_CLIENT)
-                .decoder(NutrientsDataSyncS2CPacket::new)
-                .encoder(NutrientsDataSyncS2CPacket::toBytes)
-                .consumerMainThread(NutrientsDataSyncS2CPacket::handle)
+        net.messageBuilder(NutrientsPlayerDataSyncS2CPacket.class, generateID(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(NutrientsPlayerDataSyncS2CPacket::new)
+                .encoder(NutrientsPlayerDataSyncS2CPacket::toBytes)
+                .consumerMainThread(NutrientsPlayerDataSyncS2CPacket::handle)
                 .add();
-    }
-
-    public static <MSG> void sendToServer(MSG message) {
-        INSTANCE.sendToServer(message);
+        net.messageBuilder(NutrientsGlobalDataSyncS2CPacket.class, generateID(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(NutrientsGlobalDataSyncS2CPacket::new)
+                .encoder(NutrientsGlobalDataSyncS2CPacket::toBytes)
+                .consumerMainThread(NutrientsGlobalDataSyncS2CPacket::handle)
+                .add();
     }
 
     public static <MSG> void sendToPlayer(MSG message, ServerPlayer player) {

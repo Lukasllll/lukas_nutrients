@@ -1,9 +1,9 @@
 package net.lukasllll.lukas_nutrients.config;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
-import net.lukasllll.lukas_nutrients.nutrients.NutrientGroup;
+import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
-import net.lukasllll.lukas_nutrients.nutrients.player.effects.DietEffects;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffects;
 import net.minecraftforge.fml.loading.FMLPaths;
 
 import java.io.File;
@@ -17,10 +17,10 @@ public class Config {
 
     public static void loadCommonConfigs() {
         createFolder();
-        NutrientGroupsConfig.read();
-        NutrientGroup.getFromConfig();
+        NutrientsConfig.read();
+        NutrientManager.getFromConfig();
         NutrientEffectsConfig.read();
-        DietEffects.getFromConfig();
+        NutrientEffects.getFromConfig();
         BaseNutrientsConfig.read();
         EdibleBlocksConfig.read();
         FoodNutrientProvider.getFromConfig();
