@@ -24,6 +24,7 @@ import org.apache.commons.lang3.tuple.Triple;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,9 +50,10 @@ public class NutrientScreen extends Screen {
     private static final int TEXT_COLOR = new Color(63, 63, 63).getRGB();
     private static final int SEPARATOR_COLOR = new Color(139, 139, 139).getRGB();
 
-    private Nutrient[] nutrients;
-    private Sum[] sums;
-    private String[] displayOrder;
+    private final Nutrient[] nutrients;
+    private final Sum[] sums;
+    private final String[] displayOrder;
+    private final HashMap<String, String> shortenedNameById;
 
     private NativeImage iconsBaseImage = null;
     private ResourceLocation[] nutrientBarLocations;
@@ -59,7 +61,11 @@ public class NutrientScreen extends Screen {
     private ResourceLocation[] barArrowsLocation;
 
 
-    private int leftModuleWidth, middleModuleWidth, rightModuleWidth;
+    //the middle module contains the bars which are always 101 pixels wide
+    private final int middleModuleWidth = 101;
+    //the right module contains the numbers and is always 34 pixels wide
+    private final int rightModuleWidth = 34;
+    private int leftModuleWidth;
     private int totalWidth;
     private int totalHeight;
 
@@ -73,11 +79,20 @@ public class NutrientScreen extends Screen {
         nutrients = ClientNutrientData.getNutrients();
         sums = ClientNutrientData.getSums();
         displayOrder = ClientNutrientData.getDisplayOrder();
+        shortenedNameById = new HashMap<>();
     }
 
     @Override
     protected void init() {
         super.init();
+
+        int maxDisplayNameWidth = super.width - (horizontalSpacing[0] + 16 + horizontalSpacing[1] + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3] + rightModuleWidth + horizontalSpacing[4]);
+        for(Nutrient nutrient : nutrients) {
+            shortenedNameById.put(nutrient.getID(), shortenStringIfNecessary(nutrient.getDisplayname(), maxDisplayNameWidth));
+        }
+        for(Sum sum : sums) {
+            shortenedNameById.put(sum.getID(), shortenStringIfNecessary(sum.getDisplayname(), maxDisplayNameWidth));
+        }
     }
     /*
     Method is needed to close the screen on pressing 'n' again.
@@ -137,13 +152,13 @@ public class NutrientScreen extends Screen {
                 //render display item
                 graphics.renderItem(((Nutrient)element).getDisplayItemStack(), startX + horizontalSpacing[0], currentY);
                 //render Name
-                graphics.drawString(this.font, ((Nutrient)element).getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+                graphics.drawString(this.font, shortenedNameById.get(element.getID()), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
                 currentY += 16 + verticalSpacing[1];
             } else if(element instanceof Sum) {
                 //render sum symbol
                 graphics.blit(ICONS, startX + horizontalSpacing[0], currentY, 16, 16, 0, 0, 16, 16, 256, 256);
                 //render Name
-                graphics.drawString(this.font, ((Sum)element).getDisplayname(), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+                graphics.drawString(this.font, shortenedNameById.get(element.getID()), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
                 currentY += 16 + verticalSpacing[1];
             }
         }
@@ -342,10 +357,6 @@ public class NutrientScreen extends Screen {
     private void calculateDimensions() {
         //each line of the left module consists of one 16x16 item sprite, some empty space and the display name of a food group
         leftModuleWidth = 16 + horizontalSpacing[1] + findLongestTextDisplayWidth();
-        //the middle module contains the bars which are always 101 pixels wide
-        middleModuleWidth = 101;
-        //the right module contains the numbers and is always 34 pixels wide
-        rightModuleWidth = 34;
         //the total width with the spacing between modules
         totalWidth = horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3] + rightModuleWidth + horizontalSpacing[4];
 
@@ -382,14 +393,8 @@ public class NutrientScreen extends Screen {
     }
 
     private int getTextDisplayWidthFromID(String id) {
-        if(id.equals(NutrientManager.DIVIDER_ID)) return 0;
-        for(Sum sum : sums) {
-            if(sum.getID().equals(id)) return this.font.width(sum.getDisplayname());
-        }
-        for(Nutrient nutrient : nutrients) {
-            if(nutrient.getID().equals(id)) return this.font.width(nutrient.getDisplayname());
-        }
-        return 0;
+        String shortenedName = shortenedNameById.getOrDefault(id, "");
+        return this.font.width(shortenedName);
     }
 
     private DisplayElement getDisplayElementFromID(String id) {
@@ -401,6 +406,14 @@ public class NutrientScreen extends Screen {
             if(nutrient.getID().equals(id)) return nutrient;
         }
         return null;
+    }
+
+    private String shortenStringIfNecessary(String s, int maxWidth) {
+        int stringWidth = this.font.width(s);
+        if(stringWidth <= maxWidth) return s;
+        int dotdotdotWidth = font.width("...");
+        maxWidth -= dotdotdotWidth;
+        return font.plainSubstrByWidth(s, maxWidth) + "...";
     }
 
     private ResourceLocation[] getSumBarLocations() {
