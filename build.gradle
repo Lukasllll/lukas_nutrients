@@ -206,6 +206,16 @@ publishing {
         maven {
             url "file://${project.projectDir}/mcmodsrepo"
         }
+        if (System.getenv('PUBLISH_TO_GITHUB') == 'true') {
+            maven {
+                name = "GitHubPackages"
+                url = "https://github.com/Lukasllll/lukas_nutrients"
+                credentials {
+                    username = System.getenv("GITHUB_ACTOR")
+                    password = System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }    
     }
 }
 javadoc {
