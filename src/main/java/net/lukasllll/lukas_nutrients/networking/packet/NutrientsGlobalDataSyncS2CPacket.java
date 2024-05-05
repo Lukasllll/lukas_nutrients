@@ -2,7 +2,7 @@ package net.lukasllll.lukas_nutrients.networking.packet;
 
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
-import net.lukasllll.lukas_nutrients.nutrients.Sum;
+import net.lukasllll.lukas_nutrients.nutrients.Operator;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
@@ -12,13 +12,13 @@ import java.util.function.Supplier;
 public class NutrientsGlobalDataSyncS2CPacket {
 
     private final Nutrient[] nutrients;
-    private final Sum[] sums;
+    private final Operator[] operators;
 
     private final String[] displayOrder;
 
-    public NutrientsGlobalDataSyncS2CPacket(Nutrient[] nutrients, Sum[] sums, String[] displayOrder) {
+    public NutrientsGlobalDataSyncS2CPacket(Nutrient[] nutrients, Operator[] operators, String[] displayOrder) {
         this.nutrients = nutrients;
-        this.sums = sums;
+        this.operators = operators;
         this.displayOrder = displayOrder;
     }
 
@@ -29,9 +29,9 @@ public class NutrientsGlobalDataSyncS2CPacket {
             nutrients[i] = new Nutrient(buf);
         }
         tempArrayLength = buf.readInt();
-        sums = new Sum[tempArrayLength];
+        operators = new Operator[tempArrayLength];
         for(int i=0; i<tempArrayLength; i++) {
-            sums[i] = new Sum(buf);
+            operators[i] = Operator.createOperator(buf);
         }
         tempArrayLength = buf.readInt();
         displayOrder = new String[tempArrayLength];
@@ -46,9 +46,9 @@ public class NutrientsGlobalDataSyncS2CPacket {
         for(int i=0; i<nutrients.length; i++) {
             nutrients[i].toBytes(buf);
         }
-        buf.writeInt(sums.length);
-        for(int i=0; i<sums.length; i++) {
-            sums[i].toBytes(buf);
+        buf.writeInt(operators.length);
+        for(int i = 0; i< operators.length; i++) {
+            operators[i].toBytes(buf);
         }
         buf.writeInt(displayOrder.length);
         for(int i=0; i<displayOrder.length; i++) {
@@ -61,7 +61,7 @@ public class NutrientsGlobalDataSyncS2CPacket {
         NetworkEvent.Context context = supplier.get();;
         context.enqueueWork(() -> {
             //CLIENT CODE
-            ClientNutrientData.setGlobalData(nutrients, sums, displayOrder);
+            ClientNutrientData.setGlobalData(nutrients, operators, displayOrder);
         });
 
         return true;

@@ -3,17 +3,18 @@ package net.lukasllll.lukas_nutrients.nutrients.player;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
 import net.lukasllll.lukas_nutrients.networking.packet.NutrientsPlayerDataSyncS2CPacket;
+import net.lukasllll.lukas_nutrients.nutrients.ICalcElement;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
-import net.lukasllll.lukas_nutrients.nutrients.Sum;
+import net.lukasllll.lukas_nutrients.nutrients.Operator;
 import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodData;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class PlayerNutrients {
 
@@ -21,12 +22,13 @@ public class PlayerNutrients {
     public static final double PASSIVE_DECAY_RATE = 0.1;
 
     private Nutrient[] nutrients;
-    private Sum[] sums;
-    private double[] amounts;               //how many nutrients the player has of each group
+    private Operator[] operators;
+    private double[] nutrientAmounts;               //how many nutrients the player has of each group
     private double[] exhaustionLevels;      //how much exhaustion each group has. Exhaustion increases until it reaches 4.0. Then resets and nutrients are subtracted
     private int[] ranges;                   //in which of the five segments the amount falls
-    private int[] nutrientScores;                   //the score of the given range
-    private int[] sumScores;
+    private int[] nutrientScores;           //the score of the given range
+    private int[] operatorAmounts;
+    private int[] operatorScores;
 
     private boolean dirty = true;           //dirty = true, when something has changed and the client needs to be updated
 
@@ -34,13 +36,14 @@ public class PlayerNutrients {
 
     public PlayerNutrients() {
         this.nutrients = NutrientManager.getNutrients();
-        this.sums = NutrientManager.getSums();
+        this.operators = NutrientManager.getOperators();
 
-        this.amounts = new double[this.nutrients.length];
+        this.nutrientAmounts = new double[this.nutrients.length];
         this.exhaustionLevels = new double[this.nutrients.length];
         this.ranges = new int[this.nutrients.length];
         this.nutrientScores = new int[this.nutrients.length];
-        this.sumScores = new int[this.sums.length];
+        this.operatorAmounts = new int[this.operators.length];
+        this.operatorScores = new int[this.operators.length];
 
         this.setToDefault();
     }
@@ -56,16 +59,17 @@ public class PlayerNutrients {
     public void reload() {
         HashMap<String, Pair<Double, Double>> previousAmountsAndExhaustion = new HashMap<>();
         for(int i=0; i<nutrients.length; i++) {
-            previousAmountsAndExhaustion.put(nutrients[i].getID(), Pair.of(amounts[i], exhaustionLevels[i]));
+            previousAmountsAndExhaustion.put(nutrients[i].getID(), Pair.of(nutrientAmounts[i], exhaustionLevels[i]));
         }
 
         this.nutrients = NutrientManager.getNutrients();
-        this.sums = NutrientManager.getSums();
-        this.amounts = new double[this.nutrients.length];
+        this.operators = NutrientManager.getOperators();
+        this.nutrientAmounts = new double[this.nutrients.length];
         this.exhaustionLevels = new double[this.nutrients.length];
         this.ranges = new int[this.nutrients.length];
         this.nutrientScores = new int[this.nutrients.length];
-        this.sumScores = new int[this.sums.length];
+        this.operatorAmounts = new int[this.operators.length];
+        this.operatorScores = new int[this.operators.length];
 
         this.setToDefault();
 
@@ -81,45 +85,44 @@ public class PlayerNutrients {
         for(int i = 0; i< nutrients.length; i++) {
             recalculateNutrient(i);
         }
+        updateOperators();
     }
 
     //recalculates the range and score for the given nutrients and updates the totalScore accordingly
     public void recalculateNutrient(int nutrientIndex) {
-        HashMap<String, List<Integer>> nutrientSumHashMap = NutrientManager.getNutrientSumHashMap();
-        //subtracts the old score from all relevant sums. The new score will be added back in at the end.
-        for(int sumIndex : nutrientSumHashMap.get(nutrients[nutrientIndex].getID())) {
-            sumScores[sumIndex] -= nutrientScores[nutrientIndex];
-        }
-        //sets the range to -1 to mark, that it is currently not determined.
-        ranges[nutrientIndex] = -1;
-        //gets the point ranges (where the different segments start/end)
-        int[] pointRanges = nutrients[nutrientIndex].getPointRanges();
-        //the range is determined by looping through the segment end points. If the nutrient amount is smaller than the end point value,
-        //the value falls inside that segment.
-        for(int i=0; i<pointRanges.length; i++) {
-            if(Math.max(0,amounts[nutrientIndex] -1) < pointRanges[i]) {
-                ranges[nutrientIndex] = i;
-                break;
-            }
-        }
-        //if the range has not yet been determined, the amount must fall in the last segment
-        if(ranges[nutrientIndex] == -1) {
-            ranges[nutrientIndex] = 4;
-        }
+        //get range
+        ranges[nutrientIndex] = nutrients[nutrientIndex].getCurrentRange(nutrientAmounts[nutrientIndex]);
+
         //scores are given in accordance with the range
-        switch(ranges[nutrientIndex]) {
-            case 0:
-            case 4: nutrientScores[nutrientIndex] = 0; break;
-            case 1:
-            case 3: nutrientScores[nutrientIndex] = 1; break;
-            case 2: nutrientScores[nutrientIndex] = 2; break;
-        }
-        //the new score is added back in
-        for(int sumIndex : nutrientSumHashMap.get(nutrients[nutrientIndex].getID())) {
-            sumScores[sumIndex] += nutrientScores[nutrientIndex];
+        switch (ranges[nutrientIndex]) {
+            case 0, 4 -> nutrientScores[nutrientIndex] = 0;
+            case 1, 3 -> nutrientScores[nutrientIndex] = 1;
+            case 2 -> nutrientScores[nutrientIndex] = 2;
         }
         //something changed, so the Object is now dirty
         dirty = true;
+    }
+
+    public void updateOperators() {
+        //update the relevant operators:
+        for(Operator operator : NutrientManager.getOperators()) {
+            int operatorIndex = NutrientManager.getOperatorArrayIndex(operator.getID());
+            ArrayList<Integer> inputAmounts = new ArrayList<>();
+            ArrayList<Integer> inputScores = new ArrayList<>();
+            for(ICalcElement input : operator.getInputs()) {
+                if(input instanceof Nutrient) {
+                    int inputNutrientIndex = NutrientManager.getNutrientArrayIndex(input.getID());
+                    inputAmounts.add((int) nutrientAmounts[inputNutrientIndex]);
+                    inputScores.add(nutrientScores[inputNutrientIndex]);
+                } else {
+                    int inputOperatorIndex = NutrientManager.getOperatorArrayIndex(input.getID());
+                    inputAmounts.add(operatorAmounts[inputOperatorIndex]);
+                    inputScores.add(operatorScores[inputOperatorIndex]);
+                }
+            }
+            operatorAmounts[operatorIndex] = operator.getCurrentAmount(inputAmounts.iterator(), inputScores.iterator());
+            operatorScores[operatorIndex] = operator.getCurrentScore(operatorAmounts[operatorIndex]);
+        }
     }
 
     //this function handles how nutrients decay over time. It is called every tick
@@ -189,7 +192,7 @@ public class PlayerNutrients {
     }
 
     public void addAmount(int nutrient, double amount){
-        setAmount(nutrient, amounts[nutrient] + amount);
+        setAmount(nutrient, nutrientAmounts[nutrient] + amount);
     }
 
     public void setAmount(String nutrientID, double amount) {
@@ -200,24 +203,25 @@ public class PlayerNutrients {
 
     //sets the amount of a given nutrient and then recalculates
     public void setAmount(int nutrientIndex, double amount) {
-        amounts[nutrientIndex] = Math.min(Math.max(0, amount), 24);
+        nutrientAmounts[nutrientIndex] = Math.min(Math.max(0, amount), 24);
         recalculateNutrient(nutrientIndex);
+        updateOperators();
         dirty = true;
     }
 
     public int getScore(String targetID) {
-        for(int i=0; i<sums.length; i++) {
-            if(sums[i].getID().equals(targetID)) return sumScores[i];
+        for(int i = 0; i< operators.length; i++) {
+            if(operators[i].getID().equals(targetID)) return operatorAmounts[i];
         }
         for(int i=0; i<nutrients.length; i++) {
-            if(nutrients[i].getID().equals(targetID)) return (int) amounts[i];
+            if(nutrients[i].getID().equals(targetID)) return (int) nutrientAmounts[i];
         }
 
         return 0;
     }
 
     public double[] getNutrientAmounts() {
-        return amounts;
+        return nutrientAmounts;
     }
 
     public double[] getExhaustionLevels() {
@@ -227,8 +231,12 @@ public class PlayerNutrients {
     public int[] getNutrientScores() {
         return nutrientScores;
     }
-    public int[] getSumScores() {
-        return sumScores;
+    public int[] getOperatorAmounts() {
+        return operatorAmounts;
+    }
+
+    public int[] getOperatorScores() {
+        return operatorScores;
     }
 
     public int[] getNutrientRanges() {
@@ -242,7 +250,7 @@ public class PlayerNutrients {
     }
 
     public double getNutrientAmount(int i) {
-        return amounts[i];
+        return nutrientAmounts[i];
     }
 
     public String getDisplayName(String nutrientID) {
@@ -253,20 +261,20 @@ public class PlayerNutrients {
 
     public void copyFrom(PlayerNutrients source) {
         this.nutrients = source.nutrients;
-        this.amounts = source.amounts;
+        this.nutrientAmounts = source.nutrientAmounts;
         this.exhaustionLevels = source.exhaustionLevels;
     }
 
     //sends a packet to the client containing all relevant information
     public void updateClient(ServerPlayer player) {
-        ModMessages.sendToPlayer(new NutrientsPlayerDataSyncS2CPacket(getNutrientAmounts(), getExhaustionLevels(), getNutrientScores(), getNutrientRanges(), getSumScores(), NutrientEffects.getSimplifiedList(player)), player);
+        ModMessages.sendToPlayer(new NutrientsPlayerDataSyncS2CPacket(getNutrientAmounts(), getExhaustionLevels(), getNutrientScores(), getOperatorAmounts(), getOperatorScores(), NutrientEffects.getSimplifiedList(player)), player);
         dirty = false;
     }
 
     //saves nutrient amounts and exhaustion. All other values can be calculated from these two
     public void saveNBTData(CompoundTag nbt) {
         for(int i = 0; i< nutrients.length; i++) {
-            nbt.putDouble(LukasNutrients.MOD_ID + "_nutrients_" + nutrients[i].getID(), amounts[i]);
+            nbt.putDouble(LukasNutrients.MOD_ID + "_nutrients_" + nutrients[i].getID(), nutrientAmounts[i]);
             nbt.putDouble(LukasNutrients.MOD_ID + "_nutrients_" + nutrients[i].getID() + "_exhaustion", exhaustionLevels[i]);
         }
     }

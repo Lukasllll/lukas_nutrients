@@ -5,19 +5,20 @@ import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
-import net.lukasllll.lukas_nutrients.nutrients.Sum;
+import net.lukasllll.lukas_nutrients.nutrients.Operator;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class NutrientsConfig {
     public static final String FILE_PATH = Config.FOLDER_FILE_PATH + "/nutrient_groups.json";
 
     public static NutrientsConfig DATA;
     public ConfigNutrient[] nutrients;
-    public ConfigSum[] sums;
+    public ConfigOperator[] operators;
     public String[] displayOrder;
 
     public static void create() {
@@ -52,9 +53,9 @@ public class NutrientsConfig {
     }
 
 
-    public NutrientsConfig(ConfigNutrient[] nutrients, ConfigSum[] sums, String[] displayOrder) {
+    public NutrientsConfig(ConfigNutrient[] nutrients, ConfigOperator[] operators, String[] displayOrder) {
         this.nutrients = nutrients;
-        this.sums = sums;
+        this.operators = operators;
         this.displayOrder = displayOrder;
     }
 
@@ -66,15 +67,16 @@ public class NutrientsConfig {
         nutrients[3] = new ConfigNutrient("vegetables", "Vegetables", "minecraft:carrot", 8, 16, 22, 24, 16);
         nutrients[4] = new ConfigNutrient("sugars", "Sugars", "minecraft:honey_bottle", 0, 2, 6, 14, 2);
 
-        ConfigSum[] sums = new ConfigSum[1];
-        sums[0] = new ConfigSum("total", "Diet", 4, 6, "fruits", "grains", "proteins", "vegetables", "sugars");
+        ConfigOperator[] operators = new ConfigOperator[1];
+        operators[0] = new ConfigOperator("total", "Diet", "Sum", 4, 6, -1, -1, 5, false, "fruits", "grains", "proteins", "vegetables", "sugars");
 
         String[] displayOrder = new String[]{"fruits", "grains", "proteins", "vegetables", "sugars", NutrientManager.DIVIDER_ID, "total"};
 
-        return new NutrientsConfig(nutrients, sums, displayOrder);
+        return new NutrientsConfig(nutrients, operators, displayOrder);
     }
 
     public static Nutrient[] getNutrients() {
+        if(DATA.nutrients == null) return new Nutrient[0];
         Nutrient[] out = new Nutrient[DATA.nutrients.length];
         for(int i=0; i<DATA.nutrients.length; i++) {
             out[i] = DATA.nutrients[i].toNutrient();
@@ -82,10 +84,11 @@ public class NutrientsConfig {
         return out;
     }
 
-    public static Sum[] getSums() {
-        Sum[] out = new Sum[DATA.sums.length];
-        for(int i=0; i<DATA.sums.length; i++) {
-            out[i] = DATA.sums[i].toSum();
+    public static Operator[] getOperators() {
+        if(DATA.operators == null) return new Operator[0];
+        Operator[] out = new Operator[DATA.operators.length];
+        for(int i = 0; i<DATA.operators.length; i++) {
+            out[i] = DATA.operators[i].toOperator();
         }
         return out;
     }
@@ -116,21 +119,42 @@ public class NutrientsConfig {
         }
     }
 
-    private static class ConfigSum {
-        public String sumID;
+    private static class ConfigOperator {
+        public String operatorID;
         public String displayName;
-        String[] summandIDs;
-        int[] ranges;
+        public String operatorType;
+        public String[] inputIds;
+        public int[] ranges;
+        public int basePoint;
+        public boolean score;
 
-        public ConfigSum(String sumID, String displayName, int r1, int r2, String... summandIDs) {
-            this.sumID = sumID;
+        public ConfigOperator(String operatorID, String displayName, String operatorType, int r1, int r2, int r3, int r4, int basePoint, boolean score, String... inputIDs) {
+            this.operatorID = operatorID;
             this.displayName = displayName;
-            this.ranges = new int[]{r1, r2};
-            this.summandIDs = summandIDs;
+            this.operatorType = operatorType;
+            ArrayList<Integer> tempRanges = new ArrayList<>();
+            if(r1 != -1) tempRanges.add(r1);
+            if(r2 != -1) tempRanges.add(r2);
+            if(r3 != -1) tempRanges.add(r3);
+            if(r4 != -1) tempRanges.add(r4);
+            this.ranges = new int[tempRanges.size()];
+            for(int i = 0; i< ranges.length; i++) ranges[i] = tempRanges.get(i);
+            this.basePoint = basePoint;
+            this.score = score;
+            this.inputIds = inputIDs;
         }
 
-        public Sum toSum() {
-            return new Sum(sumID, displayName, ranges, summandIDs);
+        public Operator toOperator() {
+            return Operator.createOperator(getOperatorTypeFromString(operatorType), operatorID, displayName, ranges, basePoint, score, inputIds);
+        }
+
+        public int getOperatorTypeFromString(String s) {
+            switch(s) {
+                case "Sum" -> { return 0;  }
+                case "Min" -> { return 1; }
+                case "Max" -> { return 2; }
+                default -> { return -1; }
+            }
         }
     }
 }

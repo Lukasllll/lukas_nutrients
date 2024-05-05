@@ -14,8 +14,9 @@ public class NutrientManager {
     public static final String DIVIDER_ID = "divider";
 
     private static Nutrient[] nutrients;
-    private static Sum[] sums;
-    private static HashMap<String, List<Integer>> nutrientSumHashMap;
+    private static Operator[] operators;
+    private static HashMap<String, Integer> operatorArrayIndexMap;
+    private static HashMap<String, List<Operator>> calcElementUsesMap;
 
     private static String[] displayOrder;
 
@@ -24,31 +25,33 @@ public class NutrientManager {
         return nutrients;
     }
 
-    public static Sum[] getSums() {
-        if(sums == null) getFromConfig();
-        return sums;
-    }
-
-    public static HashMap<String, List<Integer>> getNutrientSumHashMap() {
-        if(nutrientSumHashMap == null) getFromConfig();
-        return nutrientSumHashMap;
+    public static Operator[] getOperators() {
+        if(operators == null) getFromConfig();  //TODO!!!
+        return operators;
     }
 
     public static void getFromConfig() {
         nutrients = NutrientsConfig.getNutrients();
-        sums = NutrientsConfig.getSums();
+        operators = NutrientsConfig.getOperators();
         displayOrder = NutrientsConfig.getDisplayOrder();
 
-        nutrientSumHashMap = new HashMap<>();
+        operatorArrayIndexMap = new HashMap<>();
+        calcElementUsesMap = new HashMap<>();
+
         for(Nutrient nutrient : nutrients) {
-            nutrientSumHashMap.put(nutrient.getID(), new ArrayList<>());
+            calcElementUsesMap.put(nutrient.getID(), new ArrayList<>());
         }
-        for(Sum sum : sums) {
-            for(String summandID : sum.getSummandIDs()) {
-                Nutrient summand = getFromID(summandID);
-                if(summand != null) {
-                    nutrientSumHashMap.get(summandID).add(getSumArrayIndex(sum.getID()));
-                }
+        for(Operator operator : operators) {
+            calcElementUsesMap.put(operator.getID(), new ArrayList<>());
+        }
+
+
+        for(int i=0; i<operators.length; i++) {
+            operatorArrayIndexMap.put(operators[i].getID(), i);
+            operators[i].fetchInputs(false);
+            operators[i].calcMaxAmount();
+            for(ICalcElement input : operators[i].getInputs()) {
+                calcElementUsesMap.get(input.getID()).add(operators[i]);
             }
         }
     }
@@ -63,16 +66,11 @@ public class NutrientManager {
         return -1;
     }
 
-    public static int getSumArrayIndex(String nutrientID) {
-        for(int i = 0; i< sums.length; i++) {
-            if(sums[i].getID().equals(nutrientID)) {
-                return i;
-            }
-        }
-        return -1;
+    public static int getOperatorArrayIndex(String operatorID) {
+        return operatorArrayIndexMap.getOrDefault(operatorID, -1);
     }
 
-    public static Nutrient getFromID(String nutrientID) {
+    public static Nutrient getNutrientFromID(String nutrientID) {
         for(Nutrient nutrient : nutrients) {
             if(nutrient.getID().equals(nutrientID)) {
                 return  nutrient;
@@ -81,7 +79,18 @@ public class NutrientManager {
         return null;
     }
 
+    public static Operator getOperatorFromID(String operatorID) {
+        int arrayIndex = operatorArrayIndexMap.getOrDefault(operatorID, -1);
+        if(arrayIndex == -1) return null;
+        return operators[arrayIndex];
+    }
+
+    public static List<Operator> getOperatorsThatUse(String inputID) {
+        return calcElementUsesMap.getOrDefault(inputID, null);
+    }
+
+
     public static void updateClient(ServerPlayer player) {
-        ModMessages.sendToPlayer(new NutrientsGlobalDataSyncS2CPacket(nutrients, sums, displayOrder), player);
+        ModMessages.sendToPlayer(new NutrientsGlobalDataSyncS2CPacket(nutrients, operators, displayOrder), player);
     }
 }

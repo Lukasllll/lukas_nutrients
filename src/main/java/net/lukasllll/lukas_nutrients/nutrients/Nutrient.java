@@ -1,6 +1,6 @@
 package net.lukasllll.lukas_nutrients.nutrients;
 
-import net.lukasllll.lukas_nutrients.client.graphics.gui.DisplayElement;
+import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -10,7 +10,10 @@ import net.minecraftforge.registries.RegistryObject;
 
 import java.nio.charset.Charset;
 
-public class Nutrient implements DisplayElement {
+public class Nutrient implements IDisplayElement, ICalcElement {
+
+    public static int MAX_AMOUNT = 24;
+
     private final String id;
     private String displayname;
     private int[] pointRanges;
@@ -55,11 +58,31 @@ public class Nutrient implements DisplayElement {
         buf.writeDouble(defaultAmount);
     }
 
+    public int getCurrentRange(double amount) {
+        //sets the range to -1 to mark, that it is currently not determined.
+        int range = -1;
+        //the range is determined by looping through the segment end points. If the nutrient amount is smaller than the end point value,
+        //the value falls inside that segment.
+        for(int i=0; i<pointRanges.length; i++) {
+            if(Math.max(0, amount-1) < pointRanges[i]) {
+                range = i;
+                break;
+            }
+        }
+        //if the range has not yet been determined, the amount must fall in the last segment
+        if(range == -1) {
+            range = 4;
+        }
+
+        return range;
+    }
+
     public int getMaxScore() {
-        if(pointRanges[0] < 24 && pointRanges[1] < 24 && pointRanges[2] > pointRanges[1] && pointRanges[2] > pointRanges[0]) return 2;
-        if(pointRanges[0] < 24 && pointRanges[3] > pointRanges[0]) return 1;
+        if(pointRanges[0] < MAX_AMOUNT && pointRanges[1] < 24 && pointRanges[2] > pointRanges[1] && pointRanges[2] > pointRanges[0]) return 2;
+        if(pointRanges[0] < MAX_AMOUNT && pointRanges[3] > pointRanges[0]) return 1;
         return 0;
     }
+    public int getMaxAmount() { return MAX_AMOUNT; }
 
     public String getID() {return this.id;}
     public String getDisplayname() {return this.displayname;}

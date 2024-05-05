@@ -6,20 +6,21 @@ import net.minecraft.network.FriendlyByteBuf;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class Sum extends Operator implements IDisplayElement, ICalcElement {
-
-    public Sum(String id, String displayname, int[] pointRanges, int basePoint, boolean score, String[] summandIDs) {
+public class Max extends Operator implements ICalcElement, IDisplayElement {
+    public Max(String id, String displayname, int[] pointRanges, int basePoint, boolean score, String[] summandIDs) {
         super(id, displayname, pointRanges, basePoint, score, summandIDs);
     }
 
-    public Sum(FriendlyByteBuf buf) {
+    public Max(FriendlyByteBuf buf) {
         super(buf);
     }
 
     @Override
     public int getCurrentAmount(Iterator<Integer> inputAmounts, Iterator<Integer> inputScores) {
-        AtomicInteger out = new AtomicInteger();
-        inputScores.forEachRemaining(out::addAndGet);
+        AtomicInteger out = new AtomicInteger(inputAmounts.next());
+        inputAmounts.forEachRemaining((inputAmount) -> {
+            out.set(Math.max(inputAmount, out.get()));
+        });
         return out.get();
     }
 
@@ -27,21 +28,22 @@ public class Sum extends Operator implements IDisplayElement, ICalcElement {
     public void calcMaxAmount() {
         maxAmount = 0;
         for(ICalcElement input : inputs) {
-            int inputMaxScore = input.getMaxScore();
-            if(inputMaxScore == -1 && input instanceof Operator) {
+            int inputMaxAmount = input.getMaxAmount();
+            if(inputMaxAmount == -1 && input instanceof Operator) {
                 ((Operator) input).calcMaxAmount();
-                inputMaxScore = input.getMaxScore();
+                inputMaxAmount = input.getMaxAmount();
             }
-            maxAmount += inputMaxScore;
+            if(maxAmount == 0) maxAmount = inputMaxAmount;
+            else maxAmount = Math.min(maxAmount, inputMaxAmount);
         }
     }
 
     public DisplayBarStyle getDisplayBarStyle() {
-        return DisplayBarStyle.SUM;
+        return DisplayBarStyle.NUTRIENT;
     }
 
     @Override
     public int getTextureStartX() {
-        return 0;
+        return 32;
     }
 }
