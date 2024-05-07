@@ -1,7 +1,7 @@
 package net.lukasllll.lukas_nutrients.client;
 
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
-import net.lukasllll.lukas_nutrients.nutrients.Operator;
+import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -17,13 +17,13 @@ public class ClientNutrientData {
     private static double[] exhaustionLevels;              //how much exhaustion each group has. Exhaustion increases until it reaches 4.0. Then resets and nutrients are subtracted
     private static int[] nutrientRanges;                   //in which of the five segments the amount falls
     private static int[] nutrientScores;                   //the score of the given range
-    private static int[] operatorAmounts;
+    private static double[] operatorAmounts;
     private static int[] operatorScores;
     private static List<Triple<String, AttributeModifier.Operation, Double>> activeEffects;
     private static String[] displayOrder;
 
 
-    public static void setPlayerData(double[] amounts, double[] exhaustionLevels, int[] nutrientScores, int[] operatorAmounts, int[] operatorScores, List<Triple<String, AttributeModifier.Operation, Double>> activeEffects) {
+    public static void setPlayerData(double[] amounts, double[] exhaustionLevels, int[] nutrientScores, double[] operatorAmounts, int[] operatorScores, List<Triple<String, AttributeModifier.Operation, Double>> activeEffects) {
         ClientNutrientData.nutrientAmounts = amounts;
         ClientNutrientData.exhaustionLevels = exhaustionLevels;
         ClientNutrientData.nutrientScores = nutrientScores;
@@ -105,7 +105,7 @@ public class ClientNutrientData {
         return nutrientRanges[nutrientIndex];
     }
 
-    public static int getOperatorAmount(String id) {
+    public static double getOperatorAmount(String id) {
         int operatorIndex = operatorArrayIndexMap.getOrDefault(id, -1);
         if(operatorIndex == -1) return -1;
         return operatorAmounts[operatorIndex];

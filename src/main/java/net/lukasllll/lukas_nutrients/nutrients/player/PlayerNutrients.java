@@ -3,10 +3,11 @@ package net.lukasllll.lukas_nutrients.nutrients.player;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
 import net.lukasllll.lukas_nutrients.networking.packet.NutrientsPlayerDataSyncS2CPacket;
-import net.lukasllll.lukas_nutrients.nutrients.ICalcElement;
+import net.lukasllll.lukas_nutrients.nutrients.operators.Constant;
+import net.lukasllll.lukas_nutrients.nutrients.operators.ICalcElement;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
-import net.lukasllll.lukas_nutrients.nutrients.Operator;
+import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
 import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -27,7 +28,7 @@ public class PlayerNutrients {
     private double[] exhaustionLevels;      //how much exhaustion each group has. Exhaustion increases until it reaches 4.0. Then resets and nutrients are subtracted
     private int[] ranges;                   //in which of the five segments the amount falls
     private int[] nutrientScores;           //the score of the given range
-    private int[] operatorAmounts;
+    private double[] operatorAmounts;
     private int[] operatorScores;
 
     private boolean dirty = true;           //dirty = true, when something has changed and the client needs to be updated
@@ -42,7 +43,7 @@ public class PlayerNutrients {
         this.exhaustionLevels = new double[this.nutrients.length];
         this.ranges = new int[this.nutrients.length];
         this.nutrientScores = new int[this.nutrients.length];
-        this.operatorAmounts = new int[this.operators.length];
+        this.operatorAmounts = new double[this.operators.length];
         this.operatorScores = new int[this.operators.length];
 
         this.setToDefault();
@@ -68,7 +69,7 @@ public class PlayerNutrients {
         this.exhaustionLevels = new double[this.nutrients.length];
         this.ranges = new int[this.nutrients.length];
         this.nutrientScores = new int[this.nutrients.length];
-        this.operatorAmounts = new int[this.operators.length];
+        this.operatorAmounts = new double[this.operators.length];
         this.operatorScores = new int[this.operators.length];
 
         this.setToDefault();
@@ -107,20 +108,24 @@ public class PlayerNutrients {
         //update the relevant operators:
         for(Operator operator : NutrientManager.getOperators()) {
             int operatorIndex = NutrientManager.getOperatorArrayIndex(operator.getID());
-            ArrayList<Integer> inputAmounts = new ArrayList<>();
-            ArrayList<Integer> inputScores = new ArrayList<>();
-            for(ICalcElement input : operator.getInputs()) {
-                if(input instanceof Nutrient) {
-                    int inputNutrientIndex = NutrientManager.getNutrientArrayIndex(input.getID());
-                    inputAmounts.add((int) nutrientAmounts[inputNutrientIndex]);
-                    inputScores.add(nutrientScores[inputNutrientIndex]);
-                } else {
-                    int inputOperatorIndex = NutrientManager.getOperatorArrayIndex(input.getID());
-                    inputAmounts.add(operatorAmounts[inputOperatorIndex]);
-                    inputScores.add(operatorScores[inputOperatorIndex]);
+
+            ArrayList<Double> inputValues = new ArrayList<>();
+
+            ICalcElement[] inputs = operator.getInputs();
+            boolean[] takeInputScore = operator.getTakeInputScore();
+
+            for(int i=0; i<inputs.length; i++) {
+                if(inputs[i] instanceof Nutrient) {
+                    int inputNutrientIndex = NutrientManager.getNutrientArrayIndex(inputs[i].getID());
+                    inputValues.add(takeInputScore[i] ? (double) nutrientScores[inputNutrientIndex] : nutrientAmounts[inputNutrientIndex]);
+                } else if(inputs[i] instanceof Operator){
+                    int inputOperatorIndex = NutrientManager.getOperatorArrayIndex(inputs[i].getID());
+                    inputValues.add(takeInputScore[i] ? (double) operatorScores[inputOperatorIndex] : operatorAmounts[inputOperatorIndex]);
+                } else if(inputs[i] instanceof Constant) {
+                    inputValues.add(((Constant)inputs[i]).getValue());
                 }
             }
-            operatorAmounts[operatorIndex] = operator.getCurrentAmount(inputAmounts.iterator(), inputScores.iterator());
+            operatorAmounts[operatorIndex] = operator.getCurrentAmount(inputValues.iterator());
             operatorScores[operatorIndex] = operator.getCurrentScore(operatorAmounts[operatorIndex]);
         }
     }
@@ -209,15 +214,31 @@ public class PlayerNutrients {
         dirty = true;
     }
 
-    public int getScore(String targetID) {
+    /**
+     * Gets either the amount or the score of the operator or nutrient matching the targetID.
+     * @param targetID
+     * A string consisting of the id of the operator or nutrient and an optional suffix (either ".score" or ".amount").
+     * Suffixes are separated from the id by a '.'.
+     * @return
+     * If given the ".score" suffix, the score will be returned. If given no suffix (or any suffix other than ".score"),
+     * the amount will be returned.
+     * If there are more than one '.' in the targetID or no corresponding nutrient or operator could be found, -1 is
+     * returned.
+     */
+    public int getValue(String targetID) {
+        String[] splitID = targetID.split("\\.");
+        if (splitID.length > 2) return -1;
+        boolean amount = true;
+        if(splitID.length == 2 && splitID[1].equals("score")) amount = false;
+
         for(int i = 0; i< operators.length; i++) {
-            if(operators[i].getID().equals(targetID)) return operatorAmounts[i];
+            if(operators[i].getID().equals(splitID[0])) return amount ? (int) operatorAmounts[i] : operatorScores[i];
         }
         for(int i=0; i<nutrients.length; i++) {
-            if(nutrients[i].getID().equals(targetID)) return (int) nutrientAmounts[i];
+            if(nutrients[i].getID().equals(splitID[0])) return amount ? (int) nutrientAmounts[i] : nutrientScores[i];
         }
 
-        return 0;
+        return -1;
     }
 
     public double[] getNutrientAmounts() {
@@ -231,7 +252,7 @@ public class PlayerNutrients {
     public int[] getNutrientScores() {
         return nutrientScores;
     }
-    public int[] getOperatorAmounts() {
+    public double[] getOperatorAmounts() {
         return operatorAmounts;
     }
 

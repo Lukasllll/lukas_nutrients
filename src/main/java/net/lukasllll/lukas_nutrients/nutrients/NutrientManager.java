@@ -3,11 +3,10 @@ package net.lukasllll.lukas_nutrients.nutrients;
 import net.lukasllll.lukas_nutrients.config.NutrientsConfig;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
 import net.lukasllll.lukas_nutrients.networking.packet.NutrientsGlobalDataSyncS2CPacket;
+import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
 import net.minecraft.server.level.ServerPlayer;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class NutrientManager {
 
@@ -16,7 +15,6 @@ public class NutrientManager {
     private static Nutrient[] nutrients;
     private static Operator[] operators;
     private static HashMap<String, Integer> operatorArrayIndexMap;
-    private static HashMap<String, List<Operator>> calcElementUsesMap;
 
     private static String[] displayOrder;
 
@@ -36,23 +34,12 @@ public class NutrientManager {
         displayOrder = NutrientsConfig.getDisplayOrder();
 
         operatorArrayIndexMap = new HashMap<>();
-        calcElementUsesMap = new HashMap<>();
-
-        for(Nutrient nutrient : nutrients) {
-            calcElementUsesMap.put(nutrient.getID(), new ArrayList<>());
-        }
-        for(Operator operator : operators) {
-            calcElementUsesMap.put(operator.getID(), new ArrayList<>());
-        }
 
 
         for(int i=0; i<operators.length; i++) {
             operatorArrayIndexMap.put(operators[i].getID(), i);
             operators[i].fetchInputs(false);
             operators[i].calcMaxAmount();
-            for(ICalcElement input : operators[i].getInputs()) {
-                calcElementUsesMap.get(input.getID()).add(operators[i]);
-            }
         }
     }
 
@@ -83,10 +70,6 @@ public class NutrientManager {
         int arrayIndex = operatorArrayIndexMap.getOrDefault(operatorID, -1);
         if(arrayIndex == -1) return null;
         return operators[arrayIndex];
-    }
-
-    public static List<Operator> getOperatorsThatUse(String inputID) {
-        return calcElementUsesMap.getOrDefault(inputID, null);
     }
 
 

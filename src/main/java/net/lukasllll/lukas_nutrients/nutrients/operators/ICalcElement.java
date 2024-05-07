@@ -1,9 +1,9 @@
-package net.lukasllll.lukas_nutrients.nutrients;
+package net.lukasllll.lukas_nutrients.nutrients.operators;
 
 public interface ICalcElement {
 
     public String getID();
     public String getDisplayname();
-    public int getMaxAmount();
+    public double getMaxAmount();
     public int getMaxScore();
 }

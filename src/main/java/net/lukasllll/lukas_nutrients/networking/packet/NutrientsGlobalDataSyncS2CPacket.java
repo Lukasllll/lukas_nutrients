@@ -2,7 +2,7 @@ package net.lukasllll.lukas_nutrients.networking.packet;
 
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
-import net.lukasllll.lukas_nutrients.nutrients.Operator;
+import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 

@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
-import net.lukasllll.lukas_nutrients.nutrients.Operator;
+import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
 
 import java.io.File;
 import java.io.FileReader;
@@ -68,7 +68,7 @@ public class NutrientsConfig {
         nutrients[4] = new ConfigNutrient("sugars", "Sugars", "minecraft:honey_bottle", 0, 2, 6, 14, 2);
 
         ConfigOperator[] operators = new ConfigOperator[1];
-        operators[0] = new ConfigOperator("total", "Diet", "Sum", 4, 6, -1, -1, 5, false, "fruits", "grains", "proteins", "vegetables", "sugars");
+        operators[0] = new ConfigOperator("total", "Diet", "Sum", 4, 6, -1, -1, 5, false, "fruits.score", "grains.score", "proteins.score", "vegetables.score", "sugars.score");
 
         String[] displayOrder = new String[]{"fruits", "grains", "proteins", "vegetables", "sugars", NutrientManager.DIVIDER_ID, "total"};
 
@@ -137,8 +137,7 @@ public class NutrientsConfig {
             if(r2 != -1) tempRanges.add(r2);
             if(r3 != -1) tempRanges.add(r3);
             if(r4 != -1) tempRanges.add(r4);
-            this.ranges = new int[tempRanges.size()];
-            for(int i = 0; i< ranges.length; i++) ranges[i] = tempRanges.get(i);
+            this.ranges = tempRanges.stream().mapToInt(Integer::intValue).toArray();
             this.basePoint = basePoint;
             this.score = score;
             this.inputIds = inputIDs;
@@ -151,8 +150,12 @@ public class NutrientsConfig {
         public int getOperatorTypeFromString(String s) {
             switch(s) {
                 case "Sum" -> { return 0;  }
-                case "Min" -> { return 1; }
-                case "Max" -> { return 2; }
+                case "Product" -> { return 1; }
+                case "Min" -> { return 2; }
+                case "Max" -> { return 3; }
+                case "Invert" -> { return 4; }
+                case "Exp" -> { return 5; }
+                case "Log" -> { return 6; }
                 default -> { return -1; }
             }
         }

@@ -11,8 +11,7 @@ import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
 import net.lukasllll.lukas_nutrients.config.EffectIconsConfig;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
-import net.lukasllll.lukas_nutrients.nutrients.Operator;
-import net.lukasllll.lukas_nutrients.nutrients.Sum;
+import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -204,12 +203,12 @@ public class NutrientScreen extends Screen {
                 //draw diet effects bar
                 graphics.blit(sumBars[ClientNutrientData.getOperatorArrayIndex(element.getID())], currentX, currentY + 7, 101, 5, 0, 5, 101, 5, 256, 256);
 
-                int operatorAmount = ClientNutrientData.getOperatorAmount(element.getID());
+                int operatorAmount = (int) ClientNutrientData.getOperatorAmount(element.getID());
 
                 int effectsBarStartX, effectsBarEndX;
                 boolean toTheRight = false;
                 int basePoint = ((Operator) element).getBasePoint();
-                int divisions = ((Operator) element).getMaxAmount();
+                int divisions = Math.max(1, (int) ((Operator) element).getMaxAmount());
                 if(operatorAmount > basePoint) {
                     effectsBarStartX = getPieceStartX(basePoint, divisions);
                     effectsBarEndX = getPieceStartX(operatorAmount, divisions) + 1;
@@ -476,7 +475,7 @@ public class NutrientScreen extends Screen {
         //creates a new empty NativeImage with width = height = 256. I don't really know what that boolean does.
         NativeImage barImage = new NativeImage(256, 256, true);
 
-        int divisions = operator.getMaxAmount();
+        int divisions = Math.max(1,(int) operator.getMaxAmount());
         int[] pointRanges = operator.getPointRanges();
         int basePoint = operator.getBasePoint();
 

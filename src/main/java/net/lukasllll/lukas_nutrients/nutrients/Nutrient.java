@@ -1,6 +1,7 @@
 package net.lukasllll.lukas_nutrients.nutrients;
 
 import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
+import net.lukasllll.lukas_nutrients.nutrients.operators.ICalcElement;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -82,7 +83,7 @@ public class Nutrient implements IDisplayElement, ICalcElement {
         if(pointRanges[0] < MAX_AMOUNT && pointRanges[3] > pointRanges[0]) return 1;
         return 0;
     }
-    public int getMaxAmount() { return MAX_AMOUNT; }
+    public double getMaxAmount() { return MAX_AMOUNT; }
 
     public String getID() {return this.id;}
     public String getDisplayname() {return this.displayname;}

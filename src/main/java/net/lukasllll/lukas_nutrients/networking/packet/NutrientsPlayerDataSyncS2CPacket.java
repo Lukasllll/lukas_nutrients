@@ -16,11 +16,11 @@ public class NutrientsPlayerDataSyncS2CPacket {
     private final double[] nutrientAmounts;
     private final double[] exhaustionLevels;
     private final int[] nutrientScores;                   //the score of the given range
-    private final int[] operatorAmounts;
+    private final double[] operatorAmounts;
     private final int[] operatorScores;
     List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects;
 
-    public NutrientsPlayerDataSyncS2CPacket(double[] amounts, double[] exhaustionLevels, int[] nutrientScores, int[] operatorAmounts, int[] operatorScores,
+    public NutrientsPlayerDataSyncS2CPacket(double[] amounts, double[] exhaustionLevels, int[] nutrientScores, double[] operatorAmounts, int[] operatorScores,
                                             List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects) {
         this.nutrientAmounts = amounts;
         this.exhaustionLevels = exhaustionLevels;
@@ -35,16 +35,16 @@ public class NutrientsPlayerDataSyncS2CPacket {
         nutrientAmounts = new double[tempArrayLength];
         exhaustionLevels = new double[tempArrayLength];
         nutrientScores = new int[tempArrayLength];
-        operatorAmounts = new int[tempArrayLength];
         for(int i=0; i<tempArrayLength; i++) {
             nutrientAmounts[i] = buf.readDouble();
             exhaustionLevels[i] = buf.readDouble();
             nutrientScores[i] = buf.readInt();
         }
         tempArrayLength = buf.readInt();
+        operatorAmounts = new double[tempArrayLength];
         operatorScores = new int[tempArrayLength];
         for(int i=0; i<tempArrayLength; i++) {
-            operatorAmounts[i] = buf.readInt();
+            operatorAmounts[i] = buf.readDouble();
             operatorScores[i] = buf.readInt();
         }
 
@@ -69,7 +69,7 @@ public class NutrientsPlayerDataSyncS2CPacket {
         }
         buf.writeInt(operatorScores.length);
         for(int i = 0; i< operatorScores.length; i++) {
-            buf.writeInt(operatorAmounts[i]);
+            buf.writeDouble(operatorAmounts[i]);
             buf.writeInt(operatorScores[i]);
         }
 

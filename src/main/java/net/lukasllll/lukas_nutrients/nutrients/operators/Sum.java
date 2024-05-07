@@ -1,10 +1,10 @@
-package net.lukasllll.lukas_nutrients.nutrients;
+package net.lukasllll.lukas_nutrients.nutrients.operators;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
 import net.minecraft.network.FriendlyByteBuf;
 
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class Sum extends Operator implements IDisplayElement, ICalcElement {
 
@@ -17,22 +17,22 @@ public class Sum extends Operator implements IDisplayElement, ICalcElement {
     }
 
     @Override
-    public int getCurrentAmount(Iterator<Integer> inputAmounts, Iterator<Integer> inputScores) {
-        AtomicInteger out = new AtomicInteger();
-        inputScores.forEachRemaining(out::addAndGet);
+    public double getCurrentAmount(Iterator<Double> inputValues) {
+        AtomicDouble out = new AtomicDouble();
+        inputValues.forEachRemaining(out::addAndGet);
         return out.get();
     }
 
     @Override
     public void calcMaxAmount() {
         maxAmount = 0;
-        for(ICalcElement input : inputs) {
-            int inputMaxScore = input.getMaxScore();
-            if(inputMaxScore == -1 && input instanceof Operator) {
-                ((Operator) input).calcMaxAmount();
-                inputMaxScore = input.getMaxScore();
+        for(int i=0; i< inputs.length; i++) {
+            double inputMaxValue = takeInputScore[i] ? inputs[i].getMaxScore() : inputs[i].getMaxAmount();
+            if(inputMaxValue == -1 && inputs[i] instanceof Operator) {
+                ((Operator) inputs[i]).calcMaxAmount();
+                inputMaxValue = takeInputScore[i] ? inputs[i].getMaxScore() : inputs[i].getMaxAmount();
             }
-            maxAmount += inputMaxScore;
+            maxAmount += inputMaxValue;
         }
     }
 

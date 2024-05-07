@@ -1,7 +1,6 @@
 package net.lukasllll.lukas_nutrients.nutrients.player.effects;
 
 
-import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.config.NutrientEffectsConfig;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.minecraft.server.level.ServerPlayer;
@@ -51,7 +50,7 @@ public class NutrientEffects {
                 baseEffect.apply(player);
             }
             for(NutrientEffect nutrientEffect : NutrientEffects) {
-                nutrientEffect.apply(player, nutrients.getScore(nutrientEffect.getTargetID()));
+                nutrientEffect.apply(player, nutrients.getValue(nutrientEffect.getTargetID()));
             }
         });
 
@@ -102,7 +101,7 @@ public class NutrientEffects {
 
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
             for(NutrientEffect effect : NutrientEffects) {
-                if(effect.isActive(nutrients.getScore(effect.getTargetID()))) {
+                if(effect.isActive(nutrients.getValue(effect.getTargetID()))) {
                     activeEffects.add(effect);
                 }
             }

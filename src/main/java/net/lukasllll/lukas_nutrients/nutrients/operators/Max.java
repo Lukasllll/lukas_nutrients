@@ -1,5 +1,6 @@
-package net.lukasllll.lukas_nutrients.nutrients;
+package net.lukasllll.lukas_nutrients.nutrients.operators;
 
+import com.google.common.util.concurrent.AtomicDouble;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
 import net.minecraft.network.FriendlyByteBuf;
 
@@ -16,9 +17,9 @@ public class Max extends Operator implements ICalcElement, IDisplayElement {
     }
 
     @Override
-    public int getCurrentAmount(Iterator<Integer> inputAmounts, Iterator<Integer> inputScores) {
-        AtomicInteger out = new AtomicInteger(inputAmounts.next());
-        inputAmounts.forEachRemaining((inputAmount) -> {
+    public double getCurrentAmount(Iterator<Double> inputValues) {
+        AtomicDouble out = new AtomicDouble(inputValues.next());
+        inputValues.forEachRemaining((inputAmount) -> {
             out.set(Math.max(inputAmount, out.get()));
         });
         return out.get();
@@ -27,14 +28,13 @@ public class Max extends Operator implements ICalcElement, IDisplayElement {
     @Override
     public void calcMaxAmount() {
         maxAmount = 0;
-        for(ICalcElement input : inputs) {
-            int inputMaxAmount = input.getMaxAmount();
-            if(inputMaxAmount == -1 && input instanceof Operator) {
-                ((Operator) input).calcMaxAmount();
-                inputMaxAmount = input.getMaxAmount();
+        for(int i=0; i< inputs.length; i++) {
+            double inputMaxValue = takeInputScore[i] ? inputs[i].getMaxScore() : inputs[i].getMaxAmount();
+            if(inputMaxValue == -1 && inputs[i] instanceof Operator) {
+                ((Operator) inputs[i]).calcMaxAmount();
+                inputMaxValue = takeInputScore[i] ? inputs[i].getMaxScore() : inputs[i].getMaxAmount();
             }
-            if(maxAmount == 0) maxAmount = inputMaxAmount;
-            else maxAmount = Math.min(maxAmount, inputMaxAmount);
+            maxAmount = Math.max(maxAmount, inputMaxValue);
         }
     }
 
@@ -44,6 +44,6 @@ public class Max extends Operator implements ICalcElement, IDisplayElement {
 
     @Override
     public int getTextureStartX() {
-        return 32;
+        return 48;
     }
 }
