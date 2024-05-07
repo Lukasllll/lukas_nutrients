@@ -144,9 +144,17 @@ public abstract class Operator implements ICalcElement, IDisplayElement {
     public ICalcElement[] getInputs() { return inputs; }
     public boolean[] getTakeInputScore() { return takeInputScore; }
 
+
     public abstract double getCurrentAmount(Iterator<Double> inputValues);
+
+    //gets either the score or just returns the amount, depending, on whether calculateScore is true
     public int getCurrentScore(double amount) {
         if(!calculateScore) return (int) amount;
+        return getCurrentForcedScore(amount);
+    }
+
+    //just calculates and gets the current score regardless of whether calculateScore is true or false
+    public int getCurrentForcedScore(double amount) {
         if(amount >= basePoint) amount--;
         int range = 0;
         while(range < pointRanges.length && amount >= pointRanges[range]) range++;

@@ -93,6 +93,7 @@ public class NutrientScreen extends Screen {
         for(Operator operator : operators) {
             shortenedNameById.put(operator.getID(), shortenStringIfNecessary(operator.getDisplayname(), maxDisplayNameWidth));
         }
+        calculateDimensions();
     }
     /*
     Method is needed to close the screen on pressing 'n' again.
@@ -112,7 +113,6 @@ public class NutrientScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         tooltip = null;
-        if(startX == 0) calculateDimensions();
         renderBackground(graphics);
         renderDividers(graphics);
         renderDietEffects(graphics, mouseX, mouseY);
@@ -174,7 +174,9 @@ public class NutrientScreen extends Screen {
 
         for(int i=0; i<displayOrder.length; i++) {
             IDisplayElement element = getDisplayElementFromID(displayOrder[i]);
+
             if(element == null) continue;
+
             if(Objects.equals(element.getID(), NutrientManager.DIVIDER_ID)) {
                 currentY += verticalSpacing[2] + 2 + verticalSpacing[3]; //divider
             } else if(element instanceof Nutrient) {
@@ -226,12 +228,7 @@ public class NutrientScreen extends Screen {
                 graphics.blit(sumBars[ClientNutrientData.getOperatorArrayIndex(element.getID())], currentX + effectsBarStartX, currentY + 7, effectsBarEndX - effectsBarStartX, 5, effectsBarStartX, 0, effectsBarEndX - effectsBarStartX, 5, 256, 256);
 
                 //draw diet effects bar arrow;
-                int arrowArrayIndex = 1;
-                if(operatorAmount < ((Operator) element).getPointRanges()[0]) {
-                    arrowArrayIndex = 0;
-                } else if(operatorAmount > ((Operator) element).getPointRanges()[1]) {
-                    arrowArrayIndex = 2;
-                }
+                int arrowArrayIndex = ClientNutrientData.getOperatorForcedScore(element.getID());
 
                 int arrowX = (toTheRight ? effectsBarEndX - 3 : effectsBarStartX - 2);
                 if(operatorAmount == 0) arrowX += 1;

@@ -13,12 +13,13 @@ public class ClientNutrientData {
     private static Operator[] operators;
     private static HashMap<String, Integer> nutrientArrayIndexMap;
     private static HashMap<String, Integer> operatorArrayIndexMap;
-    private static double[] nutrientAmounts;               //how many nutrients the player has of each group
-    private static double[] exhaustionLevels;              //how much exhaustion each group has. Exhaustion increases until it reaches 4.0. Then resets and nutrients are subtracted
-    private static int[] nutrientRanges;                   //in which of the five segments the amount falls
-    private static int[] nutrientScores;                   //the score of the given range
+    private static double[] nutrientAmounts;                //how many nutrients the player has of each group
+    private static double[] exhaustionLevels;               //how much exhaustion each group has. Exhaustion increases until it reaches 4.0. Then resets and nutrients are subtracted
+    private static int[] nutrientRanges;                    //in which of the five segments the amount falls
+    private static int[] nutrientScores;                    //the score of the given range
     private static double[] operatorAmounts;
-    private static int[] operatorScores;
+    private static int[] operatorScores;                    //contains the outputs of Operator::getCurrentScore
+    private static int[] operatorForcedScores;              //contains the outputs of Operator::getCurrentForcedScore
     private static List<Triple<String, AttributeModifier.Operation, Double>> activeEffects;
     private static String[] displayOrder;
 
@@ -33,6 +34,7 @@ public class ClientNutrientData {
         ClientNutrientData.activeEffects = activeEffects;
 
         calculateRanges();
+        fetchForcedScores();
     }
 
     public static void setGlobalData(Nutrient[] nutrients, Operator[] operators, String[] displayOrder) {
@@ -49,12 +51,20 @@ public class ClientNutrientData {
         }
 
         calculateRanges();
+        fetchForcedScores();
     }
 
     private static void calculateRanges() {
         nutrientRanges = new int[nutrients.length];
         for(int i=0; i< nutrients.length; i++) {
             nutrientRanges[i] = nutrients[i].getCurrentRange(nutrientAmounts[i]);
+        }
+    }
+
+    private static void fetchForcedScores() {
+        operatorForcedScores = new int[operators.length];
+        for(int i=0; i<operatorForcedScores.length; i++) {
+            operatorForcedScores[i] = operators[i].getCurrentForcedScore(operatorAmounts[i]);
         }
     }
 
@@ -115,6 +125,12 @@ public class ClientNutrientData {
         int operatorIndex = operatorArrayIndexMap.getOrDefault(id, -1);
         if(operatorIndex == -1) return -1;
         return operatorScores[operatorIndex];
+    }
+
+    public static int getOperatorForcedScore(String id) {
+        int operatorIndex = operatorArrayIndexMap.getOrDefault(id, -1);
+        if(operatorIndex == -1) return -1;
+        return operatorForcedScores[operatorIndex];
     }
 
 
