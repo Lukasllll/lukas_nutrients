@@ -145,7 +145,6 @@ public class FoodNutrientProvider {
 
     public static void assignNutrientsThroughRecipe(Item item) {
         currentlyWorkingOn.add(item);
-        LukasNutrients.LOGGER.info("adding recipe for " + item.toString());
         List<Recipe<?>> recipes = getAllRecipes().get(item);
         if(recipes == null) {
             assignNoNutrients(item);
@@ -227,9 +226,11 @@ public class FoodNutrientProvider {
         //if no recipe could produce any nutrientAmounts, no nutrients are assigned to this item
         if(largestNutrientAmounts_0 == null) {
             assignNoNutrients(item);
+            LukasNutrients.LOGGER.info("Considered, but assigned no nutrients to " + item.toString());
         } else {
             //otherwise the largest amount of nutrients provided by any recipe is added to the item
             ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(largestNutrientAmounts_0, isIngredient));
+            LukasNutrients.LOGGER.info("Added nutrient values to " + item.toString());
         }
         //the item is now no longer being worked on. It now definitely has NutrientProperties.
         currentlyWorkingOn.remove(item);
