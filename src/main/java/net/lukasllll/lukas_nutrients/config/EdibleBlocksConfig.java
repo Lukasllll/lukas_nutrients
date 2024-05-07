@@ -1,58 +1,28 @@
 package net.lukasllll.lukas_nutrients.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 
-public class EdibleBlocksConfig{
+public record EdibleBlocksConfig (int configVersion, LinkedHashMap<String, Integer> edibleBlocks){
     public static final String FILE_PATH = Config.FOLDER_FILE_PATH + "/edible_blocks.json";
+    private static final int CURRENT_CONFIG_VERSION = 1;
+    private static final int MIN_COMPATIBLE_CONFIG_VERSION = 1;
+    private static final int MAX_COMPATIBLE_CONFIG_VERSION = 1;
 
     public static EdibleBlocksConfig DATA = null;
-    public HashMap<String, Integer> edibleBlocks;
 
-    public static void create() {
-        DATA = getDefaultEdibleBlocks();
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        try(FileWriter writer = new FileWriter(FILE_PATH)) {
-            gson.toJson(DATA, writer);
-            LukasNutrients.LOGGER.debug("Successfully created " + FILE_PATH);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private static boolean validate(EdibleBlocksConfig config) {
+        return Config.checkConfigVersion(MIN_COMPATIBLE_CONFIG_VERSION, MAX_COMPATIBLE_CONFIG_VERSION, config.configVersion());
     }
 
     public static void read() {
-        File path = new File(FILE_PATH);
-        if(!path.exists()) {
-            LukasNutrients.LOGGER.debug(FILE_PATH + " doesn't exist!");
-            create();
-            return;
-        }
-
-        Gson gson = new Gson();
-
-        try(FileReader reader = new FileReader(path)) {
-            DATA = gson.fromJson(reader, EdibleBlocksConfig.class);
-            LukasNutrients.LOGGER.debug("Successfully read " + FILE_PATH);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        DATA = Config.readConfigFile(FILE_PATH, EdibleBlocksConfig.class, EdibleBlocksConfig::validate, EdibleBlocksConfig::getDefaultEdibleBlocks);
     }
-    
-    public EdibleBlocksConfig(HashMap<String, Integer> edibleBlocks) { this.edibleBlocks = edibleBlocks; }
 
     private static EdibleBlocksConfig getDefaultEdibleBlocks() {
-        HashMap<String, Integer> map = new HashMap<>();
+        LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
 
         //minecraft
         map.put(ForgeRegistries.BLOCKS.getKey(Blocks.CAKE).toString(), 7);
@@ -69,6 +39,6 @@ public class EdibleBlocksConfig{
         map.put(autumnityNamespace + ":pancake", 2);
 
 
-        return new EdibleBlocksConfig(map);
+        return new EdibleBlocksConfig(CURRENT_CONFIG_VERSION, map);
     }
 }

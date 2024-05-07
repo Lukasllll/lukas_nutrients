@@ -17,15 +17,8 @@ import java.util.Set;
 
 public class NutrientEffects {
 
-    public static final int BASE_POINT = 5;
-
-    private static List<NutrientEffect> baseEffects = null;
-    private static List<NutrientEffect> NutrientEffects = null;
-
-
-    public static int getBasePoint() {
-        return BASE_POINT;
-    }
+    private static NutrientEffect[] baseEffects = null;
+    private static NutrientEffect[] NutrientEffects = null;
 
     public static void getFromConfig() {
         baseEffects = NutrientEffectsConfig.DATA.getBaseEffects();
@@ -64,8 +57,8 @@ public class NutrientEffects {
     }
 
     public static void remove(ServerPlayer player) {
-        for(int i=0; i<NutrientEffects.size(); i++) {
-            NutrientEffects.get(i).remove(player);
+        for (NutrientEffect nutrientEffect : NutrientEffects) {
+            nutrientEffect.remove(player);
         }
     }
 

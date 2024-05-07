@@ -1,63 +1,31 @@
 package net.lukasllll.lukas_nutrients.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
-public class BaseNutrientsConfig{
+public record BaseNutrientsConfig (int configVersion, LinkedHashMap<String, List<String>> baseNutrients) {
     public static final String FILE_PATH = Config.FOLDER_FILE_PATH + "/base_nutrients.json";
+    private static final int CURRENT_CONFIG_VERSION = 1;
+    private static final int MIN_COMPATIBLE_CONFIG_VERSION = 1;
+    private static final int MAX_COMPATIBLE_CONFIG_VERSION = 1;
 
     public static BaseNutrientsConfig DATA = null;
-    public HashMap<String, List<String>> baseNutrients;
-
-
-    public static void create() {
-        DATA = getDefaultBaseNutrients();
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        try(FileWriter writer = new FileWriter(FILE_PATH)) {
-            gson.toJson(DATA, writer);
-            LukasNutrients.LOGGER.debug("Successfully created " + FILE_PATH);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public static void read() {
-        File path = new File(FILE_PATH);
-        if(!path.exists()) {
-            LukasNutrients.LOGGER.debug(FILE_PATH + " doesn't exist!");
-            create();
-            return;
-        }
-
-        Gson gson = new Gson();
-
-        try(FileReader reader = new FileReader(path)) {
-            DATA = gson.fromJson(reader, BaseNutrientsConfig.class);
-            LukasNutrients.LOGGER.debug("Successfully read " + FILE_PATH);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        DATA = Config.readConfigFile(FILE_PATH, BaseNutrientsConfig.class, BaseNutrientsConfig::validate, BaseNutrientsConfig::getDefaultBaseNutrients);
     }
 
-    public BaseNutrientsConfig(HashMap<String, List<String>> baseNutrients) {
-        this.baseNutrients = baseNutrients;
+    private static boolean validate(BaseNutrientsConfig config) {
+        return Config.checkConfigVersion(MIN_COMPATIBLE_CONFIG_VERSION, MAX_COMPATIBLE_CONFIG_VERSION, config.configVersion());
     }
 
     private static BaseNutrientsConfig getDefaultBaseNutrients() {
-        HashMap<String, List<String>> map = new HashMap<>();
+        LinkedHashMap<String, List<String>> map = new LinkedHashMap<>();
 
         String grains = "grains";       //maybe change? Values already saved in nutrients.NutrientGroup
         String fruits = "fruits";
@@ -166,15 +134,13 @@ public class BaseNutrientsConfig{
         map.put(missingWildsNamespace+":brown_polypore_mushroom", buildEntry( 0.9, vegetables));
 
 
-        return new BaseNutrientsConfig(map);
+        return new BaseNutrientsConfig(CURRENT_CONFIG_VERSION, map);
     }
 
     public static ArrayList<String> buildEntry(double nutrientEffectiveness, String... nutrientIDs) {
-        ArrayList<String> out = new ArrayList<>();
-        for(String id : nutrientIDs) {
-            out.add(id);
-        }
+        ArrayList<String> out = new ArrayList<>(List.of(nutrientIDs));
         out.add("" + nutrientEffectiveness);
         return out;
     }
+
 }

@@ -112,14 +112,14 @@ public class NutrientsCommand {
 
         Nutrient[] nutrients = NutrientManager.getNutrients();
 
-        String message = "Food Groups: ";
+        StringBuilder message = new StringBuilder("Food Groups: ");
         for(int i=0; i<nutrients.length; i++) {
-            message += nutrients[i].getID();
+            message.append(nutrients[i].getID());
             if(i!=nutrients.length-1)
-                message += ", ";
+                message.append(", ");
         }
 
-        String finalMessage = message;
+        String finalMessage = message.toString();
         source.sendSuccess(() -> Component.literal(finalMessage), true);
 
         return nutrients.length;
@@ -129,8 +129,8 @@ public class NutrientsCommand {
         Config.loadCommonConfigs();
         FoodNutrientProvider.reassignAllItems();
         source.sendSuccess(() -> Component.literal("Common configs reloaded!"), true);
-        //remove all diet effects and recalculate everything.
-        source.sendSuccess(() -> Component.literal("Resetting all diet effects..."), true);
+        //remove all nutrient effects and recalculate everything.
+        source.sendSuccess(() -> Component.literal("Resetting all nutrient effects..."), true);
         List<ServerPlayer> players = source.getServer().getPlayerList().getPlayers();
         for(ServerPlayer player : players) {
             NutrientManager.updateClient(player);
@@ -141,7 +141,7 @@ public class NutrientsCommand {
                     });
             NutrientEffects.apply(player, previousMaxHealth);
         }
-        source.sendSuccess(() -> Component.literal("Diet effects have been reset for " + players.size() + (players.size() == 1 ? " player" : " players") + "!"), true);
+        source.sendSuccess(() -> Component.literal("Nutrient effects have been reset for " + players.size() + (players.size() == 1 ? " player" : " players") + "!"), true);
 
         return 1;
     }

@@ -37,11 +37,11 @@ public class FoodNutrientProvider {
     public static void getFromConfig() {
         if(BaseNutrientsConfig.DATA == null) return;
 
-        for(String key : BaseNutrientsConfig.DATA.baseNutrients.keySet()) {
+        for(String key : BaseNutrientsConfig.DATA.baseNutrients().keySet()) {
             Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(key));      //key is the full path (namespace:path) of the item e.g. "minecraft:apple"
             if(item == null || item == Items.AIR) continue;
 
-            List<String> entry = BaseNutrientsConfig.DATA.baseNutrients.get(key);
+            List<String> entry = BaseNutrientsConfig.DATA.baseNutrients().get(key);
 
             double nutrientEffectiveness = Double.parseDouble(entry.get(entry.size()-1));       //the last String in entry is always supposed to be the nutrientEffectiveness
             List<String> ids = entry.subList(0, entry.size()-1);                                //the rest of the strings are the nutrient groups assigned to the item
@@ -58,7 +58,7 @@ public class FoodNutrientProvider {
     public static void assignEdibleBlocksFromConfig() {
         if(EdibleBlocksConfig.DATA == null) return;
 
-        for(String key : EdibleBlocksConfig.DATA.edibleBlocks.keySet()) {
+        for(String key : EdibleBlocksConfig.DATA.edibleBlocks().keySet()) {
             Block block = ForgeRegistries.BLOCKS.getValue(new ResourceLocation(key));        //key is the full path (namespace:path) of the block e.g. minecraft:cake
             if(block == null || block == Blocks.AIR) continue;
 
@@ -72,7 +72,7 @@ public class FoodNutrientProvider {
             NutrientProperties itemNutrientProperties = ((INutrientPropertiesHaver)blockItem).getFoodNutrientProperties();
             itemNutrientProperties.setPlaceableEdible(true);
 
-            int servings = EdibleBlocksConfig.DATA.edibleBlocks.get(key);
+            int servings = EdibleBlocksConfig.DATA.edibleBlocks().get(key);
             //if the item isn't directly edible change servings to match that of block to display in tooltip.
             if(!blockItem.isEdible()) {
                 itemNutrientProperties.setServings(servings);

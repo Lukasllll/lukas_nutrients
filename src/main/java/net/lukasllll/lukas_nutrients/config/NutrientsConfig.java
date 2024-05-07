@@ -1,62 +1,25 @@
 package net.lukasllll.lukas_nutrients.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 
-public class NutrientsConfig {
+public record NutrientsConfig(int configVersion, ConfigNutrient[] nutrients, ConfigOperator[] operators, String[] displayOrder) {
     public static final String FILE_PATH = Config.FOLDER_FILE_PATH + "/nutrient_groups.json";
+    private static final int CURRENT_CONFIG_VERSION = 1;
+    private static final int MIN_COMPATIBLE_CONFIG_VERSION = 1;
+    private static final int MAX_COMPATIBLE_CONFIG_VERSION = 1;
 
     public static NutrientsConfig DATA;
-    public ConfigNutrient[] nutrients;
-    public ConfigOperator[] operators;
-    public String[] displayOrder;
 
-    public static void create() {
-        DATA = getDefaultNutrientsConfig();
-
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-        try(FileWriter writer = new FileWriter(FILE_PATH)) {
-            gson.toJson(DATA, writer);
-            LukasNutrients.LOGGER.debug("Successfully created " + FILE_PATH);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    private static boolean validate(NutrientsConfig config) {
+        return Config.checkConfigVersion(MIN_COMPATIBLE_CONFIG_VERSION, MAX_COMPATIBLE_CONFIG_VERSION, config.configVersion());
     }
 
     public static void read() {
-        File path = new File(FILE_PATH);
-        if(!path.exists()) {
-            LukasNutrients.LOGGER.debug(FILE_PATH + " doesn't exist!");
-            create();
-            return;
-        }
-
-        Gson gson = new Gson();
-
-        try(FileReader reader = new FileReader(path)) {
-            DATA = gson.fromJson(reader, NutrientsConfig.class);
-            LukasNutrients.LOGGER.debug("Successfully read " + FILE_PATH);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    public NutrientsConfig(ConfigNutrient[] nutrients, ConfigOperator[] operators, String[] displayOrder) {
-        this.nutrients = nutrients;
-        this.operators = operators;
-        this.displayOrder = displayOrder;
+        DATA = Config.readConfigFile(FILE_PATH, NutrientsConfig.class, NutrientsConfig::validate, NutrientsConfig::getDefaultNutrientsConfig);
     }
 
     private static NutrientsConfig getDefaultNutrientsConfig() {
@@ -72,7 +35,7 @@ public class NutrientsConfig {
 
         String[] displayOrder = new String[]{"fruits", "grains", "proteins", "vegetables", "sugars", NutrientManager.DIVIDER_ID, "total"};
 
-        return new NutrientsConfig(nutrients, operators, displayOrder);
+        return new NutrientsConfig(CURRENT_CONFIG_VERSION, nutrients, operators, displayOrder);
     }
 
     public static Nutrient[] getNutrients() {
