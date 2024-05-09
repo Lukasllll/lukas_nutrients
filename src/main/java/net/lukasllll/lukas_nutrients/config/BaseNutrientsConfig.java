@@ -42,6 +42,7 @@ public record BaseNutrientsConfig (int configVersion, LinkedHashMap<String, List
         map.put(ForgeRegistries.ITEMS.getKey(Items.SWEET_BERRIES).toString(), buildEntry( 1.4, fruits));
         map.put(ForgeRegistries.ITEMS.getKey(Items.GLOW_BERRIES).toString(), buildEntry( 0.9, fruits));
         map.put(ForgeRegistries.ITEMS.getKey(Items.ENCHANTED_GOLDEN_APPLE).toString(), buildEntry( 0.9, fruits));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.WARPED_FUNGUS).toString(), buildEntry( 0.5, fruits, vegetables));
 
         map.put(ForgeRegistries.ITEMS.getKey(Items.BREAD).toString(), buildEntry( 1.0, grains));
         map.put(ForgeRegistries.ITEMS.getKey(Items.WHEAT).toString(), buildEntry( 0.43, grains));
@@ -58,7 +59,9 @@ public record BaseNutrientsConfig (int configVersion, LinkedHashMap<String, List
         map.put(ForgeRegistries.ITEMS.getKey(Items.SPIDER_EYE).toString(), buildEntry( 0.9, proteins));
         map.put(ForgeRegistries.ITEMS.getKey(Items.MILK_BUCKET).toString(), buildEntry( 0.1, proteins));
         map.put(ForgeRegistries.ITEMS.getKey(Items.EGG).toString(), buildEntry( 0.5, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.CRIMSON_FUNGUS).toString(), buildEntry( 0.5, proteins));
         map.put(ForgeRegistries.ITEMS.getKey(Items.ROTTEN_FLESH).toString(), buildEntry( 0.5, proteins));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.SLIME_BALL).toString(), buildEntry( 0.2, proteins));
         map.put(ForgeRegistries.ITEMS.getKey(Items.BONE).toString(), buildEntry( 0.2, proteins));
 
 
@@ -92,6 +95,18 @@ public record BaseNutrientsConfig (int configVersion, LinkedHashMap<String, List
         map.put(farmersdelightNamespace+":onion", buildEntry( 1.8, vegetables));
         map.put(farmersdelightNamespace+":brown_mushroom_colony", buildEntry( 3.0, vegetables));
         map.put(farmersdelightNamespace+":red_mushroom_colony", buildEntry( 1.8, vegetables));
+
+        //nether's delight
+        String nethersdelightNamespace = "nethersdelight";
+
+        map.put(nethersdelightNamespace+":propelpearl", buildEntry( 0.9, fruits));
+
+        map.put(nethersdelightNamespace+":crimson_fungus_colony", buildEntry( 1.5, proteins));
+        map.put(nethersdelightNamespace+":hoglin_loin", buildEntry( 0.9, proteins));
+        map.put(nethersdelightNamespace+":hoglin_ear", buildEntry( 0.6, proteins));
+        map.put(nethersdelightNamespace+":strider_slice", buildEntry( 0.9, proteins));
+
+        map.put(nethersdelightNamespace+":warped_fungus_colony", buildEntry( 1.5, vegetables, fruits));
 
         //autumnity
         String autumnityNamespace = "autumnity";

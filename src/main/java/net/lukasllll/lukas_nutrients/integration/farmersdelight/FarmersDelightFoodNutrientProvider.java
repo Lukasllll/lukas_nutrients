@@ -34,7 +34,7 @@ public class FarmersDelightFoodNutrientProvider {
 
             FoodNutrientProvider.scaleArray(servingItemNutrientAmounts, 1.0/numberOfServings);
 
-            ((INutrientPropertiesHaver) servingItem).setFoodNutrientProperties(new NutrientProperties(servingItemNutrientAmounts, false));
+            ((INutrientPropertiesHaver) servingItem).setFoodNutrientProperties(new NutrientProperties(servingItemNutrientAmounts));
         }
     }
 }

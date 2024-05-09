@@ -28,6 +28,7 @@ public class Config{
         NutrientEffects.getFromConfig();
         BaseNutrientsConfig.read();
         EdibleBlocksConfig.read();
+        HeatedCraftingRecipesConfig.read();
         FoodNutrientProvider.getFromConfig();
     }
 

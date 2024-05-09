@@ -3,8 +3,10 @@ package net.lukasllll.lukas_nutrients.nutrients.food;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.config.BaseNutrientsConfig;
 import net.lukasllll.lukas_nutrients.config.EdibleBlocksConfig;
+import net.lukasllll.lukas_nutrients.config.HeatedCraftingRecipesConfig;
 import net.lukasllll.lukas_nutrients.integration.IntegrationHelper;
 import net.lukasllll.lukas_nutrients.integration.farmersdelight.FarmersDelightFoodNutrientProvider;
+import net.lukasllll.lukas_nutrients.integration.nethersdelight.NethersDelightFoodNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
@@ -30,12 +32,13 @@ public class FoodNutrientProvider {
     //of items with pre-determined NutrientProperties.
     //The assignUnassignedItems() method is called in ModEvents.onRecipesUpdated() and assigns every edible
     //item that doesn't already have NutrientProperties some based on how they are crafted.
+    private static Set<RecipeType<?>> heatedRecipeTypes;
     private static Map<Item, List<Recipe<?>>> allRecipes;
     private static Map<Item, Recipe<?>> smokerRecipesByInput;
     private static List<Item> currentlyWorkingOn = new ArrayList<>();
 
     public static void getFromConfig() {
-        if(BaseNutrientsConfig.DATA == null) return;
+        if(BaseNutrientsConfig.DATA == null || HeatedCraftingRecipesConfig.DATA == null) return;
 
         for(String key : BaseNutrientsConfig.DATA.baseNutrients().keySet()) {
             Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(key));      //key is the full path (namespace:path) of the item e.g. "minecraft:apple"
@@ -48,6 +51,8 @@ public class FoodNutrientProvider {
 
             addNutrientPropertiesByIDs(item, ids, nutrientEffectiveness);
         }
+
+        heatedRecipeTypes = HeatedCraftingRecipesConfig.DATA.getHeatedRecipeTypes();
     }
 
     /*
@@ -78,7 +83,7 @@ public class FoodNutrientProvider {
                 itemNutrientProperties.setServings(servings);
             }
 
-            ((INutrientPropertiesHaver) block).setFoodNutrientProperties(new NutrientProperties(itemNutrientProperties.getNutrientAmounts(), servings, false));
+            ((INutrientPropertiesHaver) block).setFoodNutrientProperties(itemNutrientProperties.clone());
         }
     }
 
@@ -104,7 +109,7 @@ public class FoodNutrientProvider {
             }
         }
 
-        ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(amounts, isIngredient));
+        ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(amounts));
     }
 
 
@@ -129,8 +134,13 @@ public class FoodNutrientProvider {
 
     public static void assignUnassignedItems() {
 
+        assignSmokerRecipes();
+
         if(IntegrationHelper.isFarmersDelightLoaded()) {
             FarmersDelightFoodNutrientProvider.assignUniqueItems();
+        }
+        if(IntegrationHelper.isNethersDelightLoaded()) {
+            NethersDelightFoodNutrientProvider.assignUniqueItems();
         }
 
         Collection<Item> items = ForgeRegistries.ITEMS.getValues();
@@ -141,6 +151,96 @@ public class FoodNutrientProvider {
         }
 
         assignEdibleBlocksFromConfig();
+    }
+
+    public static void assignSmokerRecipes() {
+        Collection<Item> items = getSmokerRecipesByInput().keySet();
+        for(Item item : items) {
+            boolean resultHasNutrients = assignNutrientsToSmokerOutput(item);
+
+            if(!HeatedCraftingRecipesConfig.DATA.rawFoodGivesLessNutrients() && resultHasNutrients) {
+                ((INutrientPropertiesHaver) item).setFoodNutrientProperties(
+                        ((INutrientPropertiesHaver) getSmokerRecipesByInput().get(item).
+                                getResultItem(Minecraft.getInstance().level.registryAccess()).getItem())
+                                .getFoodNutrientProperties().clone());
+                LukasNutrients.LOGGER.info("Recalculated nutrient values of " + item.toString());
+            }
+        }
+    }
+
+    /**
+     * This method assigns nutrients to the result item of a smoker recipe.
+     * @param item An item that can be cooked in a smoker.
+     * @return returns true, if the item has an associated smoker recipe that uses it as an input, and the result item
+     * either already has nutrients or was successfully assigned nutrients. Returns false if either, there is no
+     * associated smoker recipe or the result item could not be assigned nutrients.
+     */
+    public static boolean assignNutrientsToSmokerOutput(Item item) {
+
+        Recipe<?> smokerRecipe = getSmokerRecipesByInput().getOrDefault(item, null);
+        if(smokerRecipe == null) return false;
+        ItemStack outputStack = smokerRecipe.getResultItem(Minecraft.getInstance().level.registryAccess());
+        Item output = outputStack.getItem();
+
+        if(!output.isEdible()) return false;
+        if(((INutrientPropertiesHaver) output).hasFoodNutrientProperties()) return true;
+
+        currentlyWorkingOn.add(output);
+
+        int outputStackCount = outputStack.getCount();
+        Ingredient ingredient = smokerRecipe.getIngredients().get(0);
+
+        double[] nutrients = null;
+        double largestTotalNutrientAmount = 0;
+        double nutrientEffectiveness = 0;
+
+        for(ItemStack currentStack : ingredient.getItems()) {
+            Item currentItem = currentStack.getItem();
+            int currentItemCount = currentStack.getCount();
+
+            if(!((INutrientPropertiesHaver) currentItem).hasFoodNutrientProperties()) {
+                continue;
+            }
+            //clone the nutrient amount array, so that it can be modified, without modifying the original
+            double[] currentItemNutrientAmounts = ((INutrientPropertiesHaver) currentItem).getFoodNutrientProperties().getNutrientAmounts().clone();
+
+            double currentItemTotalNutrientAmount = 0;
+            for (double currentItemNutrientAmount : currentItemNutrientAmounts) {
+                currentItemTotalNutrientAmount += currentItemNutrientAmount;
+            }
+
+            double currentItemNutrientEffectiveness = 0.9;
+            FoodProperties currentItemFoodProperties = currentItem.getFoodProperties();
+            if(currentItemFoodProperties != null) {
+                currentItemNutrientEffectiveness = currentItemTotalNutrientAmount / (currentItemFoodProperties.getNutrition() * (1.0 + currentItemFoodProperties.getSaturationModifier()) * PlayerNutrients.BASE_DECAY_RATE);
+            }
+            //calculate how many nutrients this item would contribute to the new item
+            scaleArray(currentItemNutrientAmounts, currentItemCount);
+            currentItemTotalNutrientAmount *= currentItemCount;
+
+            //save these nutrients if they are larger than any previous nutrients
+            if(currentItemTotalNutrientAmount > largestTotalNutrientAmount) {
+                nutrients = currentItemNutrientAmounts;
+                largestTotalNutrientAmount = currentItemTotalNutrientAmount;
+                nutrientEffectiveness = currentItemNutrientEffectiveness;
+            }
+        }
+
+        if(nutrients == null) {
+            currentlyWorkingOn.remove(output);
+            return false;
+        }
+
+        FoodProperties foodProperties = output.getFoodProperties();
+        double optimalNutrientAmount = nutrientEffectiveness * foodProperties.getNutrition() * (1.0 + foodProperties.getSaturationModifier()) * PlayerNutrients.BASE_DECAY_RATE;
+        double scalingFactor = optimalNutrientAmount / largestTotalNutrientAmount / outputStackCount;
+        scaleArray(nutrients, scalingFactor);
+
+        ((INutrientPropertiesHaver) output).setFoodNutrientProperties(new NutrientProperties(nutrients));
+        LukasNutrients.LOGGER.info("Added nutrient values to " + output.toString());
+
+        currentlyWorkingOn.remove(output);
+        return true;
     }
 
     public static void assignNutrientsThroughRecipe(Item item) {
@@ -176,6 +276,12 @@ public class FoodNutrientProvider {
                             continue;
                         }
                         assignNutrientsThroughRecipe(currentItem);
+                    } else if(heatedRecipeTypes.contains(currentRecipe.getType()) && getSmokerRecipesByInput().containsKey(currentItem)) {
+                        //if the recipe is heated and the ingredient has a smoked variant, use that instead
+                        Item smokedItem = getSmokerRecipesByInput().get(currentItem).getResultItem(Minecraft.getInstance().level.registryAccess()).getItem();
+                        if(((INutrientPropertiesHaver)smokedItem).hasFoodNutrientProperties()) {
+                            currentItem = smokedItem;
+                        }
                     }
                     //clone the nutrient amount array, so that it can be modified, without modifying the original
                     double[] currentItemNutrientAmounts = ((INutrientPropertiesHaver) currentItem).getFoodNutrientProperties().getNutrientAmounts().clone();
@@ -207,14 +313,6 @@ public class FoodNutrientProvider {
                 currentRecipeNutrientAmounts[j] /= outputStackCount;
             }
             currentRecipeTotalNutrientAmounts /= outputStackCount;
-            //if the recipe is a smoker recipe, the nutrientAmounts are scaled by the output food values
-            if(currentRecipe.getType() == RecipeType.SMOKING && item.isEdible()) {
-                FoodProperties foodProperties = item.getFoodProperties();
-                double optimalNutrientAmount = 0.9 * foodProperties.getNutrition() * (1.0 + foodProperties.getSaturationModifier()) * PlayerNutrients.BASE_DECAY_RATE;
-                double scalingFactor = optimalNutrientAmount / currentRecipeTotalNutrientAmounts;
-                scaleArray(currentRecipeNutrientAmounts, scalingFactor);
-                currentRecipeTotalNutrientAmounts = optimalNutrientAmount;
-            }
 
             //then it is determined, if the nutrientAmounts of this recipe is larger than the nutrientAmounts of any previous
             //recipe and are saved if that's the case.
@@ -229,7 +327,7 @@ public class FoodNutrientProvider {
             LukasNutrients.LOGGER.info("Considered, but assigned no nutrients to " + item.toString());
         } else {
             //otherwise the largest amount of nutrients provided by any recipe is added to the item
-            ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(largestNutrientAmounts_0, isIngredient));
+            ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(largestNutrientAmounts_0));
             LukasNutrients.LOGGER.info("Added nutrient values to " + item.toString());
         }
         //the item is now no longer being worked on. It now definitely has NutrientProperties.
@@ -239,7 +337,7 @@ public class FoodNutrientProvider {
     public static void assignNoNutrients(Item item) {
         double[] nutrientAmounts = new double[NutrientManager.getNutrients().length];
         boolean isIngredient = !item.isEdible();
-        ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(nutrientAmounts, isIngredient));
+        ((INutrientPropertiesHaver) item).setFoodNutrientProperties(new NutrientProperties(nutrientAmounts));
     }
 
     private static Map<Item, List<Recipe<?>>> getAllRecipes() {

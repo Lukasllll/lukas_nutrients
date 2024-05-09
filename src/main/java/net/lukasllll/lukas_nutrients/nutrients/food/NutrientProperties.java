@@ -7,20 +7,23 @@ public class NutrientProperties {
 
     private double[] nutrientAmounts;
     private int servings;
-    private boolean isIngredient;
     private boolean placeableEdible;        //whether the item can be placed to create an edible block e.g. cake
 
-    public NutrientProperties(double[] nutrientAmounts, boolean isIngredient) {
+    public NutrientProperties(double[] nutrientAmounts) {
         this.nutrientAmounts = nutrientAmounts;
-        this.isIngredient = isIngredient;
         this.placeableEdible = false;
         this.servings = 1;
     }
 
-    public NutrientProperties(double[] nutrientAmounts, int servings, boolean isIngredient) {
+    public NutrientProperties(double[] nutrientAmounts, int servings) {
         this.nutrientAmounts = nutrientAmounts;
-        this.isIngredient = isIngredient;
         this.placeableEdible = false;
+        this.servings = servings;
+    }
+
+    public NutrientProperties(double[] nutrientAmounts, int servings, boolean placeableEdible) {
+        this.nutrientAmounts = nutrientAmounts;
+        this.placeableEdible = placeableEdible;
         this.servings = servings;
     }
 
@@ -44,8 +47,8 @@ public class NutrientProperties {
         return getNutrientAmount(arrayIndex);
     }
 
-    public boolean isIngredient() {
-        return isIngredient;
+    public NutrientProperties clone() {
+        return new NutrientProperties(nutrientAmounts.clone(), this.servings, this.placeableEdible);
     }
 
 }
