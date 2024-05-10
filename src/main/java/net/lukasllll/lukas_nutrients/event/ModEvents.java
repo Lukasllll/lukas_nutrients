@@ -1,8 +1,9 @@
 package net.lukasllll.lukas_nutrients.event;
 
-import net.lukasllll.lukas_nutrients.BasicGameTest;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.commands.NutrientsCommand;
+// import net.lukasllll.lukas_nutrients.gameTests.CommandTests;
+import net.lukasllll.lukas_nutrients.gameTests.*;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.food.NutrientProperties;
@@ -131,7 +132,8 @@ public class ModEvents {
     }
     @SubscribeEvent
     public static void onRegisterGameTests(RegisterGameTestsEvent event){
-        event.register(BasicGameTest.class);
+        event.register(CommandTests.class);
+        event.register(GameTestCommons.class);
     }
 
 }
