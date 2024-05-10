@@ -34,6 +34,7 @@ public class BasicGameTest {
   // fixed template names for actual Tests
   private final String testTemplateTemplate = twoXtwo;
   private final String testSetCommandTemplate = twoXtwo;
+  private final String testGetCommandTemplate = twoXtwo;
 
   private static boolean checkTemplateExists(String tName, String modID) {
     MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
@@ -57,7 +58,7 @@ public class BasicGameTest {
     helper.succeed();
   }
 
-  @GameTest(template = "2x2empty")
+  @GameTest(template = testSetCommandTemplate)
   public void TestSetCommand(GameTestHelper helper) {
     LukasNutrients.LOGGER.info("Initialising TestSetCommand gametest");
 
@@ -77,7 +78,7 @@ public class BasicGameTest {
     // ServerPlayer mockplayer = helper.makeMockServerPlayerInLevel();
 
     if (!checkTemplateExists(testSetCommandTemplate, modID)) {
-      helper.fail(missingTemplatString(testTemplateTemplate));
+      helper.fail(missingTemplatString(testSetCommandTemplate));
     }
 
     ServerPlayer mockplayer = findAnOp();
@@ -133,6 +134,24 @@ public class BasicGameTest {
     helper.succeed();
   }
 
+  @GameTest(template = testGetCommandTemplate)
+  public void testGetCommand(GameTestHelper helper){
+    if (!checkTemplateExists(testGetCommandTemplate, modID)) {
+      helper.fail(missingTemplatString(testGetCommandTemplate));
+    }
+
+    ServerPlayer mockplayer = findAnOp();
+    if(mockplayer==null){helper.fail("No OP connected!");} 
+
+    String opPlayer = (mockplayer.getName()).getString();
+    String gameMode=getMockplayerGamemode(mockplayer);
+    runMockPlayerCommand(mockplayer, "gamemode survival");
+
+
+
+    helper.fail("not implemente fail");
+  }
+
   private static ServerPlayer getServerPlayerByName(String playerName) {
     MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
     ServerPlayer player = server.getPlayerList().getPlayerByName(playerName);
@@ -164,4 +183,10 @@ public class BasicGameTest {
   private static String missingTemplatString(String templatename) {
     return String.format("Template %s not found", templatename);
   }
+
+  private static String getMockplayerGamemode(ServerPlayer player){
+   ServerPlayerGameMode spg = player.gameMode;
+   return spg.getGameModeForPlayer().getName();
+  }
+
 }
