@@ -44,11 +44,6 @@ public class ClientEvents {
         }
 
         @SubscribeEvent
-        public static void onKeyRegister(RegisterKeyMappingsEvent event) {
-            event.register(KeyBinding.OPEN_GUI_KEY);
-        }
-
-        @SubscribeEvent
         public static void onKeyInput(InputEvent.Key event) {
             Minecraft mc = Minecraft.getInstance();
             if(KeyBinding.OPEN_GUI_KEY.consumeClick() && mc.screen == null) {
