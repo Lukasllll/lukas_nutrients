@@ -1,7 +1,13 @@
 package net.lukasllll.lukas_nutrients.nutrients.player.effects;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
+import net.lukasllll.lukas_nutrients.client.TooltipHelper;
+import net.lukasllll.lukas_nutrients.nutrients.operators.ICalcElement;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -9,6 +15,8 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.nio.charset.Charset;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.UUID;
 
 public class NutrientEffect {
@@ -109,6 +117,67 @@ public class NutrientEffect {
 
     public AttributeModifier.Operation getAttributeModifierOperation() {
         return getAttributeModifier().getOperation();
+    }
+
+    public List<Component> getEffectTooltip(boolean moreInfo) {
+        LinkedList<Component> out = new LinkedList<>();
+
+        out.add(getSmallEffectTooltip());
+
+        if(moreInfo) {
+            out.add(Component.literal("Cause: ").withStyle(ChatFormatting.GRAY));
+
+            String[] splitID = this.getTargetID().split("\\.");
+            if (splitID.length > 2) return out;
+            boolean amount = true;
+            if(splitID.length == 2 && splitID[1].equals("score")) amount = false;
+
+            ICalcElement cause = ClientNutrientData.getNutrient(splitID[0]);
+            if(cause == null) cause = ClientNutrientData.getOperator(splitID[0]);
+            if(cause != null) {
+                int min = this.getMinDietScore();
+                int max = this.getMaxDietScore();
+                int maxValue = amount ? (int) cause.getMaxAmount() : cause.getMaxScore();
+
+                MutableComponent line = Component.literal(cause.getDisplayname()).withStyle(ChatFormatting.GRAY);
+                line.append(Component.literal(amount ? " (amount)" : " (score)").withStyle(ChatFormatting.DARK_GRAY));
+                if(min == 0 && max < maxValue) {
+                    line.append(Component.literal(" < " + (max + 1))).withStyle(ChatFormatting.GRAY);
+                } else if(min > 0 && max >= maxValue) {
+                    line.append(Component.literal(" > " + (min - 1))).withStyle(ChatFormatting.GRAY);
+                } else {
+                    line.append(Component.literal(" between " + min + " and " + max)).withStyle(ChatFormatting.GRAY);
+                }
+
+                out.add(line);
+            }
+        } else {
+            out.add(TooltipHelper.getHoldShiftComponent());
+        }
+
+        return out;
+    }
+
+    public Component getSmallEffectTooltip() {
+        MutableComponent out = Component.literal("");
+
+        switch (this.getAttributeModifierOperation()) {
+            case ADDITION -> {
+                if (this.getAttributeModifierAmount() >= 0)
+                    out.append(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + this.getAttributeModifierAmount()), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+                else
+                    out.append(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(this.getAttributeModifierAmount())), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+            }
+            case MULTIPLY_TOTAL -> {
+                if (this.getAttributeModifierAmount() >= 0)
+                    out.append(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + this.getAttributeModifierAmount() * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+                else
+                    out.append(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(this.getAttributeModifierAmount()) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+            }
+            case MULTIPLY_BASE ->
+                    out.append(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + this.getAttributeModifierAmount())) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+        }
+        return out;
     }
 
     public boolean canCombineWith(NutrientEffect other) {

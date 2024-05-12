@@ -38,8 +38,7 @@ public class ClientEvents {
          */
         @SubscribeEvent
         public static void onInitScreen(ScreenEvent.Init.Post event) {
-            if(!(event.getScreen() instanceof InventoryScreen)) return;
-            InventoryScreen screen = (InventoryScreen) event.getScreen();
+            if(!(event.getScreen() instanceof InventoryScreen screen)) return;
             NutrientButton nutrientButton = new NutrientButton(screen);
             event.addListener(nutrientButton);
         }

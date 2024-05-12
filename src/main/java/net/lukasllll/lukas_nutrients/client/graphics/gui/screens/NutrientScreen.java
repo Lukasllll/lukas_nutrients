@@ -375,7 +375,7 @@ public class NutrientScreen extends Screen {
             The tooltip is just created here. It is rendered, once renderComponentTooltip is called
              */
             if(mouseX >= x && mouseX < x+32 && mouseY >= y && mouseY < y+32) {
-                setEffectTooltip(activeDietEffects.get(i), hasShiftDown());
+                tooltip = activeDietEffects.get(i).getEffectTooltip(hasShiftDown());
             }
 
             y += 34;
@@ -384,62 +384,6 @@ public class NutrientScreen extends Screen {
                 x += 34;
             }
         }
-    }
-
-    public void setEffectTooltip(NutrientEffect effect, boolean moreInfo) {
-        LinkedList<Component> barTooltip = new LinkedList<>();
-
-        //barTooltip.add(Component.literal("Nutrient Effect").withStyle(ChatFormatting.GRAY));
-
-        switch (effect.getAttributeModifierOperation()) {
-            case ADDITION -> {
-                if (effect.getAttributeModifierAmount() >= 0)
-                    barTooltip.add(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + effect.getAttributeModifierAmount()), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
-                else
-                    barTooltip.add(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(effect.getAttributeModifierAmount())), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
-            }
-            case MULTIPLY_TOTAL -> {
-                if (effect.getAttributeModifierAmount() >= 0)
-                    barTooltip.add(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + effect.getAttributeModifierAmount() * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
-                else
-                    barTooltip.add(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(effect.getAttributeModifierAmount()) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
-            }
-            case MULTIPLY_BASE ->
-                    barTooltip.add(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + effect.getAttributeModifierAmount())) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
-        }
-
-        if(moreInfo) {
-            barTooltip.add(Component.literal("Cause: ").withStyle(ChatFormatting.GRAY));
-
-            String[] splitID = effect.getTargetID().split("\\.");
-            if (splitID.length > 2) return;
-            boolean amount = true;
-            if(splitID.length == 2 && splitID[1].equals("score")) amount = false;
-
-            ICalcElement cause = ClientNutrientData.getNutrient(splitID[0]);
-            if(cause == null) cause = ClientNutrientData.getOperator(splitID[0]);
-            if(cause != null) {
-                int min = effect.getMinDietScore();
-                int max = effect.getMaxDietScore();
-                int maxValue = amount ? (int) cause.getMaxAmount() : cause.getMaxScore();
-
-                MutableComponent line = Component.literal(cause.getDisplayname()).withStyle(ChatFormatting.GRAY);
-                line.append(Component.literal(amount ? " (amount)" : " (score)").withStyle(ChatFormatting.DARK_GRAY));
-                if(min == 0 && max < maxValue) {
-                    line.append(Component.literal(" < " + (max + 1))).withStyle(ChatFormatting.GRAY);
-                } else if(min > 0 && max >= maxValue) {
-                    line.append(Component.literal(" > " + (min - 1))).withStyle(ChatFormatting.GRAY);
-                } else {
-                    line.append(Component.literal(" between " + min + " and " + max)).withStyle(ChatFormatting.GRAY);
-                }
-
-                barTooltip.add(line);
-            }
-        } else {
-            barTooltip.add(TooltipHelper.getHoldShiftComponent());
-        }
-
-        tooltip = barTooltip;
     }
 
     //this function draws the background. Not very interesting.
