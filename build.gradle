@@ -7,7 +7,7 @@ plugins {
     id 'org.spongepowered.mixin' version '0.7.+'
 }
 
-version = '1.20.1 - 0.12.1'
+version = '1.20.1 - 0.12.2'
 group = 'net.lukasllll.lukas_nutrients' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'lukas_nutrients'
 
@@ -161,8 +161,14 @@ dependencies {
     //nethers delight 1.20.1: https://modrinth.com/mod/nethers-delight/version/MTDQhZd2
     implementation fg.deobf("maven.modrinth:nethers-delight:MTDQhZd2")
 
+    //create 1.20.1: https://modrinth.com/mod/create/version/1.20.1-0.5.1.f
+    implementation fg.deobf("maven.modrinth:create:1.20.1-0.5.1.f")
+
     //appleskin 1.20.1 (run only): https://modrinth.com/mod/appleskin/version/2.5.1+mc1.20.1
     runtimeOnly fg.deobf("maven.modrinth:appleskin:2.5.1+mc1.20.1")
+
+    //jei 1.20.1 (run only): https://modrinth.com/mod/jei/version/PeYsGsQy
+    runtimeOnly fg.deobf("maven.modrinth:jei:PeYsGsQy")
 
     // For more info...
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html

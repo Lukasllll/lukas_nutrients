@@ -15,7 +15,7 @@ public class NethersDelightFoodNutrientProvider {
 
         Item stuffedHoglin = NDItems.STUFFED_HOGLIN.get();
 
-        FoodNutrientProvider.assignNutrientsThroughRecipe(stuffedHoglin);
+        FoodNutrientProvider.assignItemNutrientsThroughRecipes(stuffedHoglin);
 
         HashMap<Item, Integer> stuffedHoglinBlockServings = new HashMap<>();
         stuffedHoglinBlockServings.put(NDItems.PLATE_OF_STUFFED_HOGLIN_SNOUT.get(), 1);

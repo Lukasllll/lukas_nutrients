@@ -4,7 +4,8 @@
   "package": "net.lukasllll.lukas_nutrients.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "ItemMixin",
-    "BlockMixin"
+    "BlockMixin",
+    "FluidMixin",
+    "ItemMixin"
   ]
 }

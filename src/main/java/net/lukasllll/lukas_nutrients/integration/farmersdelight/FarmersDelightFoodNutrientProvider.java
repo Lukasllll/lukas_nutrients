@@ -21,7 +21,7 @@ public class FarmersDelightFoodNutrientProvider {
 
         for(FeastBlock feast : feasts) {
             Item feastItem = feast.asItem();
-            FoodNutrientProvider.assignNutrientsThroughRecipe(feastItem);
+            FoodNutrientProvider.assignItemNutrientsThroughRecipes(feastItem);
 
             int numberOfServings = feast.getMaxServings();
             Item servingItem = feast.getServingItem(feast.defaultBlockState()).getItem();

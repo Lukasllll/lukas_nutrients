@@ -1,6 +1,5 @@
 package net.lukasllll.lukas_nutrients.config;
 
-import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.minecraft.world.item.Items;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -27,7 +26,7 @@ public record BaseNutrientsConfig (int configVersion, LinkedHashMap<String, List
     private static BaseNutrientsConfig getDefaultBaseNutrients() {
         LinkedHashMap<String, List<String>> map = new LinkedHashMap<>();
 
-        String grains = "grains";       //maybe change? Values already saved in nutrients.NutrientGroup
+        String grains = "grains";
         String fruits = "fruits";
         String vegetables = "vegetables";
         String proteins = "proteins";
@@ -73,6 +72,7 @@ public record BaseNutrientsConfig (int configVersion, LinkedHashMap<String, List
         map.put(ForgeRegistries.ITEMS.getKey(Items.MUSHROOM_STEW).toString(), buildEntry( 1.0, vegetables));
         map.put(ForgeRegistries.ITEMS.getKey(Items.RED_MUSHROOM).toString(), buildEntry( 0.54, vegetables));
         map.put(ForgeRegistries.ITEMS.getKey(Items.BROWN_MUSHROOM).toString(), buildEntry( 1.0, vegetables));
+        map.put(ForgeRegistries.ITEMS.getKey(Items.WARPED_ROOTS).toString(), buildEntry( 0.2, vegetables));
 
 
         map.put(ForgeRegistries.ITEMS.getKey(Items.HONEY_BOTTLE).toString(), buildEntry( 2.0, sugars));
