@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Either;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
+import net.lukasllll.lukas_nutrients.client.TooltipHelper;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.NutrientButton;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.screens.NutrientScreen;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
@@ -70,7 +71,7 @@ public class ClientEvents {
             List<Either<FormattedText, TooltipComponent>> nutrientTooltipElements = new ArrayList<>();
             for(int i=0; i< nutrients.length; i++) {
                 if(nutrientAmounts[i] == 0) continue;
-                String text = "+" + round(nutrientAmounts[i] / servings) + " " + nutrients[i].getDisplayname();
+                String text = "+" + TooltipHelper.round(nutrientAmounts[i] / servings) + " " + nutrients[i].getDisplayname();
                 nutrientTooltipElements.add(Either.left(Component.literal(text).withStyle(ChatFormatting.GOLD)));
             }
             if(nutrientTooltipElements.isEmpty()) {
@@ -91,10 +92,6 @@ public class ClientEvents {
             }
             //add the nutrients
             toolTipElements.addAll(nutrientTooltipElements);
-        }
-
-        private static double round(double in) {
-            return (double) Math.round(in * 100) / 100.0;
         }
     }
 }

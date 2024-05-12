@@ -2,6 +2,7 @@ package net.lukasllll.lukas_nutrients.client;
 
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffect;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -20,11 +21,11 @@ public class ClientNutrientData {
     private static double[] operatorAmounts;
     private static int[] operatorScores;                    //contains the outputs of Operator::getCurrentScore
     private static int[] operatorForcedScores;              //contains the outputs of Operator::getCurrentForcedScore
-    private static List<Triple<String, AttributeModifier.Operation, Double>> activeEffects;
+    private static List<NutrientEffect> activeEffects;
     private static String[] displayOrder;
 
 
-    public static void setPlayerData(double[] amounts, double[] exhaustionLevels, int[] nutrientScores, double[] operatorAmounts, int[] operatorScores, List<Triple<String, AttributeModifier.Operation, Double>> activeEffects) {
+    public static void setPlayerData(double[] amounts, double[] exhaustionLevels, int[] nutrientScores, double[] operatorAmounts, int[] operatorScores, List<NutrientEffect> activeEffects) {
         ClientNutrientData.nutrientAmounts = amounts;
         ClientNutrientData.exhaustionLevels = exhaustionLevels;
         ClientNutrientData.nutrientScores = nutrientScores;
@@ -47,6 +48,7 @@ public class ClientNutrientData {
         }
         operatorArrayIndexMap = new HashMap<>();
         for(int i=0; i<operators.length; i++) {
+            operators[i].fetchInputs(true);
             operatorArrayIndexMap.put(operators[i].getID(), i);
         }
 
@@ -115,6 +117,12 @@ public class ClientNutrientData {
         return nutrientRanges[nutrientIndex];
     }
 
+    public static Operator getOperator(String id) {
+        int operatorIndex = operatorArrayIndexMap.getOrDefault(id, -1);
+        if(operatorIndex == -1) return null;
+        return operators[operatorIndex];
+    }
+
     public static double getOperatorAmount(String id) {
         int operatorIndex = operatorArrayIndexMap.getOrDefault(id, -1);
         if(operatorIndex == -1) return -1;
@@ -140,7 +148,7 @@ public class ClientNutrientData {
 
     public static String[] getDisplayOrder() { return displayOrder; }
 
-    public static List<Triple<String, AttributeModifier.Operation, Double>> getActiveDietEffects() {
+    public static List<NutrientEffect> getActiveDietEffects() {
         return activeEffects;
     }
 

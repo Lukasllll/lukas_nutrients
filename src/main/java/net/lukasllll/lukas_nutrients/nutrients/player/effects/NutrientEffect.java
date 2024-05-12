@@ -1,12 +1,14 @@
 package net.lukasllll.lukas_nutrients.nutrients.player.effects;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.nio.charset.Charset;
 import java.util.UUID;
 
 public class NutrientEffect {
@@ -23,24 +25,51 @@ public class NutrientEffect {
         this.attributeModifier = attributeModifier;
     }
 
-    public NutrientEffect(String targetID,int minDietScore, int maxDietScore, String attributeString, double amount, String operationString) {
+    public NutrientEffect(String targetID, int minDietScore, int maxDietScore, String attributeString, double amount, String operationString) {
         this.targetID = targetID;
         this.minDietScore = minDietScore;
         this.maxDietScore = maxDietScore;
-        AttributeModifier.Operation operation = null;
-        switch(operationString) {
-            case "ADDITION":
-                operation = AttributeModifier.Operation.ADDITION;
-                break;
-            case "MULTIPLY_BASE":
-                operation = AttributeModifier.Operation.MULTIPLY_BASE;
-                break;
-            case "MULTIPLY_TOTAL":
-                operation = AttributeModifier.Operation.MULTIPLY_TOTAL;
-                break;
-        }
         Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attributeString));
-        this.attributeModifier = new AssignedAttributeModifier(UUID.randomUUID(), EFFECT_NAME, attribute, amount, operation);
+        this.attributeModifier = new AssignedAttributeModifier(UUID.randomUUID(), EFFECT_NAME, attribute, amount, operationString);
+    }
+
+    public NutrientEffect(FriendlyByteBuf buf) {
+        int tempLength = buf.readInt();
+        this.targetID = (String) buf.readCharSequence(tempLength, Charset.defaultCharset());
+        this.minDietScore = buf.readInt();
+        this.maxDietScore = buf.readInt();
+
+        tempLength = buf.readInt();
+        String attributeString = (String) buf.readCharSequence(tempLength, Charset.defaultCharset());
+
+        double amount = buf.readDouble();
+
+        tempLength = buf.readInt();
+        String operationString = (String) buf.readCharSequence(tempLength, Charset.defaultCharset());
+
+        Attribute attribute = ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(attributeString));
+        this.attributeModifier = new AssignedAttributeModifier(UUID.randomUUID(), EFFECT_NAME, attribute, amount, operationString);
+    }
+
+
+    /*
+    Write the objects relevant data to a ByteBuffer to be sent from the server to the client.
+     */
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeInt(targetID.length());
+        buf.writeCharSequence(targetID, Charset.defaultCharset());
+        buf.writeInt(minDietScore);
+        buf.writeInt(maxDietScore);
+
+        String attributeString = ForgeRegistries.ATTRIBUTES.getKey(getAttributeModifier().getAttribute()).toString();
+        buf.writeInt(attributeString.length());
+        buf.writeCharSequence(attributeString, Charset.defaultCharset());
+
+        buf.writeDouble(attributeModifier.getAmount());
+
+        String operationString = this.attributeModifier.getOperationString();
+        buf.writeInt(operationString.length());
+        buf.writeCharSequence(operationString, Charset.defaultCharset());
     }
 
     public void apply(ServerPlayer player, int totalDietScore) {
@@ -65,12 +94,29 @@ public class NutrientEffect {
 
     public String getTargetID() { return targetID; }
 
+    public int getMinDietScore() { return minDietScore; }
+    public int getMaxDietScore() { return maxDietScore; }
+
     public AssignedAttributeModifier getAttributeModifier() { return attributeModifier; }
+
+    public String getAttributeString() {
+        return ForgeRegistries.ATTRIBUTES.getKey(getAttributeModifier().getAttribute()).toString();
+    }
+
+    public double getAttributeModifierAmount() {
+        return getAttributeModifier().getAmount();
+    }
+
+    public AttributeModifier.Operation getAttributeModifierOperation() {
+        return getAttributeModifier().getOperation();
+    }
 
     public boolean canCombineWith(NutrientEffect other) {
         return (this.attributeModifier.getAttribute() == other.attributeModifier.getAttribute()
                 && this.attributeModifier.getOperation() == other.attributeModifier.getOperation()
-                && this.getTargetID().equals(other.getTargetID()));
+                && this.getTargetID().equals(other.getTargetID())
+                && this.minDietScore <= other.maxDietScore
+                && other.minDietScore <= this.maxDietScore);
     }
 
     /*
@@ -96,7 +142,7 @@ public class NutrientEffect {
                 break;
         }
 
-        return new NutrientEffect(this.getTargetID(), -1, -1,
+        return new NutrientEffect(this.getTargetID(), Math.max(this.minDietScore, other.minDietScore), Math.min(this.maxDietScore, other.maxDietScore),
                 new AssignedAttributeModifier(this.attributeModifier.getName(), this.attributeModifier.getAttribute(), amount, this.attributeModifier.getOperation()));
     }
 }

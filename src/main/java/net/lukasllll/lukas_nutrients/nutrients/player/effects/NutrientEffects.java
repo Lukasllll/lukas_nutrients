@@ -89,7 +89,7 @@ public class NutrientEffects {
     returns a list with all important information about active attributeModifiers. Similar modifiers are combined.
     baseEffects are ignored for this list.
      */
-    public static List<Triple<String, AttributeModifier.Operation, Double>> getSimplifiedList(ServerPlayer player) {
+    public static List<NutrientEffect> getSimplifiedList(ServerPlayer player) {
         ArrayList<NutrientEffect> activeEffects = new ArrayList<>();
 
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
@@ -119,14 +119,7 @@ public class NutrientEffects {
             }
         }
 
-        ArrayList< Triple<String, AttributeModifier.Operation, Double> > out = new ArrayList<>();
-        for(NutrientEffect effect : activeEffects) {
-            out.add(Triple.of(ForgeRegistries.ATTRIBUTES.getKey(effect.getAttributeModifier().getAttribute()).toString(),
-                    effect.getAttributeModifier().getOperation(),
-                    effect.getAttributeModifier().getAmount()));
-        }
-
-        return out;
+        return activeEffects;
     }
 
 }

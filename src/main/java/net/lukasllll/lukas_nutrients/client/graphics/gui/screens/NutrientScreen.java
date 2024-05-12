@@ -5,32 +5,35 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.KeyBinding;
+import net.lukasllll.lukas_nutrients.client.TooltipHelper;
 import net.lukasllll.lukas_nutrients.client.graphics.CustomTexture;
 import net.lukasllll.lukas_nutrients.client.graphics.NativeImageLoader;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
 import net.lukasllll.lukas_nutrients.config.EffectIconsConfig;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
+import net.lukasllll.lukas_nutrients.nutrients.operators.ICalcElement;
 import net.lukasllll.lukas_nutrients.nutrients.operators.Operator;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffect;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.commons.lang3.tuple.Triple;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 public class NutrientScreen extends Screen {
 
-    private static final Component TITLE = Component.translatable("gui." + LukasNutrients.MOD_ID +".nutrient_screen_title");
+    private static final Component TITLE = Component.translatable(LukasNutrients.MOD_ID + ".gui.nutrient_screen_title");
     private static final ResourceLocation BACKGROUND = new ResourceLocation("minecraft", "textures/gui/demo_background.png");
     public static final ResourceLocation INVENTORY_LOCATION = new ResourceLocation("minecraft","textures/gui/container/inventory.png");
     private static final ResourceLocation ICONS = new ResourceLocation(LukasNutrients.MOD_ID, "textures/gui/icons.png");
@@ -95,13 +98,10 @@ public class NutrientScreen extends Screen {
         }
         calculateDimensions();
     }
-    /*
-    Method is needed to close the screen on pressing 'n' again.
-    I don't know what all these parameters do, so I didn't change their names.
-     */
-    public boolean keyPressed(int p_97765_, int p_97766_, int p_97767_){
-        InputConstants.Key key = InputConstants.getKey(p_97765_, p_97766_);
-        if(super.keyPressed(p_97765_, p_97766_, p_97767_)) {
+
+    public boolean keyPressed(int pKeyCode, int pScanCode, int pModifiers){
+        InputConstants.Key key = InputConstants.getKey(pKeyCode, pScanCode);
+        if(super.keyPressed(pKeyCode, pScanCode, pModifiers)) {
             return true;
         } else if (KeyBinding.OPEN_GUI_KEY.isActiveAndMatches(key)) {
             this.onClose();
@@ -116,9 +116,9 @@ public class NutrientScreen extends Screen {
         renderBackground(graphics);
         renderDividers(graphics);
         renderDietEffects(graphics, mouseX, mouseY);
-        renderLeftModule(graphics);
-        renderMiddleModule(graphics);
-        renderRightModule(graphics);
+        renderLeftModule(graphics, mouseX, mouseY);
+        renderMiddleModule(graphics, mouseX, mouseY);
+        renderRightModule(graphics, mouseX, mouseY);
         if(tooltip != null)
             graphics.renderComponentTooltip(this.font, tooltip, mouseX, mouseY);
         super.render(graphics, mouseX, mouseY, partialTick);
@@ -140,7 +140,8 @@ public class NutrientScreen extends Screen {
         }
     }
 
-    public void renderLeftModule(GuiGraphics graphics) {
+    public void renderLeftModule(GuiGraphics graphics, int mouseX, int mouseY) {
+        int currentX = startX + horizontalSpacing[0];
         int currentY = startY + verticalSpacing[0];
 
         for(int i=0; i<displayOrder.length; i++) {
@@ -150,21 +151,39 @@ public class NutrientScreen extends Screen {
                 currentY += verticalSpacing[2] + 2 + verticalSpacing[3]; //divider
             } else if (element instanceof Nutrient) {
                 //render display item
-                graphics.renderItem(((Nutrient)element).getDisplayItemStack(), startX + horizontalSpacing[0], currentY);
+                graphics.renderItem(((Nutrient)element).getDisplayItemStack(), currentX, currentY);
                 //render Name
-                graphics.drawString(this.font, shortenedNameById.get(element.getID()), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+                graphics.drawString(this.font, shortenedNameById.get(element.getID()), currentX + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+
+                boolean mouseHoversIcon = mouseX >= currentX && mouseX < currentX + 16 && mouseY >= currentY && mouseY < currentY + 16;
+                //bounding box for hovering text is a few pixels larger than actual text for better user experience
+                boolean mouseHoversText = mouseX >= currentX + 16 && mouseX < currentX + 16 + horizontalSpacing[1] + this.font.width(shortenedNameById.get(element.getID()))
+                        && mouseY >= currentY + 3 && mouseY < currentY + 5 + this.font.lineHeight;
+                if(mouseHoversIcon || mouseHoversText) {
+                    tooltip = ((Nutrient) element).getTooltip();
+                }
+
                 currentY += 16 + verticalSpacing[1];
             } else if(element instanceof Operator) {
                 //render symbol
-                graphics.blit(ICONS, startX + horizontalSpacing[0], currentY, 16, 16, ((Operator) element).getTextureStartX(), ((Operator) element).getTextureStartY(), 16, 16, 256, 256);
+                graphics.blit(ICONS, currentX, currentY, 16, 16, ((Operator) element).getTextureStartX(), ((Operator) element).getTextureStartY(), 16, 16, 256, 256);
                 //render Name
-                graphics.drawString(this.font, shortenedNameById.get(element.getID()), startX + horizontalSpacing[0] + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+                graphics.drawString(this.font, shortenedNameById.get(element.getID()), currentX + 16 + horizontalSpacing[1], currentY + 5, TEXT_COLOR, false);
+
+                boolean mouseHoversIcon = mouseX >= currentX && mouseX < currentX + 16 && mouseY >= currentY && mouseY < currentY + 16;
+                //bounding box for hovering text is a few pixels larger than actual text for better user experience
+                boolean mouseHoversText = mouseX >= currentX + 16 && mouseX < currentX + 16 + horizontalSpacing[1] + this.font.width(shortenedNameById.get(element.getID()))
+                        && mouseY >= currentY + 3 && mouseY < currentY + 5 + this.font.lineHeight;
+                if(mouseHoversIcon || mouseHoversText) {
+                    tooltip = ((Operator) element).getTooltip(hasShiftDown());
+                }
+
                 currentY += 16 + verticalSpacing[1];
             }
         }
     }
 
-    public void renderMiddleModule(GuiGraphics graphics) {
+    public void renderMiddleModule(GuiGraphics graphics, int mouseX, int mouseY) {
         ResourceLocation[] nutrientBars = getNutrientBarLocations();
         ResourceLocation[] sumBars = getOperatorBarLocations();
         ResourceLocation[] arrows = getBarArrowsLocation();
@@ -200,6 +219,12 @@ public class NutrientScreen extends Screen {
                 barLength = (int) ((4.0 - exhaustionLevel)/4.0 * 98.0);
                 graphics.blit(ICONS, currentX, currentY + 12, barLength, 2, 16, 10, barLength, 2, 256, 256);
 
+                boolean mouseHoversBar = mouseX >= currentX && mouseX < currentX + 101
+                        && mouseY >= currentY + 3 && mouseY < currentY + 14;
+                if(mouseHoversBar) {
+                    setBarTooltip((ICalcElement) element);
+                }
+
                 currentY += 16 + verticalSpacing[1];
             } else if(element instanceof Operator) {
                 //draw diet effects bar
@@ -223,8 +248,6 @@ public class NutrientScreen extends Screen {
                     effectsBarEndX = effectsBarStartX + 1;
                 }
 
-                //LukasNutrients.LOGGER.debug("start = " + effectsBarStartX + ", end = " + effectsBarEndX + ", totalScore = " + totalScore + ", basePoint = " + basePoint +", divisons = " + divisions + ", toTheRight = " + toTheRight);
-
                 graphics.blit(sumBars[ClientNutrientData.getOperatorArrayIndex(element.getID())], currentX + effectsBarStartX, currentY + 7, effectsBarEndX - effectsBarStartX, 5, effectsBarStartX, 0, effectsBarEndX - effectsBarStartX, 5, 256, 256);
 
                 //draw diet effects bar arrow;
@@ -236,12 +259,34 @@ public class NutrientScreen extends Screen {
 
                 graphics.blit(arrows[arrowArrayIndex], currentX + arrowX, currentY + 1, 5, 5, 0, 0, 5, 5, 256, 256);
 
+                boolean mouseHoversBar = mouseX >= currentX && mouseX < currentX + 101
+                        && mouseY >= currentY + 3 && mouseY < currentY + 14;
+                if(mouseHoversBar) {
+                    setBarTooltip((ICalcElement) element);
+                }
+
                 currentY += 16 + verticalSpacing[1];
             }
         }
     }
 
-    public void renderRightModule(GuiGraphics graphics) {
+    public void setBarTooltip(ICalcElement element) {
+        LinkedList<Component> barTooltip = new LinkedList<>();
+
+        barTooltip.add(Component.literal("Amount:").withStyle(ChatFormatting.GRAY));
+
+        double amount = ClientNutrientData.getNutrientAmount(element.getID());
+        if(amount == -1) amount = ClientNutrientData.getOperatorAmount(element.getID());
+
+        MutableComponent barAmountComponent = Component.literal("" + TooltipHelper.round(amount));
+        barAmountComponent.append(Component.literal(" / ").withStyle(ChatFormatting.GRAY));
+        barAmountComponent.append(Component.literal("" + TooltipHelper.round(element.getMaxAmount())).withStyle(ChatFormatting.GRAY));
+
+        barTooltip.add(barAmountComponent);
+        tooltip = barTooltip;
+    }
+
+    public void renderRightModule(GuiGraphics graphics, int mouseX, int mouseY) {
 
         int currentY = startY + verticalSpacing[0];
         int currentX = startX + horizontalSpacing[0] + leftModuleWidth + horizontalSpacing[2] + middleModuleWidth + horizontalSpacing[3];
@@ -257,6 +302,13 @@ public class NutrientScreen extends Screen {
                 //render number
                 graphics.drawString(this.font, ""+ClientNutrientData.getNutrientScore(element.getID()), currentX + 8, currentY + 4, TEXT_COLOR, false);
                 graphics.drawString(this.font, "/" + ClientNutrientData.getNutrient(element.getID()).getMaxScore(), currentX + 17, currentY + 4, TEXT_COLOR, false);
+
+                boolean mouseHoversScore = mouseX >= currentX + 6 && mouseX < currentX + 29
+                        && mouseY >= currentY + 2 && mouseY < currentY + 13;
+                if(mouseHoversScore) {
+                    setScoreTooltip((ICalcElement) element);
+                }
+
                 currentY += 16 + verticalSpacing[1];
             } else if(element instanceof Operator) {
                 //render box
@@ -269,16 +321,39 @@ public class NutrientScreen extends Screen {
                     graphics.drawString(this.font, "" + operatorScore, currentX + 2, currentY + 4, TEXT_COLOR, false);
                 }
                 graphics.drawString(this.font, "/" + ((Operator) element).getMaxScore(), currentX + 17, currentY + 4, TEXT_COLOR, false);
+
+                boolean mouseHoversScore = mouseX >= currentX && mouseX < currentX + 35
+                        && mouseY >= currentY + 2 && mouseY < currentY + 13;
+                if(mouseHoversScore) {
+                    setScoreTooltip((ICalcElement) element);
+                }
+
                 currentY += 16 + verticalSpacing[1];
             }
         }
+    }
+
+    public void setScoreTooltip(ICalcElement element) {
+        LinkedList<Component> barTooltip = new LinkedList<>();
+
+        barTooltip.add(Component.literal("Score:").withStyle(ChatFormatting.GRAY));
+
+        int amount = ClientNutrientData.getNutrientScore(element.getID());
+        if(amount == -1) amount = ClientNutrientData.getOperatorScore(element.getID());
+
+        MutableComponent barAmountComponent = Component.literal("" + amount);
+        barAmountComponent.append(Component.literal(" / ").withStyle(ChatFormatting.GRAY));
+        barAmountComponent.append(Component.literal("" + element.getMaxScore()).withStyle(ChatFormatting.GRAY));
+
+        barTooltip.add(barAmountComponent);
+        tooltip = barTooltip;
     }
 
     /*
     Renders the icons for currently active diet effect and sets the appropriate tooltip, if moused-over
      */
     public void renderDietEffects(GuiGraphics graphics, int mouseX, int mouseY) {
-        List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects = ClientNutrientData.getActiveDietEffects();
+        List<NutrientEffect> activeDietEffects = ClientNutrientData.getActiveDietEffects();
 
         int x = startX + totalWidth + 2;
         int y = startY;
@@ -292,7 +367,7 @@ public class NutrientScreen extends Screen {
             //effect image
             ResourceLocation effectLocation = new ResourceLocation(
                     "minecraft","textures/mob_effect/" +
-                    EffectIconsConfig.getEffectIcon(activeDietEffects.get(i).getLeft(), activeDietEffects.get(i).getRight()) + ".png");
+                    EffectIconsConfig.getEffectIcon(activeDietEffects.get(i).getAttributeString(), activeDietEffects.get(i).getAttributeModifierAmount()) + ".png");
 
             graphics.blit(effectLocation, x + 7, y + 7, 0, (float) 0.0, (float) 0.0, 18, 18, 18, 18);
 
@@ -300,24 +375,7 @@ public class NutrientScreen extends Screen {
             The tooltip is just created here. It is rendered, once renderComponentTooltip is called
              */
             if(mouseX >= x && mouseX < x+32 && mouseY >= y && mouseY < y+32) {
-                tooltip = new ArrayList<>();
-                switch (activeDietEffects.get(i).getMiddle()) {
-                    case ADDITION:
-                        if(activeDietEffects.get(i).getRight() >= 0)
-                            tooltip.add(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + activeDietEffects.get(i).getRight()), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
-                        else
-                            tooltip.add(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight())), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
-                        break;
-                    case MULTIPLY_TOTAL:
-                        if(activeDietEffects.get(i).getRight() >= 0)
-                            tooltip.add(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + activeDietEffects.get(i).getRight() * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
-                        else
-                            tooltip.add(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(activeDietEffects.get(i).getRight()) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
-                        break;
-                    case MULTIPLY_BASE:
-                        tooltip.add(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + activeDietEffects.get(i).getRight())) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(activeDietEffects.get(i).getLeft())).getDescriptionId())));
-                        break;
-                }
+                setEffectTooltip(activeDietEffects.get(i), hasShiftDown());
             }
 
             y += 34;
@@ -328,6 +386,61 @@ public class NutrientScreen extends Screen {
         }
     }
 
+    public void setEffectTooltip(NutrientEffect effect, boolean moreInfo) {
+        LinkedList<Component> barTooltip = new LinkedList<>();
+
+        //barTooltip.add(Component.literal("Nutrient Effect").withStyle(ChatFormatting.GRAY));
+
+        switch (effect.getAttributeModifierOperation()) {
+            case ADDITION -> {
+                if (effect.getAttributeModifierAmount() >= 0)
+                    barTooltip.add(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + effect.getAttributeModifierAmount()), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
+                else
+                    barTooltip.add(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(effect.getAttributeModifierAmount())), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
+            }
+            case MULTIPLY_TOTAL -> {
+                if (effect.getAttributeModifierAmount() >= 0)
+                    barTooltip.add(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + effect.getAttributeModifierAmount() * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
+                else
+                    barTooltip.add(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(effect.getAttributeModifierAmount()) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
+            }
+            case MULTIPLY_BASE ->
+                    barTooltip.add(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + effect.getAttributeModifierAmount())) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(effect.getAttributeString())).getDescriptionId())));
+        }
+
+        if(moreInfo) {
+            barTooltip.add(Component.literal("Cause: ").withStyle(ChatFormatting.GRAY));
+
+            String[] splitID = effect.getTargetID().split("\\.");
+            if (splitID.length > 2) return;
+            boolean amount = true;
+            if(splitID.length == 2 && splitID[1].equals("score")) amount = false;
+
+            ICalcElement cause = ClientNutrientData.getNutrient(splitID[0]);
+            if(cause == null) cause = ClientNutrientData.getOperator(splitID[0]);
+            if(cause != null) {
+                int min = effect.getMinDietScore();
+                int max = effect.getMaxDietScore();
+                int maxValue = amount ? (int) cause.getMaxAmount() : cause.getMaxScore();
+
+                MutableComponent line = Component.literal(cause.getDisplayname()).withStyle(ChatFormatting.GRAY);
+                line.append(Component.literal(amount ? " (amount)" : " (score)").withStyle(ChatFormatting.DARK_GRAY));
+                if(min == 0 && max < maxValue) {
+                    line.append(Component.literal(" < " + (max + 1))).withStyle(ChatFormatting.GRAY);
+                } else if(min > 0 && max >= maxValue) {
+                    line.append(Component.literal(" > " + (min - 1))).withStyle(ChatFormatting.GRAY);
+                } else {
+                    line.append(Component.literal(" between " + min + " and " + max)).withStyle(ChatFormatting.GRAY);
+                }
+
+                barTooltip.add(line);
+            }
+        } else {
+            barTooltip.add(TooltipHelper.getHoldShiftComponent());
+        }
+
+        tooltip = barTooltip;
+    }
 
     //this function draws the background. Not very interesting.
     @Override
