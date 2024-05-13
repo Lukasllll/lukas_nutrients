@@ -43,9 +43,13 @@ public class NutrientButton extends ImageButton {
 
         if(mouseX >= this.getX() && mouseX < this.getX() + this.getWidth() && mouseY >= this.getY() && mouseY < this.getY() + this.getHeight()) {
             List<Component> tooltip = new LinkedList<>();
-            tooltip.add(Component.literal("Active Nutrient Effects:").withStyle(ChatFormatting.GRAY));
-            for(NutrientEffect effect : ClientNutrientData.getActiveDietEffects()) {
-                tooltip.add(effect.getSmallEffectTooltip());
+            if(ClientNutrientData.getActiveDietEffects().isEmpty()) {
+                tooltip.add(Component.literal("No active Nutrient Effects").withStyle(ChatFormatting.GRAY));
+            } else {
+                tooltip.add(Component.literal("Active Nutrient Effects:").withStyle(ChatFormatting.GRAY));
+                for (NutrientEffect effect : ClientNutrientData.getActiveDietEffects()) {
+                    tooltip.add(effect.getSmallEffectTooltip());
+                }
             }
             graphics.renderComponentTooltip(screen.getMinecraft().font, tooltip, mouseX, mouseY);
         }
