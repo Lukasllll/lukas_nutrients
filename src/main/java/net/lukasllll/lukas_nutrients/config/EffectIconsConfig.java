@@ -40,7 +40,11 @@ public record EffectIconsConfig(int configVersion, LinkedHashMap<String, String>
     }
 
     public static String getEffectIcon(String attributeDescriptionId, double modifier) {
+        return getEffectIcon(attributeDescriptionId, modifier >= 0);
+    }
+
+    public static String getEffectIcon(String attributeDescriptionId, boolean positive) {
         if(DATA == null) return null;
-        return DATA.effectIconMapping.getOrDefault(attributeDescriptionId + (modifier >= 0 ? POSITIVE_SUFFIX : NEGATIVE_SUFFIX), "regeneration");
+        return DATA.effectIconMapping.getOrDefault(attributeDescriptionId + (positive ? POSITIVE_SUFFIX : NEGATIVE_SUFFIX), "regeneration");
     }
 }

@@ -1,6 +1,7 @@
 package net.lukasllll.lukas_nutrients.nutrients.player.effects;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.api.event.NutrientEffectEvent;
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.TooltipHelper;
 import net.lukasllll.lukas_nutrients.nutrients.operators.ICalcElement;
@@ -12,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.nio.charset.Charset;
@@ -80,20 +82,28 @@ public class NutrientEffect {
         buf.writeCharSequence(operationString, Charset.defaultCharset());
     }
 
-    public void apply(ServerPlayer player, int totalDietScore) {
-        remove(player);
+    public void apply(ServerPlayer player, int totalDietScore, boolean setup) {
+        boolean removed = remove(player);
+        boolean added = false;
         if(isActive(totalDietScore)) {
-            player.getAttribute(attributeModifier.getAttribute()).addPermanentModifier(attributeModifier);
+            player.getAttribute(attributeModifier.getAttribute()).addTransientModifier(attributeModifier);
+            added = !removed;
+            removed = false;
         }
+        if(added) MinecraftForge.EVENT_BUS.post(new NutrientEffectEvent.Added(this, player, setup));
+        if(removed) MinecraftForge.EVENT_BUS.post(new NutrientEffectEvent.Removed(this, player));
     }
 
-    public void apply(ServerPlayer player) {
-        remove(player);
-        player.getAttribute(attributeModifier.getAttribute()).addPermanentModifier(attributeModifier);
+    public void apply(ServerPlayer player, boolean setup) {
+        boolean removed = remove(player);
+        player.getAttribute(attributeModifier.getAttribute()).addTransientModifier(attributeModifier);
+        if(!removed) MinecraftForge.EVENT_BUS.post(new NutrientEffectEvent.Added(this, player, setup));
     }
 
-    public void remove(ServerPlayer player) {
+    public boolean remove(ServerPlayer player) {
+        boolean out = player.getAttribute(attributeModifier.getAttribute()).hasModifier(attributeModifier);
         player.getAttribute(attributeModifier.getAttribute()).removeModifier(attributeModifier.getId());
+        return out;
     }
 
     public boolean isActive(int totalDietScore) {
@@ -164,18 +174,18 @@ public class NutrientEffect {
         switch (this.getAttributeModifierOperation()) {
             case ADDITION -> {
                 if (this.getAttributeModifierAmount() >= 0)
-                    out.append(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + this.getAttributeModifierAmount()), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+                    out.append(Component.translatable(("attribute.modifier.plus.0"), Component.literal("" + this.getAttributeModifierAmount()), Component.translatable(this.getAttributeModifier().getAttribute().getDescriptionId())));
                 else
-                    out.append(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(this.getAttributeModifierAmount())), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+                    out.append(Component.translatable(("attribute.modifier.take.0"), Component.literal("" + Math.abs(this.getAttributeModifierAmount())), Component.translatable(this.getAttributeModifier().getAttribute().getDescriptionId())));
             }
             case MULTIPLY_TOTAL -> {
                 if (this.getAttributeModifierAmount() >= 0)
-                    out.append(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + this.getAttributeModifierAmount() * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+                    out.append(Component.translatable(("attribute.modifier.plus.1"), Component.literal("" + this.getAttributeModifierAmount() * 100.0), Component.translatable(this.getAttributeModifier().getAttribute().getDescriptionId())));
                 else
-                    out.append(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(this.getAttributeModifierAmount()) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+                    out.append(Component.translatable(("attribute.modifier.take.1"), Component.literal("" + Math.abs(this.getAttributeModifierAmount()) * 100.0), Component.translatable(this.getAttributeModifier().getAttribute().getDescriptionId())));
             }
             case MULTIPLY_BASE ->
-                    out.append(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + this.getAttributeModifierAmount())) * 100.0), Component.translatable(ForgeRegistries.ATTRIBUTES.getValue(new ResourceLocation(this.getAttributeString())).getDescriptionId())));
+                    out.append(Component.translatable(("attribute.modifier.equals.0"), Component.literal("" + ((1.0 + this.getAttributeModifierAmount())) * 100.0), Component.translatable(this.getAttributeModifier().getAttribute().getDescriptionId())));
         }
         return out;
     }

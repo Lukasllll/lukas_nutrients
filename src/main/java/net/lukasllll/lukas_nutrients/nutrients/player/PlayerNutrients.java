@@ -156,7 +156,7 @@ public class PlayerNutrients {
         //if anything changed the client is then informed and any changes in diet effects are applied
         if(isDirty()) {
             updateClient(player);
-            NutrientEffects.apply(player);
+            NutrientEffects.apply(player, false);
         }
     }
 

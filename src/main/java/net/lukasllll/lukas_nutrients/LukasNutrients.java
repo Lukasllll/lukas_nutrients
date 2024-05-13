@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.lukasllll.lukas_nutrients.config.Config;
 import net.lukasllll.lukas_nutrients.integration.IntegrationHelper;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
+import net.minecraft.client.gui.components.toasts.Toast;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;

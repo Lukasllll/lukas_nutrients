@@ -31,19 +31,19 @@ public class NutrientEffects {
     specified in such a case, just calling apply(player) may lead to the player gaining health.
     Otherwise, just call apply(player) and it will probably be fine.
      */
-    public static void apply(ServerPlayer player) {
+    public static void apply(ServerPlayer player, boolean setup) {
         int previousMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
-        apply(player, previousMaxHealth);
+        apply(player, previousMaxHealth, setup);
     }
 
-    public static void apply(ServerPlayer player, int previousMaxHealth) {
+    public static void apply(ServerPlayer player, int previousMaxHealth, boolean setup) {
 
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
             for(NutrientEffect baseEffect : baseEffects) {
-                baseEffect.apply(player);
+                baseEffect.apply(player, setup);
             }
             for(NutrientEffect nutrientEffect : NutrientEffects) {
-                nutrientEffect.apply(player, nutrients.getValue(nutrientEffect.getTargetID()));
+                nutrientEffect.apply(player, nutrients.getValue(nutrientEffect.getTargetID()), setup);
             }
         });
 
