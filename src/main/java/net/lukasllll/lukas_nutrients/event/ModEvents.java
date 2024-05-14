@@ -2,8 +2,8 @@ package net.lukasllll.lukas_nutrients.event;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
 import net.lukasllll.lukas_nutrients.commands.NutrientsCommand;
-// import net.lukasllll.lukas_nutrients.gameTests.CommandTests;
-import net.lukasllll.lukas_nutrients.gameTests.*;
+import net.lukasllll.lukas_nutrients.gameTests.tests.*;
+import net.lukasllll.lukas_nutrients.gameTests.GameTestCommons;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.food.NutrientProperties;

@@ -1,4 +1,4 @@
-package net.lukasllll.lukas_nutrients.gameTests;
+package net.lukasllll.lukas_nutrients.gameTests.tests;
 
 import net.minecraft.gametest.framework.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.gametest.GameTestHolder;
 import net.minecraftforge.gametest.PrefixGameTestTemplate;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.gameTests.GameTestCommons;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 
 @PrefixGameTestTemplate(false)
@@ -19,25 +20,11 @@ public class CommandTests extends GameTestCommons {
     // fixed template names for actual Tests
     private final String testSetCommandTemplate = twoXtwo;
     private final String testGetCommandTemplate = twoXtwo;
+    private final String testReloadTemplate = twoXtwo;
 
     @GameTest(template = testSetCommandTemplate)
     public void TestSetCommand(GameTestHelper helper) {
         LukasNutrients.LOGGER.info("Initialising TestSetCommand gametest");
-
-        /**
-         * MockPlayer creation failing might be out of our control.
-         * So far I have only found one repo actually using it (WilderWild and it's the
-         * fabric variant of GameTestHelper), but versions >1.20.1 (which also won't
-         * build for me). Additionally NeoForge marked makeMockServerPlayerInLevel as
-         * obsolete. Instead the Test will be ran on the first connected OP player that
-         * is in the Player list.
-         * 
-         * makeMockServerPlayerInLevel():
-         * - Fails on MC 1.20.1
-         * - Fails on Forge 47.2.0 to 47.2.30
-         * - Fails in Singleplayer and Multiplayer
-         **/
-        // ServerPlayer mockplayer = helper.makeMockServerPlayerInLevel();
 
         checkTemplate(testSetCommandTemplate, modID, helper);
 
@@ -72,7 +59,7 @@ public class CommandTests extends GameTestCommons {
         int nurishmentVal = 10;
         String command = String.format("nutrients set %s %s %s", opPlayer, nutrientID, nurishmentVal);
         runMockPlayerCommand(mockplayer, command);
-        Object[] badArray = { 99, 2.0, "I'm a String" };
+        Object[] badArray = { 99, -1, 2.0, "I'm a String" };
 
         for (Object arrEntry : badArray) {
             command = String.format("nutrients set Dev %s %s", nutrientID, arrEntry.toString());
@@ -103,8 +90,16 @@ public class CommandTests extends GameTestCommons {
         String opPlayer = (mockplayer.getName()).getString();
         String gameMode = getServerPlayerGamemode(mockplayer);
         runMockPlayerCommand(mockplayer, "gamemode survival");
+        String nutrientID = "fruits";
 
-        helper.fail("not implemente fail");
+        helper.fail("not implemented fail");
+    }
+
+    @GameTest(template = testReloadTemplate)
+    public void testReloadCommand(GameTestHelper helper) {
+
+        helper.fail("not implemented fail");
+
     }
 
 }
