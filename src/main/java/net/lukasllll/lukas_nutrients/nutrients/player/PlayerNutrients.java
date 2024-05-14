@@ -12,11 +12,13 @@ import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffects;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.food.FoodData;
+import net.minecraftforge.common.capabilities.AutoRegisterCapability;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 
+@AutoRegisterCapability
 public class PlayerNutrients {
 
     public static final double BASE_DECAY_RATE = 0.16;
