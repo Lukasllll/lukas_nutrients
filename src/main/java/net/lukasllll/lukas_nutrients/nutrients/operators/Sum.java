@@ -1,10 +1,16 @@
 package net.lukasllll.lukas_nutrients.nutrients.operators;
 
 import com.google.common.util.concurrent.AtomicDouble;
+import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.client.TooltipHelper;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Iterator;
+import java.util.List;
 
 public class Sum extends Operator implements IDisplayElement, ICalcElement {
 
@@ -34,6 +40,31 @@ public class Sum extends Operator implements IDisplayElement, ICalcElement {
             }
             maxAmount += inputMaxValue;
         }
+    }
+
+    @Override
+    public String getOperatorName() {
+        return "Sum";
+    }
+
+    @Override
+    public List<Component> getTooltip(boolean moreInfo) {
+        List<Component> out = super.getTooltip(moreInfo);
+        if(moreInfo) {
+            out.add(Component.literal("Summands: ").withStyle(ChatFormatting.DARK_GRAY));
+            for(int i=0; i<inputs.length; i++) {
+                MutableComponent line = Component.literal(inputs[i].getDisplayname()).withStyle(ChatFormatting.GRAY);
+                if(inputs[i] instanceof Constant)
+                    line.append(Component.literal(" (constant)").withStyle(ChatFormatting.DARK_GRAY));
+                else
+                    line.append(Component.literal(takeInputScore[i] ? " (score)" : " (amount)").withStyle(ChatFormatting.DARK_GRAY));
+                out.add(line);
+            }
+        } else {
+            out.add(TooltipHelper.getHoldShiftComponent());
+        }
+
+        return out;
     }
 
     public DisplayBarStyle getDisplayBarStyle() {

@@ -46,7 +46,7 @@ public class NutrientsCommand {
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 nutrients.setAmount(nutrientID, amount);
                 nutrients.updateClient(player);
-                NutrientEffects.apply(player);
+                NutrientEffects.apply(player, false);
                 logNutrientChange(source, player, nutrients, nutrientID, amount);
             });
         }
@@ -139,7 +139,7 @@ public class NutrientsCommand {
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 nutrients.reload();
                     });
-            NutrientEffects.apply(player, previousMaxHealth);
+            NutrientEffects.apply(player, previousMaxHealth, true);
         }
         source.sendSuccess(() -> Component.literal("Nutrient effects have been reset for " + players.size() + (players.size() == 1 ? " player" : " players") + "!"), true);
 

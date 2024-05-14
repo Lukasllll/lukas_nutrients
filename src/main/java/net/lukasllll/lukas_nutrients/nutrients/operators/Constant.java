@@ -2,10 +2,10 @@ package net.lukasllll.lukas_nutrients.nutrients.operators;
 
 public class Constant implements ICalcElement{
 
-    public static final String DISPLAY_NAME = "CONSTANT";
+    public static final String DISPLAY_NAME = "Constant = ";
     public static final String ID = "const";
 
-    private double value;
+    private final double value;
 
     public Constant(String inputID) {
         String[] splitID = inputID.split("=");
@@ -23,7 +23,7 @@ public class Constant implements ICalcElement{
 
     @Override
     public String getDisplayname() {
-        return DISPLAY_NAME;
+        return "" + value;
     }
 
     @Override

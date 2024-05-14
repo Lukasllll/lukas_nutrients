@@ -2,8 +2,11 @@ package net.lukasllll.lukas_nutrients;
 
 import com.mojang.logging.LogUtils;
 import net.lukasllll.lukas_nutrients.config.Config;
+import net.lukasllll.lukas_nutrients.gamerule.ModGameRules;
 import net.lukasllll.lukas_nutrients.integration.IntegrationHelper;
 import net.lukasllll.lukas_nutrients.networking.ModMessages;
+import net.minecraft.client.gui.components.toasts.Toast;
+import net.minecraft.world.level.GameRules;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
@@ -25,6 +28,9 @@ public class LukasNutrients
         modEventBus.addListener(this::clientSetup);
 
         MinecraftForge.EVENT_BUS.register(this);
+
+        //yeah... idk why I have to register an instance of this class, but if I don't, the gamerules won't be registered.
+        MinecraftForge.EVENT_BUS.register(new ModGameRules());
     }
 
     private void commonSetup(final FMLCommonSetupEvent event)

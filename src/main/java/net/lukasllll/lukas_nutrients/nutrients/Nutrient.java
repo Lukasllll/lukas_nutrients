@@ -2,7 +2,9 @@ package net.lukasllll.lukas_nutrients.nutrients;
 
 import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
 import net.lukasllll.lukas_nutrients.nutrients.operators.ICalcElement;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -10,6 +12,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 import java.nio.charset.Charset;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Nutrient implements IDisplayElement, ICalcElement {
 
@@ -90,4 +94,10 @@ public class Nutrient implements IDisplayElement, ICalcElement {
     public ItemStack getDisplayItemStack() {return this.displayItemStack;}
     public int[] getPointRanges() {return this.pointRanges;}
     public double getDefaultAmount() {return this.defaultAmount;}
+
+    public List<Component> getTooltip() {
+        LinkedList<Component> out = new LinkedList<>();
+        out.add(Component.literal(getDisplayname()).append(Component.literal(" (Nutrient)").withStyle(ChatFormatting.GRAY)));
+        return out;
+    }
 }

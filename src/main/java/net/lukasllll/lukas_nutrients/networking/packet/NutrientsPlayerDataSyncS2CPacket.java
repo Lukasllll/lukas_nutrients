@@ -1,6 +1,7 @@
 package net.lukasllll.lukas_nutrients.networking.packet;
 
 import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
+import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffect;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraftforge.network.NetworkEvent;
@@ -18,10 +19,10 @@ public class NutrientsPlayerDataSyncS2CPacket {
     private final int[] nutrientScores;                   //the score of the given range
     private final double[] operatorAmounts;
     private final int[] operatorScores;
-    List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects;
+    List<NutrientEffect> activeDietEffects;
 
-    public NutrientsPlayerDataSyncS2CPacket(double[] amounts, double[] exhaustionLevels, int[] nutrientScores, double[] operatorAmounts, int[] operatorScores,
-                                            List<Triple<String, AttributeModifier.Operation, Double>> activeDietEffects) {
+    public NutrientsPlayerDataSyncS2CPacket(double[] amounts, double[] exhaustionLevels, int[] nutrientScores,
+                                            double[] operatorAmounts, int[] operatorScores, List<NutrientEffect> activeDietEffects) {
         this.nutrientAmounts = amounts;
         this.exhaustionLevels = exhaustionLevels;
         this.nutrientScores = nutrientScores;
@@ -51,11 +52,7 @@ public class NutrientsPlayerDataSyncS2CPacket {
         int listLength = buf.readInt();
         activeDietEffects = new ArrayList<>();
         for(int i=0; i < listLength; i++) {
-            int stringLength = buf.readInt();
-            String attributeDescriptionId = buf.readCharSequence(stringLength, Charset.defaultCharset()).toString();
-            AttributeModifier.Operation operation = AttributeModifier.Operation.fromValue(buf.readInt());
-            Double amount = buf.readDouble();
-            activeDietEffects.add(Triple.of(attributeDescriptionId, operation, amount));
+            activeDietEffects.add(new NutrientEffect(buf));
         }
 
     }
@@ -75,10 +72,7 @@ public class NutrientsPlayerDataSyncS2CPacket {
 
         buf.writeInt(activeDietEffects.size());
         for(int i=0; i < activeDietEffects.size(); i++) {
-            buf.writeInt(activeDietEffects.get(i).getLeft().length());
-            buf.writeCharSequence(activeDietEffects.get(i).getLeft(), Charset.defaultCharset());
-            buf.writeInt(activeDietEffects.get(i).getMiddle().toValue());
-            buf.writeDouble(activeDietEffects.get(i).getRight());
+            activeDietEffects.get(i).toBytes(buf);
         }
     }
 

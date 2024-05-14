@@ -1,5 +1,8 @@
 {
-  "key.categories.lukas_nutrients": "Nutrients Mod",
-  "key.lukas_nutrients.open_gui": "Open Nutrient Screen",
-  "gui.lukas_nutrients.nutrient_screen_title": "Nutrient Screen"
+  "lukas_nutrients.key.category": "Nutrients Mod",
+  "lukas_nutrients.key.open_gui": "Open Nutrient Screen",
+  "lukas_nutrients.gui.nutrient_screen_title": "Nutrient Screen",
+  "lukas_nutrients.tooltip.holdForInfo": "Hold [%1$s] for more Info",
+  "lukas_nutrients.tooltip.keyShift": "Shift",
+  "gamerule.keepNutrients": "Keep nutrients after death"
 }

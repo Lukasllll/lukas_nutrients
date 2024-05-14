@@ -1,9 +1,12 @@
 package net.lukasllll.lukas_nutrients.event;
 
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.api.event.NutrientEffectEvent;
+import net.lukasllll.lukas_nutrients.client.graphics.gui.NutrientToast;
 import net.lukasllll.lukas_nutrients.commands.NutrientsCommand;
 import net.lukasllll.lukas_nutrients.gameTests.tests.*;
 import net.lukasllll.lukas_nutrients.gameTests.GameTestCommons;
+import net.lukasllll.lukas_nutrients.gamerule.ModGameRules;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
 import net.lukasllll.lukas_nutrients.nutrients.food.FoodNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.food.NutrientProperties;
@@ -11,10 +14,13 @@ import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrientProvider;
 import net.lukasllll.lukas_nutrients.nutrients.player.PlayerNutrients;
 import net.lukasllll.lukas_nutrients.nutrients.player.effects.NutrientEffects;
 import net.lukasllll.lukas_nutrients.util.INutrientPropertiesHaver;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.client.event.RecipesUpdatedEvent;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
@@ -31,12 +37,23 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.server.command.ConfigCommand;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 @Mod.EventBusSubscriber(modid = LukasNutrients.MOD_ID)
 public class ModEvents {
 
     @SubscribeEvent
-    public static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
-        event.register(PlayerNutrients.class);
+    public static void onAddedNutrientEffect(NutrientEffectEvent.Added event) {
+        if(!event.isSetup()) {
+            ToastComponent toastGui = Minecraft.getInstance().getToasts();
+            NutrientToast.addOrUpdate(toastGui, event.getEffect(), true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRemovedNutrientEffect(NutrientEffectEvent.Removed event) {
+        ToastComponent toastGui =  Minecraft.getInstance().getToasts();
+        NutrientToast.addOrUpdate(toastGui, event.getEffect(), false);
     }
 
     @SubscribeEvent
@@ -44,7 +61,6 @@ public class ModEvents {
         new NutrientsCommand(event.getDispatcher());
         ConfigCommand.register(event.getDispatcher());
     }
-
 
     @SubscribeEvent
     public static void onAttachCapabilitiesPlayer(AttachCapabilitiesEvent<Entity> event) {
@@ -64,7 +80,7 @@ public class ModEvents {
                     nutrients.updateClient(player);
                     int previousMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
                     NutrientEffects.removeAll(player);
-                    NutrientEffects.apply(player, previousMaxHealth);
+                    NutrientEffects.apply(player, previousMaxHealth, true);
                 });
                 NutrientManager.updateClient(player);
             }
@@ -86,10 +102,21 @@ public class ModEvents {
     @SubscribeEvent
     public static void onPlayerCloned(PlayerEvent.Clone event) {
         if(event.getEntity() instanceof ServerPlayer player && event.isWasDeath()) {
+            GameRules gamerules = event.getEntity().level().getLevelData().getGameRules();
+            boolean keepNutrients = gamerules.getBoolean(ModGameRules.RULE_KEEPNUTRIENTS);
+            if(keepNutrients) {
+                event.getOriginal().reviveCaps();
+                event.getOriginal().getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(oldNutrients -> {
+                            player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(newNutrients -> {
+                                newNutrients.copyFrom(oldNutrients);
+                            });
+                });
+                event.getOriginal().invalidateCaps();
+            }
+
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
-                nutrients.setToDefault();
                 nutrients.updateClient(player);
-                NutrientEffects.apply(player);
+                NutrientEffects.apply(player, true);
             });
         }
     }
@@ -112,7 +139,7 @@ public class ModEvents {
                 player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                     nutrients.addAmounts(properties.getNutrientAmounts(), properties.getServings());
                     nutrients.updateClient(player);
-                    NutrientEffects.apply(player);
+                    NutrientEffects.apply(player, false);
                 });
             }
         }
@@ -126,7 +153,7 @@ public class ModEvents {
             player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
                 nutrients.addAmounts(properties.getNutrientAmounts(), properties.getServings());
                 nutrients.updateClient(player);
-                NutrientEffects.apply(player);
+                NutrientEffects.apply(player, false);
             });
         }
     }

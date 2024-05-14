@@ -1,14 +1,19 @@
 package net.lukasllll.lukas_nutrients.nutrients.operators;
 
 import com.google.common.primitives.Booleans;
+import net.lukasllll.lukas_nutrients.client.ClientNutrientData;
 import net.lukasllll.lukas_nutrients.client.graphics.gui.IDisplayElement;
 import net.lukasllll.lukas_nutrients.nutrients.Nutrient;
 import net.lukasllll.lukas_nutrients.nutrients.NutrientManager;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Operators implement different calculations, taking Nutrient objects or other Operator objects as inputs and
@@ -115,28 +120,32 @@ public abstract class Operator implements ICalcElement, IDisplayElement {
     public void fetchInputs(boolean onClient) {
         ArrayList<ICalcElement> tempInputs = new ArrayList<>();
         ArrayList<Boolean> tempTakeInputScore = new ArrayList<>();
-        if(onClient) {
-            //TODO ???
-        } else {
-            for(String inputID : inputIds) {
-                if(inputID.contains("=")) {
-                    tempInputs.add(new Constant(inputID));
-                    tempTakeInputScore.add(false);
+        for(String inputID : inputIds) {
+            if(inputID.contains("=")) {
+                tempInputs.add(new Constant(inputID));
+                tempTakeInputScore.add(false);
+            } else {
+                String[] splitID = inputID.split("\\.");
+                if (splitID.length > 2) continue;
+                Nutrient nutrient;
+                Operator operator;
+                if(onClient) {
+                    nutrient = ClientNutrientData.getNutrient(splitID[0]);
+                    operator = ClientNutrientData.getOperator(splitID[0]);
                 } else {
-                    String[] splitID = inputID.split("\\.");
-                    if (splitID.length > 2) continue;
-                    Nutrient nutrient = NutrientManager.getNutrientFromID(splitID[0]);
-                    Operator operator = NutrientManager.getOperatorFromID(splitID[0]);
-                    if (nutrient != null) {
-                        tempInputs.add(nutrient);
-                    } else if (operator != null) {
-                        tempInputs.add(operator);
-                    }
-                    String takeInputScoreSuffix = (splitID.length == 2) ? splitID[1] : "empty";
-                    tempTakeInputScore.add(!takeInputScoreSuffix.equals("amount"));
+                    nutrient = NutrientManager.getNutrientFromID(splitID[0]);
+                    operator = NutrientManager.getOperatorFromID(splitID[0]);
                 }
+                if (nutrient != null) {
+                    tempInputs.add(nutrient);
+                } else if (operator != null) {
+                    tempInputs.add(operator);
+                }
+                String takeInputScoreSuffix = (splitID.length == 2) ? splitID[1] : "empty";
+                tempTakeInputScore.add(!takeInputScoreSuffix.equals("amount"));
             }
         }
+
         inputs = tempInputs.toArray(new ICalcElement[0]);
         takeInputScore = Booleans.toArray(tempTakeInputScore);
     }
@@ -171,6 +180,7 @@ public abstract class Operator implements ICalcElement, IDisplayElement {
 
     public String getID() {return this.id;}
     public String getDisplayname() {return this.displayname;}
+    public abstract String getOperatorName();
     public int[] getPointRanges() {return this.pointRanges;}
     public int getBasePoint() {return this.basePoint; }
 
@@ -183,6 +193,12 @@ public abstract class Operator implements ICalcElement, IDisplayElement {
     }
 
     public abstract DisplayBarStyle getDisplayBarStyle();
+
+    public List<Component> getTooltip(boolean moreInfo) {
+        LinkedList<Component> out = new LinkedList<>();
+        out.add(Component.literal(getDisplayname()).append(Component.literal(" (" + getOperatorName() + ")").withStyle(ChatFormatting.GRAY)));
+        return out;
+    }
 
     public enum DisplayBarStyle {
         NUTRIENT,

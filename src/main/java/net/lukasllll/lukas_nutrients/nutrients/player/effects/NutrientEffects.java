@@ -31,19 +31,19 @@ public class NutrientEffects {
     specified in such a case, just calling apply(player) may lead to the player gaining health.
     Otherwise, just call apply(player) and it will probably be fine.
      */
-    public static void apply(ServerPlayer player) {
+    public static void apply(ServerPlayer player, boolean setup) {
         int previousMaxHealth = (int) player.getAttribute(Attributes.MAX_HEALTH).getValue();
-        apply(player, previousMaxHealth);
+        apply(player, previousMaxHealth, setup);
     }
 
-    public static void apply(ServerPlayer player, int previousMaxHealth) {
+    public static void apply(ServerPlayer player, int previousMaxHealth, boolean setup) {
 
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
             for(NutrientEffect baseEffect : baseEffects) {
-                baseEffect.apply(player);
+                baseEffect.apply(player, setup);
             }
             for(NutrientEffect nutrientEffect : NutrientEffects) {
-                nutrientEffect.apply(player, nutrients.getValue(nutrientEffect.getTargetID()));
+                nutrientEffect.apply(player, nutrients.getValue(nutrientEffect.getTargetID()), setup);
             }
         });
 
@@ -89,7 +89,7 @@ public class NutrientEffects {
     returns a list with all important information about active attributeModifiers. Similar modifiers are combined.
     baseEffects are ignored for this list.
      */
-    public static List<Triple<String, AttributeModifier.Operation, Double>> getSimplifiedList(ServerPlayer player) {
+    public static List<NutrientEffect> getSimplifiedList(ServerPlayer player) {
         ArrayList<NutrientEffect> activeEffects = new ArrayList<>();
 
         player.getCapability(PlayerNutrientProvider.PLAYER_NUTRIENTS).ifPresent(nutrients -> {
@@ -119,14 +119,7 @@ public class NutrientEffects {
             }
         }
 
-        ArrayList< Triple<String, AttributeModifier.Operation, Double> > out = new ArrayList<>();
-        for(NutrientEffect effect : activeEffects) {
-            out.add(Triple.of(ForgeRegistries.ATTRIBUTES.getKey(effect.getAttributeModifier().getAttribute()).toString(),
-                    effect.getAttributeModifier().getOperation(),
-                    effect.getAttributeModifier().getAmount()));
-        }
-
-        return out;
+        return activeEffects;
     }
 
 }
