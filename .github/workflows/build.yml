@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
     - name: Checkout repository
@@ -59,6 +60,8 @@ jobs:
         modloader: forge
         regex: .*forge.*
         java: 17
+        xvfb: false
+        headlessmc_command: -lwjgl --jvm -Djava.awt.headless=true
 
 
     - name: Archive build artifacts
