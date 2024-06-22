@@ -1,9 +1,6 @@
 name: Build and Test
 
 on:
-  push:
-    branches:
-      - active-development
   pull_request:
     branches:
       - active-development
