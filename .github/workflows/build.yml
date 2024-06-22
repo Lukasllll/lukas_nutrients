@@ -57,7 +57,11 @@ jobs:
         draft: false
         prerelease: false
 
-
+    - name: Download build artifacts
+      uses: actions/download-artifact@v2
+      with:
+        name: build-artifacts
+        path: build/libs
 
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
