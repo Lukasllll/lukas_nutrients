@@ -39,10 +39,17 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
-    - name: Get the built JAR file name
-      id: get_jar_name
+    - name: Get the built JAR file Path
+      id: get_jar_path
       run: echo "JAR_PATH=$(ls build/libs/lukas_nutrients*.jar)" >> $GITHUB_ENV
 
+    - name: Get the built JAR file name
+      id: get_jar_name
+      run: echo "JAR_NAME=$(basename $(ls build/libs/lukas_nutrients*.jar))" >> $GITHUB_ENV
+
+    - name: extract version number
+      id: get_mod_version
+      run: echo "VER_NUM=$(echo ${{ env.JAR_NAME }} | sed 's/.*-\(.*\)\.jar/\1/')" >> $GITHUB_ENV
 
 
     - name: Archive build artifacts
@@ -52,16 +59,6 @@ jobs:
         path: ${{ env.JAR_PATH }}
 
 
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.BUILD_TOKEN }}
-      with:
-        tag_name: v${{ github.run_number }}
-        release_name: Release ${{ github.run_number }}
-        draft: false
-        prerelease: false
 
     - name: Download build artifacts
       uses: actions/download-artifact@v2
@@ -73,6 +70,17 @@ jobs:
       run: echo "current" & ls -alh ./
             echo "build/libs" & ls build/libs
 
+    - name: Create GitHub Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.BUILD_TOKEN }}
+      with:
+        tag_name: "v${{ env.VER_NUM }}_dev${{ github.run }}"
+        release_name: "Dev build: ${{ env.JAR_name }}  ${{ github.sha }}"
+        draft: false
+        prerelease: true
+
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
@@ -80,6 +88,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.JAR_PATH }}
-        asset_name: mod-${{ github.run_number }}.jar
+        asset_name: ${{ env.JAR_NAME }}-${{ github.sha }}.jar
         asset_content_type: application/java-archive
   
