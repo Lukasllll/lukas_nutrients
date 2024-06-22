@@ -39,11 +39,17 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew build
 
+    - name: Get the built JAR file name
+      id: get_jar_name
+      run: echo "JAR_PATH=$(ls build/libs/lukas_nutrients*.jar)" >> $GITHUB_ENV
+
+
+
     - name: Archive build artifacts
       uses: actions/upload-artifact@v2
       with:
         name: build-artifacts
-        path: build/libs/*.jar
+        path: ${{ env.JAR_PATH }}
 
 
     - name: Create GitHub Release
@@ -73,7 +79,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.BUILD_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/libs/*.jar
+        asset_path: ${{ env.JAR_PATH }}
         asset_name: mod-${{ github.run_number }}.jar
         asset_content_type: application/java-archive
   
