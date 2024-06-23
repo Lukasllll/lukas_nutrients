@@ -88,8 +88,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.BUILD_TOKEN }}
       with:
-        tag_name: "v${{ env.VER_NUM }}_dev${{ github.run_number }}"
-        release_name: "Dev build: ${{ env.JAR_NAME }}  ${{ github.sha }}"
+        tag_name: ${{ steps.version.outputs.v-version }}
+        release_name: "Dev build: ${{ steps.version.outputs.v-version }}"
         draft: false
         prerelease: true
 
@@ -100,6 +100,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.JAR_PATH }}
-        asset_name: ${{ env.JAR_NAME }}-R${{ github.run_number }}-${{ github.sha }}.jar
+        asset_name: ${{ steps.version.outputs.v-version }}.jar
         asset_content_type: application/java-archive
   
