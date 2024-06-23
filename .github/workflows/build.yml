@@ -60,7 +60,7 @@ jobs:
         release_branch: master
 
     - name: print version
-      run: echo ${{ steps.version.outputs.patch-version }}
+      run: echo ${{ steps.version.outputs.pre-release-label }}
 
 
     - name: Archive build artifacts
