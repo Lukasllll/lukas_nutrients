@@ -50,6 +50,19 @@ jobs:
       id: get_mod_version
       run: echo "VER_NUM=$(echo ${{ env.JAR_NAME }} | sed 's/.*-\(.*\)\.jar/\1/')" >> $GITHUB_ENV
 
+
+    - name: Get next version
+      uses: reecetech/version-increment@2024.4.3
+      id: version
+      with:
+        scheme: conventional_commits
+        increment: patch
+        release_branch: master
+
+    - name: print version
+      run: echo ${{ steps.version.outputs.v-version }}
+
+
     - name: Archive build artifacts
       uses: actions/upload-artifact@v2
       with:
