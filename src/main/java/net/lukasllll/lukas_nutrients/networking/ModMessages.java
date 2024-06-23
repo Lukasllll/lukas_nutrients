@@ -1,5 +1,6 @@
 package net.lukasllll.lukas_nutrients.networking;
 import net.lukasllll.lukas_nutrients.LukasNutrients;
+import net.lukasllll.lukas_nutrients.networking.packet.NutrientsAddToastS2CPacket;
 import net.lukasllll.lukas_nutrients.networking.packet.NutrientsGlobalDataSyncS2CPacket;
 import net.lukasllll.lukas_nutrients.networking.packet.NutrientsPlayerDataSyncS2CPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -36,6 +37,11 @@ public class ModMessages {
                 .decoder(NutrientsGlobalDataSyncS2CPacket::new)
                 .encoder(NutrientsGlobalDataSyncS2CPacket::toBytes)
                 .consumerMainThread(NutrientsGlobalDataSyncS2CPacket::handle)
+                .add();
+        net.messageBuilder(NutrientsAddToastS2CPacket.class, generateID(), NetworkDirection.PLAY_TO_CLIENT)
+                .decoder(NutrientsAddToastS2CPacket::new)
+                .encoder(NutrientsAddToastS2CPacket::toBytes)
+                .consumerMainThread(NutrientsAddToastS2CPacket::handle)
                 .add();
     }
 
