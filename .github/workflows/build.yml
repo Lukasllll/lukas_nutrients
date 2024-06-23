@@ -52,7 +52,7 @@ jobs:
     
     - name: extract name for asset
       id: get_asset_name
-      run: echo "ASSET_NAME=$(echo ${{ env.JAR_NAME }} | sed 's/\.jar$//'" >> $GITHUB_ENV
+      run: echo "ASSET_NAME=$(echo ${{ env.JAR_NAME }} | sed 's/\.jar$//')" >> $GITHUB_ENV
 
 
     - name: Get next version
