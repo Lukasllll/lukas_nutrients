@@ -7,7 +7,7 @@ plugins {
     id 'org.spongepowered.mixin' version '0.7.+'
 }
 
-version = '1.20.1 - 0.12.7'
+version = '1.20.1-0.12.7'
 group = 'net.lukasllll.lukas_nutrients' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'lukas_nutrients'
 
