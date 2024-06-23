@@ -5,7 +5,7 @@ Lukas' Nutrients is a highly customizable mod that aims to make Minecraft's food
 
 ## Overview
 
-This mod incentivises players to secure multiple different food sources, to keep their nutrients balanced.
+This mod incentivises players to secure multiple different food sources to keep their nutrients balanced.
 
 <img src="https://github.com/Nutrient-Mod/lukas_nutrients/assets/145078665/73362caf-b40f-40f2-a2fc-464c4b48b91a" width="600">
 
@@ -47,7 +47,7 @@ The mod also provides a few commands for utility.
 ### Download
 **Please note that this mod isn't officially released yet and may have some bugs as well as features missing!**
 
-Check out the current releases at https://github.com/Nutrient-Mod/lukas_nutrients/releases. You can find a downloadable `.jar` file under "Assets".
+Check out the current releases at [Nutrient Mod Releases](https://github.com/Nutrient-Mod/lukas_nutrients/releases). You can find a downloadable `.jar` file under "Assets".
 
 ### Supported Mods
 
@@ -61,4 +61,4 @@ At the moment, Lukas' Nutrients has full inbuilt support for the following mods:
 * Ecologics
 * Missing Wilds
 
-As well as for all food, crafted with vanilla ingredients.
+As well as for all food crafted with vanilla ingredients.
