@@ -60,7 +60,7 @@ jobs:
         release_branch: master
 
     - name: print version
-      run: echo ${{ steps.version.outputs.pre-release-label }}
+      run: echo ${{ steps.version.outputs.v-version }}
 
 
     - name: Archive build artifacts
@@ -89,7 +89,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.BUILD_TOKEN }}
       with:
         tag_name: ${{ steps.version.outputs.v-version }}
-        release_name: "Dev build: ${{ steps.version.outputs.v-version }}"
+        release_name: "Dev build: ${{ env.JAR_NAME }}${{ steps.version.outputs.pre-release-label}}"
         draft: false
         prerelease: true
 
@@ -100,6 +100,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.JAR_PATH }}
-        asset_name: ${{ steps.version.outputs.v-version }}.jar
+        asset_name: ${{ env.JAR_NAME }}${{ steps.version.outputs.pre-release-label}}.jar
         asset_content_type: application/java-archive
   
