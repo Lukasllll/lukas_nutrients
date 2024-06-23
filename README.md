@@ -1,7 +1,7 @@
 **Please note that this mod isn't officially released yet and may have some bugs as well as features missing!**
 
 # Lukas' Nutrients
-Lukas' Nutrients is a highly customizable mod that aims to make Minecraft's food mechanics more engaging, by adding nutrients to food. By default the mod provides five food groups (fruits, grains, proteins, vegetables, and sugars).
+Lukas' Nutrients is a highly customizable mod that aims to make Minecraft's food mechanics more engaging by adding nutrients to food. By default the mod provides five food groups (fruits, grains, proteins, vegetables, and sugars).
 
 ## Overview
 
