@@ -7,6 +7,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraftforge.fml.ModList;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class IntegrationHelper {
@@ -24,6 +25,12 @@ public class IntegrationHelper {
         }
     }
 
+    /**
+     * Assigns the specified RecipeType a special IRecipeNutrientProvider.
+     * @param type any RecipeType
+     * @param provider a method, that takes a recipe as a parameter and returns custom nutrient amounts for that recipe.
+     *   See IRecipeNutrientProvider for more info.
+     */
     public static void addOutsourcedRecipeNutrientProvider(RecipeType<?> type, IRecipeNutrientProvider provider) {
         outsourcedRecipeNutrientProviders.put(type, provider);
     }
@@ -41,7 +48,7 @@ public class IntegrationHelper {
         NETHERSDELIGHT,
         CREATE;
 
-        private final String id = Lang.asId(this.name());
+        private final String id = this.name().toLowerCase(Locale.ROOT);
 
         public String id() {
             return this.id;

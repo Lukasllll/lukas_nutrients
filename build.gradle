@@ -7,7 +7,7 @@ plugins {
     id 'org.spongepowered.mixin' version '0.7.+'
 }
 
-version = '1.20.1-0.12.6'
+version = '1.20.1 - 0.12.7'
 group = 'net.lukasllll.lukas_nutrients' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'lukas_nutrients'
 
@@ -156,13 +156,13 @@ dependencies {
     //implementation -> The mods code can be accessed and it will be loaded when running the runClient task
 
     //farmers delight 1.20.1: https://modrinth.com/mod/farmers-delight/version/1.20.1-1.2.4
-    implementation fg.deobf("maven.modrinth:farmers-delight:1.20.1-1.2.4")
+    compileOnly fg.deobf("maven.modrinth:farmers-delight:1.20.1-1.2.4")
 
     //nethers delight 1.20.1: https://modrinth.com/mod/nethers-delight/version/MTDQhZd2
-    implementation fg.deobf("maven.modrinth:nethers-delight:MTDQhZd2")
+    compileOnly fg.deobf("maven.modrinth:nethers-delight:MTDQhZd2")
 
     //create 1.20.1: https://modrinth.com/mod/create/version/1.20.1-0.5.1.f
-    implementation fg.deobf("maven.modrinth:create:1.20.1-0.5.1.f")
+    compileOnly fg.deobf("maven.modrinth:create:1.20.1-0.5.1.f")
 
     //appleskin 1.20.1 (run only): https://modrinth.com/mod/appleskin/version/2.5.1+mc1.20.1
     runtimeOnly fg.deobf("maven.modrinth:appleskin:2.5.1+mc1.20.1")
