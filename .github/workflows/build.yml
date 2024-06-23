@@ -49,6 +49,10 @@ jobs:
     - name: extract version number
       id: get_mod_version
       run: echo "VER_NUM=$(echo ${{ env.JAR_NAME }} | sed 's/.*-\(.*\)\.jar/\1/')" >> $GITHUB_ENV
+    
+    - name: extract name for asset
+      id: get_asset_name
+      run: echo "ASSET_NAME=$(echo ${{ env.JAR_NAME }} | sed 's/\.jar$//'" >> $GITHUB_ENV
 
 
     - name: Get next version
@@ -89,7 +93,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.BUILD_TOKEN }}
       with:
         tag_name: ${{ steps.version.outputs.v-version }}
-        release_name: "Dev build: ${{ env.VER_NUM }}${{ steps.version.outputs.pre-release-label}}"
+        release_name: "Dev build: ${{ env.ASSET_NAME }}${{ steps.version.outputs.pre-release-label}}"
         draft: false
         prerelease: true
 
@@ -100,6 +104,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ${{ env.JAR_PATH }}
-        asset_name: ${{ env.VER_NUM }}${{ steps.version.outputs.pre-release-label}}.jar
+        asset_name: ${{ env.ASSET_NAME }}${{ steps.version.outputs.pre-release-label}}.jar
         asset_content_type: application/java-archive
   
