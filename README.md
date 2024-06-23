@@ -1,5 +1,7 @@
 **Please note that this mod isn't officially released yet and may have some bugs as well as features missing!**
 
+*Lukas' Nutrients is currently only available for [Minecraft Forge 1.20.1](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html). For 1.21 we are planning to move to NeoForged and add a Fabric port.*
+
 # Lukas' Nutrients
 Lukas' Nutrients is a highly customizable mod that aims to make Minecraft's food mechanics more engaging by adding nutrients to food. By default the mod provides five food groups (fruits, grains, proteins, vegetables, and sugars).
 
@@ -48,6 +50,8 @@ The mod also provides a few commands for utility.
 **Please note that this mod isn't officially released yet and may have some bugs as well as features missing!**
 
 Check out the current releases at [Nutrient Mod Releases](https://github.com/Nutrient-Mod/lukas_nutrients/releases). You can find a downloadable `.jar` file under "Assets".
+
+*Lukas' Nutrients is currently only available for [Minecraft Forge 1.20.1](https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html).*
 
 ### Supported Mods
 
